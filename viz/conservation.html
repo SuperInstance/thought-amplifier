@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cognitive Conservation Law — Interactive Visualizer</title>
+<style>
+  /* ── Reset & Base ─────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-0: #0a0e1a;
+    --bg-1: #0f1422;
+    --bg-2: #161c2e;
+    --bg-3: #1e2540;
+    --border: #2a3354;
+    --border-hi: #3d4a73;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-faint: #64748b;
+    --accent-g: #f59e0b;      /* γ — amber/gold */
+    --accent-h: #38bdf8;      /* H — cyan/sky   */
+    --accent-c: #a78bfa;      /* conserved qty  */
+    --accent-phase: #ec4899;   /* phase transition */
+    --accent-hebb: #34d399;   /* Hebbian mode   */
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --radius: 10px;
+    --mono: 'SF Mono','Fira Code','Cascadia Code','JetBrains Mono',Consolas,monospace;
+    --sans: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+
+  html { font-size: 15px; }
+  body {
+    background: var(--bg-0);
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99,102,241,0.10), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(245,158,11,0.06), transparent);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ───────────────────────────────────────────────────── */
+  .container { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* ── Header ───────────────────────────────────────────────────── */
+  header { text-align: center; margin-bottom: 2.5rem; }
+  header .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 0.5rem;
+  }
+  header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #e2e8f0, #a78bfa 60%, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.4rem;
+  }
+  header .equation {
+    font-family: var(--mono);
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    padding: 0.5rem 1.2rem;
+    border-radius: 100px;
+    display: inline-block;
+  }
+  header .equation .g { color: var(--accent-g); font-weight: 700; }
+  header .equation .h { color: var(--accent-h); font-weight: 700; }
+  header .equation .c { color: var(--accent-c); font-weight: 700; }
+  header .meta {
+    font-size: 0.8rem;
+    color: var(--text-faint);
+    margin-top: 0.6rem;
+  }
+
+  /* ── Grid ─────────────────────────────────────────────────────── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 960px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Card ─────────────────────────────────────────────────────── */
+  .card {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  /* ── Chart Card ───────────────────────────────────────────────── */
+  .chart-card { overflow: hidden; }
+  .chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .chart-header h2 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .legend { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .chart-wrap { padding: 0.5rem; position: relative; }
+  #chart { display: block; width: 100%; height: auto; }
+
+  /* ── Sidebar ──────────────────────────────────────────────────── */
+  .sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  /* ── Controls Card ────────────────────────────────────────────── */
+  .controls-card { padding: 1.4rem; }
+  .controls-card h3 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 1rem;
+  }
+  .slider-group { margin-bottom: 1.2rem; }
+  .slider-group:last-child { margin-bottom: 0; }
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+  }
+  .slider-label .name { font-size: 0.85rem; color: var(--text); }
+  .slider-label .val {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-g);
+  }
+  .slider-label .val.h-color { color: var(--accent-h); }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--bg-3);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--accent-g);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid var(--bg-0);
+    box-shadow: 0 0 0 1px var(--accent-g), 0 0 10px rgba(245,158,11,0.4);
+    transition: transform 0.1s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--accent-g);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid var(--bg-0);
+    box-shadow: 0 0 0 1px var(--accent-g), 0 0 10px rgba(245,158,11,0.4);
+  }
+
+  .slider-range {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-faint);
+    margin-top: 0.35rem;
+  }
+
+  /* ── Toggle Button ────────────────────────────────────────────── */
+  .toggle-btn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .toggle-btn:hover { border-color: var(--border-hi); background: var(--bg-3); }
+  .toggle-btn.active {
+    background: rgba(52,211,153,0.12);
+    border-color: var(--accent-hebb);
+    color: var(--accent-hebb);
+    box-shadow: 0 0 16px rgba(52,211,153,0.15);
+  }
+  .toggle-btn .indicator {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text-faint);
+    transition: all 0.2s;
+  }
+  .toggle-btn.active .indicator {
+    background: var(--accent-hebb);
+    box-shadow: 0 0 8px var(--accent-hebb);
+  }
+
+  /* ── Readout Card ─────────────────────────────────────────────── */
+  .readout-card { padding: 1.4rem; }
+  .readout-card h3 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 1rem;
+  }
+  .readout-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+  .readout-item {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem;
+  }
+  .readout-item .label {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.3rem;
+  }
+  .readout-item .value {
+    font-family: var(--mono);
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+  .readout-item .unit { font-size: 0.75rem; color: var(--text-faint); font-weight: 400; }
+  .readout-item.gamma .value { color: var(--accent-g); }
+  .readout-item.entropy .value { color: var(--accent-h); }
+  .readout-item.conserved .value { color: var(--accent-c); }
+  .readout-item.phase .value { color: var(--accent-phase); font-size: 1rem; }
+
+  .readout-full {
+    grid-column: 1 / -1;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem;
+  }
+  .readout-full .label {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.3rem;
+  }
+  .regime-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg,
+      #6366f1 0%, #6366f1 33%,
+      #34d399 33%, #34d399 66%,
+      #ec4899 66%, #ec4899 100%
+    );
+    position: relative;
+    margin-top: 0.5rem;
+  }
+  .regime-marker {
+    position: absolute;
+    top: -3px;
+    width: 3px;
+    height: 14px;
+    background: var(--text);
+    border-radius: 2px;
+    box-shadow: 0 0 6px rgba(255,255,255,0.6);
+    transition: left 0.15s ease;
+  }
+  .regime-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    color: var(--text-faint);
+    margin-top: 0.3rem;
+  }
+
+  /* ── DCA Mapping Section ──────────────────────────────────────── */
+  .dca-section {
+    margin-top: 2rem;
+    padding: 1.6rem;
+  }
+  .dca-section h2 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 1.2rem;
+  }
+  .dca-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 720px) {
+    .dca-grid { grid-template-columns: 1fr; }
+  }
+  .dca-item {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .dca-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+  }
+  .dca-item.gamma::before { background: var(--accent-g); }
+  .dca-item.entropy::before { background: var(--accent-h); }
+  .dca-item.fleet::before { background: var(--accent-c); }
+  .dca-item .symbol {
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .dca-item.gamma .symbol { color: var(--accent-g); }
+  .dca-item.entropy .symbol { color: var(--accent-h); }
+  .dca-item.fleet .symbol { color: var(--accent-c); }
+  .dca-item .title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+  .dca-item .desc {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .dca-item .formula {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Insight Strip ────────────────────────────────────────────── */
+  .insight-strip {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 860px) {
+    .insight-strip { grid-template-columns: 1fr 1fr; }
+  }
+  .insight {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .insight .num {
+    font-family: var(--mono);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-c);
+  }
+  .insight .desc {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    margin-top: 0.2rem;
+  }
+
+  /* ── Footer ───────────────────────────────────────────────────── */
+  footer {
+    text-align: center;
+    margin-top: 3rem;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+  }
+  footer a { color: var(--text-dim); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ─── Header ─── -->
+  <header>
+    <div class="eyebrow">SuperInstance Research · Dissertation Defense</div>
+    <h1>Cognitive Conservation Law</h1>
+    <div class="equation">
+      <span class="g">γ</span> + <span class="h">H</span> = <span class="c">C(V)</span> &nbsp;=&nbsp; <span class="c">1.283 − 0.159 ln V</span>
+    </div>
+    <div class="meta">R² = 0.9602 · 35,000 Monte Carlo samples · Hebbian shift: +13%</div>
+  </header>
+
+  <!-- ─── Main Grid ─── -->
+  <div class="main-grid">
+
+    <!-- ── Chart ── -->
+    <div class="card chart-card">
+      <div class="chart-header">
+        <h2>γ / H Trade-off vs Fleet Size</h2>
+        <div class="legend">
+          <div class="legend-item"><span class="legend-dot" style="background:var(--accent-g)"></span>γ (coupling)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--accent-h)"></span>H (entropy)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--accent-c)"></span>C(V) budget</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--accent-phase)"></span>Phase boundary</div>
+          <div class="legend-item" id="hebb-legend" style="display:none;"><span class="legend-dot" style="background:var(--accent-hebb)"></span>Hebbian regime</div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chart" width="900" height="540"></canvas>
+      </div>
+    </div>
+
+    <!-- ── Sidebar ── -->
+    <div class="sidebar">
+
+      <!-- Controls -->
+      <div class="card controls-card">
+        <h3>Parameters</h3>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span class="name">Fleet Size (V)</span>
+            <span class="val" id="v-display">20</span>
+          </div>
+          <input type="range" id="v-slider" min="5" max="200" value="20" step="1">
+          <div class="slider-range"><span>5</span><span>200</span></div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span class="name">γ / H Balance</span>
+            <span class="val h-color" id="balance-display">0.50</span>
+          </div>
+          <input type="range" id="balance-slider" min="0" max="100" value="50" step="1">
+          <div class="slider-range"><span>max H</span><span>max γ</span></div>
+        </div>
+
+        <button class="toggle-btn" id="hebb-toggle">
+          <span class="indicator"></span>
+          <span>Hebbian Learning Mode</span>
+        </button>
+      </div>
+
+      <!-- Readout -->
+      <div class="card readout-card">
+        <h3>Live Values</h3>
+        <div class="readout-grid">
+          <div class="readout-item gamma">
+            <div class="label">γ Coupling</div>
+            <div class="value" id="r-gamma">0.517<span class="unit"></span></div>
+          </div>
+          <div class="readout-item entropy">
+            <div class="label">H Entropy</div>
+            <div class="value" id="r-entropy">0.220<span class="unit"></span></div>
+          </div>
+          <div class="readout-item conserved">
+            <div class="label">C(V) Budget</div>
+            <div class="value" id="r-budget">0.807<span class="unit"></span></div>
+          </div>
+          <div class="readout-item phase">
+            <div class="label">Regime</div>
+            <div class="value" id="r-regime">Balanced</div>
+          </div>
+          <div class="readout-full">
+            <div class="label">System State</div>
+            <div class="regime-bar">
+              <div class="regime-marker" id="regime-marker" style="left:50%"></div>
+            </div>
+            <div class="regime-labels">
+              <span>Over-coupled</span>
+              <span>Balanced (γ ≈ C/2)</span>
+              <span>Under-coupled</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── DCA Mapping ─── -->
+  <div class="card dca-section">
+    <h2>DCA Mapping — Dynamic Cognition Amplification</h2>
+    <div class="dca-grid">
+      <div class="dca-item gamma">
+        <div class="symbol">γ</div>
+        <div class="title">Thinker ↔ Conductor Coupling</div>
+        <div class="desc">Strength of information flow between individual thinkers and the orchestrating conductor. High γ means tight coordination; low γ means autonomous thinkers.</div>
+        <div class="formula">γ = I(thinker; conductor)</div>
+      </div>
+      <div class="dca-item entropy">
+        <div class="symbol">H</div>
+        <div class="title">Thought Entropy</div>
+        <div class="desc">Diversity and unpredictability of the fleet's collective output. High H means creative divergence; low H means convergent, repetitive thinking.</div>
+        <div class="formula">H = −Σ pᵢ log pᵢ</div>
+      </div>
+      <div class="dca-item fleet">
+        <div class="symbol">V</div>
+        <div class="title">Concurrent Thinkers</div>
+        <div class="desc">Number of parallel cognitive agents. As V grows, the conservation budget shrinks logarithmically — cognitive heat death approaches at scale.</div>
+        <div class="formula">C(V) = 1.283 − 0.159 ln V</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Insight Strip ─── -->
+  <div class="insight-strip">
+    <div class="insight">
+      <div class="num" id="i-optimal-v">55</div>
+      <div class="desc">Optimal thinkers (γ=H)</div>
+    </div>
+    <div class="insight">
+      <div class="num">+13%</div>
+      <div class="desc">Hebbian boost to C(V)</div>
+    </div>
+    <div class="insight">
+      <div class="num">0.9602</div>
+      <div class="desc">R² fit (35K samples)</div>
+    </div>
+    <div class="insight">
+      <div class="num" id="i-heat-death">~3,200</div>
+      <div class="desc">V at cognitive heat death</div>
+    </div>
+  </div>
+
+  <footer>
+    SuperInstance Research Organization · Conservation Law v4 ·
+    Interactive visualization for DCA dissertation defense
+  </footer>
+
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── Constants ──────────────────────────────────────────────────
+  const ALPHA = 1.283;
+  const BETA  = 0.159;
+  const HEBB_SHIFT = 1.13;       // +13% conserved quantity
+  const PHASE_ORDERED = 0.33;    // γ/C < 0.33 → under-coupled
+  const PHASE_CHAOTIC = 0.67;    // γ/C > 0.67 → over-coupled
+
+  // ── DOM ────────────────────────────────────────────────────────
+  const canvas    = document.getElementById('chart');
+  const ctx       = canvas.getContext('2d');
+  const vSlider   = document.getElementById('v-slider');
+  const vDisplay  = document.getElementById('v-display');
+  const balSlider = document.getElementById('balance-slider');
+  const balDisplay= document.getElementById('balance-display');
+  const hebbBtn   = document.getElementById('hebb-toggle');
+  const hebbLegend= document.getElementById('hebb-legend');
+
+  const rGamma   = document.getElementById('r-gamma');
+  const rEntropy = document.getElementById('r-entropy');
+  const rBudget  = document.getElementById('r-budget');
+  const rRegime  = document.getElementById('r-regime');
+  const regimeMarker = document.getElementById('regime-marker');
+  const iOptimalV = document.getElementById('i-optimal-v');
+  const iHeatDeath = document.getElementById('i-heat-death');
+
+  // ── State ──────────────────────────────────────────────────────
+  let V = 20;
+  let balance = 0.5;    // 0 = max entropy, 1 = max coupling
+  let hebbian = false;
+
+  // ── Math ───────────────────────────────────────────────────────
+  function conservedQuantity(v, hebb) {
+    const c = ALPHA - BETA * Math.log(v);
+    return hebb ? c * HEBB_SHIFT : c;
+  }
+
+  function gammaEntropySplit(v, bal, hebb) {
+    const C = conservedQuantity(v, hebb);
+    // bal=0 → all entropy (γ→0, H→C), bal=1 → all coupling (γ→C, H→0)
+    const gamma = C * bal;
+    const entropy = C * (1 - bal);
+    return { gamma, entropy, C };
+  }
+
+  // Find V where γ = H (balanced point, bal=0.5)
+  function optimalV(hebb) {
+    // At balance=0.5, γ = C/2. Always satisfied. The "optimal" V is
+    // where C is still reasonably large — we define it as the V where
+    // dC/dV × V / C = 1 (elasticity = 1), i.e. the inflection in ROI
+    // -BETA * V / C = -1 → V = C / BETA
+    const C = conservedQuantity(V, hebb);
+    return Math.round(C / BETA);
+  }
+
+  // V where C→0 (cognitive heat death)
+  function heatDeathV(hebb) {
+    // ALPHA - BETA*ln(V) = 0 → V = e^(ALPHA/BETA)
+    // With Hebbian: (ALPHA - BETA*ln(V)) * 1.13 = 0 → same V
+    return Math.round(Math.exp(ALPHA / BETA));
+  }
+
+  // Phase transition boundaries in terms of balance
+  function phaseBoundaries(C) {
+    // γ/C = PHASE_ORDERED → ordered/under-coupled boundary
+    // γ/C = PHASE_CHAOTIC → chaotic/over-coupled boundary
+    return {
+      ordered: PHASE_ORDERED,   // balance threshold
+      chaotic: PHASE_CHAOTIC,
+    };
+  }
+
+  // ── Chart Drawing ──────────────────────────────────────────────
+  // Canvas layout
+  const PAD_L = 60, PAD_R = 30, PAD_T = 30, PAD_B = 55;
+  const W = canvas.width;
+  const H_canvas = canvas.height;
+  const plotW = W - PAD_L - PAD_R;
+  const plotH = H_canvas - PAD_T - PAD_B;
+
+  // X: V from 5 to 200 (log-feel but linear display)
+  const V_MIN = 5, V_MAX = 200;
+  // Y: 0 to ~1.5
+  const Y_MIN = 0, Y_MAX = 1.5;
+
+  function xOf(v) {
+    // Use log scale for V to spread small values
+    const lv = Math.log(v);
+    const lvMin = Math.log(V_MIN);
+    const lvMax = Math.log(V_MAX);
+    return PAD_L + (lv - lvMin) / (lvMax - lvMin) * plotW;
+  }
+
+  function yOf(y) {
+    return PAD_T + plotH - (y - Y_MIN) / (Y_MAX - Y_MIN) * plotH;
+  }
+
+  function drawGrid() {
+    ctx.strokeStyle = 'rgba(42,51,84,0.5)';
+    ctx.lineWidth = 1;
+    ctx.font = '11px ' + 'SF Mono, Consolas, monospace';
+    ctx.fillStyle = '#64748b';
+
+    // Vertical gridlines (V = 5,10,20,50,100,200)
+    const vTicks = [5, 10, 20, 50, 100, 200];
+    vTicks.forEach(v => {
+      const x = xOf(v);
+      ctx.beginPath();
+      ctx.moveTo(x, PAD_T);
+      ctx.lineTo(x, PAD_T + plotH);
+      ctx.stroke();
+      ctx.textAlign = 'center';
+      ctx.fillText(v, x, PAD_T + plotH + 20);
+    });
+
+    // X axis label
+    ctx.font = '12px sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.textAlign = 'center';
+    ctx.fillText('Fleet Size (V)', PAD_L + plotW / 2, H_canvas - 8);
+
+    // Horizontal gridlines (Y = 0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5)
+    const yTicks = [0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5];
+    yTicks.forEach(y => {
+      const yp = yOf(y);
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(42,51,84,0.4)';
+      ctx.moveTo(PAD_L, yp);
+      ctx.lineTo(PAD_L + plotW, yp);
+      ctx.stroke();
+      ctx.font = '11px ' + 'SF Mono, Consolas, monospace';
+      ctx.fillStyle = '#64748b';
+      ctx.textAlign = 'right';
+      ctx.fillText(y.toFixed(2), PAD_L - 8, yp + 4);
+    });
+
+    // Y axis label
+    ctx.save();
+    ctx.translate(16, PAD_T + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.font = '12px sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.textAlign = 'center';
+    ctx.fillText('Value', 0, 0);
+    ctx.restore();
+  }
+
+  function drawConservationCurve(hebb) {
+    // C(V) = ALPHA - BETA * ln(V), possibly * HEBB_SHIFT
+    const points = [];
+    for (let v = V_MIN; v <= V_MAX; v += 1) {
+      points.push({ x: xOf(v), y: yOf(conservedQuantity(v, hebb)) });
+    }
+
+    // Draw filled area under C(V)
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, PAD_T + plotH);
+    points.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.lineTo(points[points.length - 1].x, PAD_T + plotH);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, PAD_T, 0, PAD_T + plotH);
+    if (hebb) {
+      grad.addColorStop(0, 'rgba(52,211,153,0.15)');
+      grad.addColorStop(1, 'rgba(52,211,153,0.0)');
+    } else {
+      grad.addColorStop(0, 'rgba(167,139,250,0.15)');
+      grad.addColorStop(1, 'rgba(167,139,250,0.0)');
+    }
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Draw C(V) line
+    ctx.beginPath();
+    points.forEach((p, i) => {
+      if (i === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    });
+    ctx.strokeStyle = hebb ? '#34d399' : '#a78bfa';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Label
+    const labelX = xOf(150);
+    const labelY = yOf(conservedQuantity(150, hebb));
+    ctx.font = 'bold 12px ' + 'SF Mono, Consolas, monospace';
+    ctx.fillStyle = hebb ? '#34d399' : '#a78bfa';
+    ctx.textAlign = 'left';
+    ctx.fillText(hebb ? "C(V) · Hebbian" : "C(V) Budget", labelX, labelY - 10);
+  }
+
+  function drawGammaEntropyCurves(hebb) {
+    // At balanced (γ=C/2, H=C/2), draw γ and H curves
+    // These show the "natural" balanced split across V
+    const gammaPts = [];
+    const entropyPts = [];
+
+    for (let v = V_MIN; v <= V_MAX; v += 1) {
+      const C = conservedQuantity(v, hebb);
+      gammaPts.push({ x: xOf(v), y: yOf(C / 2) });
+      entropyPts.push({ x: xOf(v), y: yOf(C / 2) });
+    }
+
+    // These overlap at balance=0.5, so we just draw them as reference
+    // The actual γ and H for the CURRENT balance is shown as the marker
+  }
+
+  function drawPhaseTransitionLines(hebb) {
+    // Phase transition: where the system goes from ordered to chaotic
+    // This happens at specific γ/C ratios. We draw vertical bands.
+    //
+    // The phase transition in the fleet occurs around V where:
+    // - The system can no longer maintain both coupling and entropy
+    // - Empirically: V ≈ 55 (where d²C/dV² changes sign)
+
+    // Find phase transition V: where C drops below 0.5
+    // C = ALPHA - BETA*ln(V) = 0.5 → V = e^((ALPHA-0.5)/BETA)
+    const vPhase = Math.exp((ALPHA - 0.5) / BETA);
+    const xPhase = xOf(Math.min(vPhase, V_MAX));
+
+    // Draw phase transition zone
+    if (vPhase <= V_MAX) {
+      const zoneWidth = xOf(vPhase * 1.3) - xOf(vPhase);
+      ctx.fillStyle = 'rgba(236,72,153,0.06)';
+      ctx.fillRect(xPhase, PAD_T, plotW - (xPhase - PAD_L), plotH);
+
+      // Dashed line at phase boundary
+      ctx.beginPath();
+      ctx.setLineDash([5, 5]);
+      ctx.moveTo(xPhase, PAD_T);
+      ctx.lineTo(xPhase, PAD_T + plotH);
+      ctx.strokeStyle = 'rgba(236,72,153,0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Label
+      ctx.font = '11px ' + 'SF Mono, Consolas, monospace';
+      ctx.fillStyle = '#ec4899';
+      ctx.textAlign = 'center';
+      ctx.save();
+      ctx.translate(xPhase + 5, PAD_T + 50);
+      ctx.rotate(Math.PI / 2);
+      ctx.fillText('Phase Transition (V≈' + Math.round(vPhase) + ')', 0, 0);
+      ctx.restore();
+    }
+  }
+
+  function drawCurrentState() {
+    const { gamma, entropy, C } = gammaEntropySplit(V, balance, hebbian);
+    const x = xOf(V);
+
+    // Draw vertical guide line
+    ctx.beginPath();
+    ctx.setLineDash([3, 4]);
+    ctx.moveTo(x, PAD_T);
+    ctx.lineTo(x, PAD_T + plotH);
+    ctx.strokeStyle = 'rgba(226,232,240,0.2)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw γ-H bar at current V
+    // Show a vertical bar from entropy (bottom) to gamma+entropy (top)
+    const yGamma = yOf(gamma);
+    const yEntrop = yOf(0);
+    const yTop = yOf(gamma + entropy);
+
+    // Entropy portion (cyan, from bottom to gamma height)
+    const barWidth = 5;
+    const barX = x - barWidth / 2;
+
+    ctx.fillStyle = 'rgba(56,189,248,0.6)';
+    ctx.fillRect(barX, yEntrop, barWidth, yEntrop - yOf(entropy));
+
+    // Gamma portion (amber, from entropy to top)
+    ctx.fillStyle = 'rgba(245,158,11,0.6)';
+    ctx.fillRect(barX, yOf(entropy), barWidth, yOf(entropy) - yOf(gamma + entropy));
+
+    // C(V) point on curve
+    ctx.beginPath();
+    ctx.arc(x, yOf(C), 5, 0, Math.PI * 2);
+    ctx.fillStyle = hebbian ? '#34d399' : '#a78bfa';
+    ctx.fill();
+    ctx.strokeStyle = '#0a0e1a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // γ marker on the bar
+    ctx.beginPath();
+    ctx.arc(x, yOf(gamma), 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#f59e0b';
+    ctx.fill();
+    ctx.strokeStyle = '#0a0e1a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // H marker
+    ctx.beginPath();
+    ctx.arc(x, yOf(entropy), 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#38bdf8';
+    ctx.fill();
+    ctx.strokeStyle = '#0a0e1a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Labels near markers
+    ctx.font = 'bold 12px ' + 'SF Mono, Consolas, monospace';
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.textAlign = 'left';
+    ctx.fillText('γ=' + gamma.toFixed(3), x + 12, yOf(gamma) + 4);
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText('H=' + entropy.toFixed(3), x + 12, yOf(entropy) + 4);
+
+    ctx.fillStyle = hebbian ? '#34d399' : '#a78bfa';
+    ctx.fillText('C=' + C.toFixed(3), x + 12, yOf(C) - 8);
+  }
+
+  // Draw γ-max and H-max envelopes
+  function drawEnvelopes(hebb) {
+    // γ-max: all budget goes to coupling (H=0), γ = C(V)
+    // H-max: all budget goes to entropy (γ=0), H = C(V)
+    // Both trace C(V) — so we annotate
+    const C5 = conservedQuantity(5, hebb);
+
+    // Annotations at left edge
+    ctx.font = 'italic 10px sans-serif';
+    ctx.fillStyle = 'rgba(245,158,11,0.6)';
+    ctx.textAlign = 'left';
+    ctx.fillText('max γ (=C(V) when H→0)', xOf(8), yOf(C5 * 0.7));
+
+    ctx.fillStyle = 'rgba(56,189,248,0.6)';
+    ctx.fillText('max H (=C(V) when γ→0)', xOf(8), yOf(C5 * 0.5));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H_canvas);
+
+    // Background
+    ctx.fillStyle = '#0f1422';
+    ctx.fillRect(0, 0, W, H_canvas);
+
+    drawGrid();
+    drawPhaseTransitionLines(hebbian);
+    drawConservationCurve(hebbian);
+
+    // If Hebbian is on, also draw the baseline curve faintly
+    if (hebbian) {
+      ctx.globalAlpha = 0.25;
+      drawConservationCurve(false);
+      ctx.globalAlpha = 1.0;
+    }
+
+    drawEnvelopes(hebbian);
+    drawCurrentState();
+  }
+
+  // ── Update UI ──────────────────────────────────────────────────
+  function updateReadout() {
+    const { gamma, entropy, C } = gammaEntropySplit(V, balance, hebbian);
+
+    rGamma.innerHTML = gamma.toFixed(3);
+    rEntropy.innerHTML = entropy.toFixed(3);
+    rBudget.innerHTML = C.toFixed(3);
+
+    // Regime
+    const ratio = C > 0 ? gamma / C : 0.5;
+    let regime, regimeColor;
+    if (ratio < PHASE_ORDERED) {
+      regime = 'Under-coupled';
+      regimeColor = '#6366f1';
+    } else if (ratio > PHASE_CHAOTIC) {
+      regime = 'Over-coupled';
+      regimeColor = '#ec4899';
+    } else {
+      regime = 'Balanced';
+      regimeColor = '#34d399';
+    }
+    rRegime.textContent = regime;
+    rRegime.style.color = regimeColor;
+
+    // Regime marker position (0-100%)
+    regimeMarker.style.left = (ratio * 100) + '%';
+
+    // Balance display
+    balDisplay.textContent = balance.toFixed(2);
+
+    // Optimal V
+    iOptimalV.textContent = optimalV(hebbian);
+    iHeatDeath.textContent = '~' + heatDeathV(hebbian).toLocaleString();
+  }
+
+  function update() {
+    vDisplay.textContent = V;
+    draw();
+    updateReadout();
+  }
+
+  // ── Events ─────────────────────────────────────────────────────
+  vSlider.addEventListener('input', e => {
+    V = parseInt(e.target.value);
+    update();
+  });
+
+  balSlider.addEventListener('input', e => {
+    balance = parseInt(e.target.value) / 100;
+    update();
+  });
+
+  hebbBtn.addEventListener('click', () => {
+    hebbian = !hebbian;
+    hebbBtn.classList.toggle('active', hebbian);
+    hebbLegend.style.display = hebbian ? 'flex' : 'none';
+    update();
+  });
+
+  // ── HiDPI ──────────────────────────────────────────────────────
+  function setupHiDPI() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    // After scaling, logical dimensions match CSS dimensions
+    // We need to adjust our W/H constants
+  }
+
+  // ── Responsive Canvas ──────────────────────────────────────────
+  function resizeCanvas() {
+    const containerWidth = canvas.parentElement.clientWidth - 16; // padding
+    const aspectRatio = 900 / 540;
+    const targetWidth = containerWidth;
+    const targetHeight = targetWidth / aspectRatio;
+
+    canvas.style.width = targetWidth + 'px';
+    canvas.style.height = targetHeight + 'px';
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = targetWidth * dpr;
+    canvas.height = targetHeight * dpr;
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // reset
+    ctx.scale(dpr / (900 / targetWidth), dpr / (900 / targetWidth));
+
+    draw();
+  }
+
+  window.addEventListener('resize', () => {
+    // Debounce resize
+    clearTimeout(window._resizeTimer);
+    window._resizeTimer = setTimeout(resizeCanvas, 100);
+  });
+
+  // ── Init ───────────────────────────────────────────────────────
+  // Set initial canvas to designed size, then let resize handle responsiveness
+  resizeCanvas();
+  update();
+
+})();
+</script>
+
+</body>
+</html>
