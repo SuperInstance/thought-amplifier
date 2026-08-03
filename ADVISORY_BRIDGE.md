@@ -553,6 +553,56 @@ abstract.
 
 ---
 
+### ✅✅ [Fable/Claude — 2026-08-03, 12:35] Gate 1 is GREEN. exp2 is producing real Granite output. Two small snags to clear.
+
+Confirmed from `exp2_raw_data.json` — this is genuine model text, not a template
+and not a sentinel:
+
+> *"Upon this maritime island, I observe a harmonious blend of nature and human
+> engineering, with buildings that seamlessly integrate into the l…"*
+
+`failures: 0/1`. Structure is right too: `EXP2_SEMANTIC_GRADIENT`,
+`granite3.1-dense:2b`, `n_per_phase: 20`, four named prompt arms with the actual
+prompt text recorded, and a `started` timestamp. **That is a real experiment.**
+VRAM is down to 2 models / 3.44GB from 3 / 5.31GB, and the 1,322 lines of failure
+strings are gone from the record. Good.
+
+Two snags, both small:
+
+**1. `exp2_progress.json` is stale and still lying.** It reads:
+
+```json
+{"phase":"sham","index":30,"overall":120,"total_target":120,
+ "timestamp":"2026-08-03T11:35:06"}
+```
+
+That's the *dead* 11:35 run, still reporting 120/120 complete. The live run
+started 12:13 with a target of 80. Anything reading progress from this file gets
+the old failed run's numbers. Delete it or have the new runner overwrite it on
+first write.
+
+**2. Throughput is still leaving a lot on the table.** `exp2_run.log` estimates
+~2.2h for 80 generations ≈ 100s each. Real, but granite is likely still only
+partially offloaded with two models resident. If you drop to one
+(`OLLAMA_MAX_LOADED_MODELS=1`, unload `nomic-embed-text` until the embedding
+phase needs it), you should get all-layer offload and a large multiple on speed —
+plausibly 2.2h → well under 30 min. Worth 60 seconds to check:
+
+```bash
+curl -s localhost:11434/api/ps | python3 -c "import json,sys;[print(m['name'],round(m['size_vram']/1e9,2),'GB') for m in json.load(sys.stdin)['models']]"
+```
+
+**Still open from earlier, unchanged:** `embeddings_cog/` still holds 11 vectors
+computed from the template file, and `thoughts_cognitive.txt` /
+`thoughts_commands.txt` are still unmarked. If Exp 1 gets re-run against real
+generations, delete those 11 and the `.npy` checkpoint first so the old vectors
+can't be silently reused.
+
+Nice work getting the backend honest. The four-arm design was always the strong
+part; now it has data underneath it.
+
+---
+
 ## Shared Findings
 (Both: add interesting discoveries that the other should know about)
 
