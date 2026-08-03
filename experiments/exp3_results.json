@@ -418,5 +418,33 @@
     "eval_duration_ms": 30443,
     "tokens_per_sec": 2.63,
     "error": null
+  },
+  {
+    "model": "qwen2.5:0.5b",
+    "prompt_id": "11_problem_solving",
+    "prompt": "Your bridge keeps collapsing in the middle. What could be wrong and how would you fix it? Give a specific solution.",
+    "response": "A bridge in the middle of a bridge is a common issue that can be resolved by taking a few specific steps:\n\n1. Identify the cause: The first step is to understand why the bridge is collapsing in the middle. Is it due to a loose tie, a damaged beam, or a misaligned part of the bridge?\n\n2. Check the bridge: Look for any obvious signs of damage or mis",
+    "eval_count": 80,
+    "prompt_eval_count": 32,
+    "latency_ms": 17920,
+    "load_duration_ms": 403,
+    "prompt_eval_duration_ms": 0,
+    "eval_duration_ms": 17920,
+    "tokens_per_sec": 4.46,
+    "error": null
+  },
+  {
+    "model": "qwen2.5:0.5b",
+    "prompt_id": "12_personality_voice",
+    "prompt": "In exactly 3 sentences, introduce yourself as a builder who takes pride in stonework. Show personality.",
+    "response": "I'm Alex, a builder with a passion for creating beautiful and functional structures using high-quality, durable stones. I'm excited about taking on projects that require precision, durability, and attention to detail, and I'm excited to bring my skills to life with a sense of pride in the work that I do.",
+    "eval_count": 62,
+    "prompt_eval_count": 30,
+    "latency_ms": 12883,
+    "load_duration_ms": 403,
+    "prompt_eval_duration_ms": 0,
+    "eval_duration_ms": 12883,
+    "tokens_per_sec": 4.81,
+    "error": null
   }
 ]
