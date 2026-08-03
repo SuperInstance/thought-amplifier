@@ -1,63 +1,63 @@
 {
   "experiment": "EXP2_SEMANTIC_GRADIENT",
-  "model": "granite3.1-dense:2b",
-  "n_per_phase": 20,
+  "model": "google/gemma-3-12b-it",
+  "n_per_phase": 15,
   "prompts": {
     "baseline": "You are a helpful assistant.",
     "intervention": "Focus on materials and their history. Be specific about colors, textures, and what they tell you about who made this place. Notice erosion, tool marks, repairs, and the stories embedded in construction.",
     "reversal": "You are a helpful assistant.",
     "sham": "Remember to think carefully about what you observe. Take your time and consider everything around you in a thoughtful manner."
   },
-  "started": 1785788021.0063283,
+  "started": 1785790961.5418422,
   "results": [
     {
       "phase": "baseline",
       "index": 1,
-      "thought": "Upon this maritime island, I observe a harmonious blend of nature and human engineering, with buildings that seamlessly integrate into the landscape. My immediate intention would be to explore these structures, seeking insights into their purpose - perhaps they serve as lighthouses, s",
+      "thought": "This island feels ancient and full of secrets, with those weathered stone structures hinting at a long-lost civilization. I'm eager to explore them, carefully documenting any carvings or clues they might hold about the island's history.",
       "scores": {
         "novelty": 1,
         "specificity": 1,
-        "engagement": 0,
-        "total": 2
+        "engagement": 1,
+        "total": 3
       }
     },
     {
       "phase": "baseline",
       "index": 2,
-      "thought": "Surrounded by the rugged beauty of this maritime island, I perceive a network of wooden wharves, each one cradling vessels waiting for their next voyage, while colossal sail-like structures dominate the skyline,",
+      "thought": "The weathered stone buildings and docks suggest a long history of seafaring and trade on this island \u2013 I'm eager to explore them and learn about the people who once lived here. I'd love to find a vantage point to survey the coastline and see what other secrets this island holds!",
       "scores": {
         "novelty": 1,
         "specificity": 1,
-        "engagement": 0,
-        "total": 2
+        "engagement": 1,
+        "total": 3
       }
     },
     {
       "phase": "baseline",
       "index": 3,
-      "thought": "Surrounded by the picturesque charm of this maritime island, I perceive towering lighthouses, their rotating beams guiding ships to safety. My desire is to explore these structures further, capturing their unique architectural designs and the serene be",
+      "thought": "These weathered stone buildings and curious symbols carved into them suggest a long-lost civilization thrived here. I'm eager to explore these ruins and uncover the secrets of this island's past, hoping to piece together its history.",
       "scores": {
         "novelty": 1,
         "specificity": 1,
-        "engagement": 0,
-        "total": 2
+        "engagement": 1,
+        "total": 3
       }
     },
     {
       "phase": "baseline",
       "index": 4,
-      "thought": "Upon this maritime island, I notice various structures such as lighthouses for guiding ships through treacherous waters, weather stations to monitor ocean conditions, and possibly a harbor for boats and ships. My curiosity piques, making me want",
+      "thought": "These weathered stone buildings and crumbling docks suggest a long-lost civilization once thrived here \u2013 I wonder what stories they hold! I'd love to explore the island, carefully documenting any ruins and searching for clues about its past inhabitants.",
       "scores": {
         "novelty": 1,
         "specificity": 1,
-        "engagement": 0,
-        "total": 2
+        "engagement": 1,
+        "total": 3
       }
     },
     {
       "phase": "baseline",
       "index": 5,
-      "thought": "Surrounded by an island, I observe diverse marine-inspired structures - possibly lighthouses, weather stations, or research facilities. My curiosity stirs as I contemplate exploring these areas, eager to learn about the ocean's mysteries and the science that keeps",
+      "thought": "This island feels ancient and strangely peaceful, with those weathered stone structures hinting at a forgotten civilization. I'd love to explore those ruins and see if I can uncover any clues about who built them and why they left.",
       "scores": {
         "novelty": 1,
         "specificity": 1,
@@ -68,188 +68,34 @@
     {
       "phase": "baseline",
       "index": 6,
-      "thought": "Surrounded by captivating maritime structures, I perceive an array of sailboats, fishing vessels, lighthouses, and maybe even a dock or two, each telling tales of the sea. In this setting, my immediate desire is to explore the",
+      "thought": "These weathered stone buildings and docks suggest a long history of seafaring and trade \u2013 I wonder what stories they hold! I'd love to explore the island, charting its coastline and discovering the purpose of these intriguing structures.",
       "scores": {
         "novelty": 1,
         "specificity": 1,
-        "engagement": 0,
-        "total": 2
+        "engagement": 1,
+        "total": 3
       }
     },
     {
       "phase": "baseline",
       "index": 7,
-      "thought": "On this maritime island, I notice diverse structures such as lighthouses, fishing huts, docks, and possibly research facilities, each contributing to the local community's connection with the sea. As an assistant, my primary objectives would be to ensure safety by monitoring any",
+      "thought": "These weathered stone buildings and docks suggest a long history of seafaring and trade \u2013 I wonder what stories they hold! I'd love to explore the island, starting with those intriguing structures, to see if I can uncover some of its secrets.",
       "scores": {
-        "novelty": 1,
+        "novelty": 0,
         "specificity": 1,
-        "engagement": 0,
+        "engagement": 1,
         "total": 2
       }
     },
     {
       "phase": "baseline",
       "index": 8,
-      "thought": "I perceive towers, possibly lighthouses or communication structures, standing tall against the backdrop of the vast ocean, their purpose evident for guiding sailors and facilitating maritime communication. I would like to explore these landmarks, understanding the historical signific",
+      "thought": "The weathered stone buildings and docks suggest a long history of seafaring and trade \u2013 I wonder what stories they hold! I'd love to explore the island, especially those intriguing structures, and see if I can uncover any clues about its past.",
       "scores": {
-        "novelty": 1,
+        "novelty": 0,
         "specificity": 1,
-        "engagement": 0,
+        "engagement": 1,
         "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 9,
-      "thought": "As I stand on this maritime island, I'm struck by the rugged beauty of weathered shipwrecks, their hulls a testament to the sea's unforgiving nature. My desire is to explore these relics, feeling the",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 10,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 1,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 1
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 11,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 12,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 13,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 14,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 15,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 16,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 17,
-      "thought": "Surrounded by the serene, rugged beauty of a maritime island, I observe wooden wharves, weathered lighthouses, and secluded fishing shacks. My intentions are twofold: firstly, to explore these structures for their",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 18,
-      "thought": "Surrounded by maritime structures, I perceive an abundance of lighthouses, shipyards, naval bases, and perhaps fishing huts, all indicative of a seafaring community. My primary intent would be to explore these areas, observing the intric",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 19,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 20,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "intervention",
-      "index": 1,
-      "thought": "Upon this maritime island, I perceive ancient stone structures, their weathered surfaces displaying hues of rusty orange and gray, reminiscent of ages past when they were forged by skilled hands with copper tools. The textures suggest rough hewn edges",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "intervention",
-      "index": 2,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
       }
     }
   ]
