@@ -82,7 +82,7 @@ def call_ollama_raw(model, prompt, num_predict=80, timeout=600):
         print(f"    [call error: {e}]", flush=True)
         return None
 
-def run_prompt(model, prompt, pid, num_predict=80, max_attempts=3):
+def run_prompt(model, prompt, pid="", num_predict=80, max_attempts=3):
     """Run a single prompt with retries and Ollama restart."""
     for attempt in range(max_attempts):
         if not ensure_ollama():
