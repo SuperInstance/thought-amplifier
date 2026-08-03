@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark Granite 3.1 2B vs Qwen 2.5 0.5B - resilient version."""
+"""Benchmark Granite 3.1 2B vs Qwen 2.5 0.5B on RTX 4050 Laptop (CPU fallback mode)."""
 
 import json
 import os
@@ -11,7 +11,7 @@ PROMPTS_DIR = "/home/eileen/projects/thought-amplifier/experiments/prompts"
 OUTPUT_FILE = "/home/eileen/projects/thought-amplifier/experiments/exp3_results.json"
 MODELS = ["granite3.1-dense:2b", "qwen2.5:0.5b"]
 
-def call_ollama(model, prompt, num_predict=256, timeout=300):
+def call_ollama(model, prompt, num_predict=150, timeout=600):
     """Call ollama API and return parsed response or None."""
     payload = json.dumps({
         "model": model,
@@ -26,41 +26,45 @@ def call_ollama(model, prompt, num_predict=256, timeout=300):
         proc = subprocess.run(
             ["curl", "-s", "--max-time", str(timeout),
              "http://localhost:11434/api/chat", "-d", payload],
-            capture_output=True, text=True, timeout=timeout + 10
+            capture_output=True, text=True, timeout=timeout + 15
         )
         if proc.returncode != 0 or not proc.stdout.strip():
             return None
         return json.loads(proc.stdout)
-    except Exception:
+    except Exception as e:
+        print(f"    ERROR: {e}", flush=True)
         return None
 
 def main():
     prompt_files = sorted(glob.glob(os.path.join(PROMPTS_DIR, "*.txt")))
-    print(f"Found {len(prompt_files)} prompts\n", flush=True)
+    print(f"Found {len(prompt_files)} prompts", flush=True)
     results = []
 
     for model in MODELS:
-        print(f"=== {model} ===", flush=True)
+        print(f"\n=== {model} ===", flush=True)
 
-        # Warmup with small generation
-        print("  Warmup...", flush=True)
-        d = call_ollama(model, "Say hello.", num_predict=20, timeout=120)
-        if d:
+        # Warmup
+        print("  Warmup...", end=" ", flush=True)
+        d = call_ollama(model, "Say hello.", num_predict=10, timeout=120)
+        if d and "message" in d:
             ed = d.get("eval_duration", 1) / 1e9
             tps = d.get("eval_count", 0) / ed if ed > 0 else 0
-            print(f"  Warm: {d.get('eval_count',0)} tok in {ed:.1f}s = {tps:.1f} tok/s", flush=True)
+            print(f"{d.get('eval_count',0)} tok in {ed:.1f}s = {tps:.2f} tok/s", flush=True)
         else:
-            print("  Warmup failed, continuing anyway...", flush=True)
-        time.sleep(2)
+            print("FAILED", flush=True)
+        time.sleep(1)
 
         for pf in prompt_files:
             pid = os.path.basename(pf).replace(".txt", "")
             prompt = open(pf).read().strip()
             print(f"  {pid}...", end=" ", flush=True)
+            t0 = time.time()
 
-            d = call_ollama(model, prompt, num_predict=256, timeout=300)
+            d = call_ollama(model, prompt, num_predict=150, timeout=600)
+            elapsed = time.time() - t0
+
             if d is None or "message" not in d:
-                print("FAILED", flush=True)
+                print(f"FAILED ({elapsed:.0f}s)", flush=True)
                 results.append({
                     "model": model, "prompt_id": pid, "prompt": prompt,
                     "response": "[FAILED]", "eval_count": 0, "latency_ms": 0,
@@ -84,11 +88,28 @@ def main():
                 "eval_duration_ms": ed // 1_000_000,
                 "tokens_per_sec": round(tps, 2),
             })
-            print(f"{ec}t {ed//1_000_000}ms {tps:.1f}t/s", flush=True)
+            print(f"{ec}t {ed//1_000_000}ms {tps:.1f}t/s (wall {elapsed:.0f}s)", flush=True)
 
     with open(OUTPUT_FILE, "w") as f:
         json.dump(results, f, indent=2)
     print(f"\nSaved {len(results)} results to {OUTPUT_FILE}", flush=True)
+
+    # Summary
+    for model in MODELS:
+        mr = [r for r in results if r["model"] == model and r["eval_count"] > 0]
+        if not mr:
+            print(f"{model}: ALL FAILED")
+            continue
+        avg_tps = sum(r["tokens_per_sec"] for r in mr) / len(mr)
+        avg_tok = sum(r["eval_count"] for r in mr) / len(mr)
+        avg_eval_ms = sum(r["eval_duration_ms"] for r in mr) / len(mr)
+        avg_lat = sum(r["latency_ms"] for r in mr) / len(mr)
+        print(f"\n{model}:")
+        print(f"  Avg tokens/sec:    {avg_tps:.2f}")
+        print(f"  Avg output tokens: {avg_tok:.1f}")
+        print(f"  Avg eval time:     {avg_eval_ms:.0f}ms")
+        print(f"  Avg total latency: {avg_lat:.0f}ms")
+        print(f"  Success: {len(mr)}/{len(prompt_files)}")
 
 if __name__ == "__main__":
     main()
