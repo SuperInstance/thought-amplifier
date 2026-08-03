@@ -128,6 +128,15 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 | 13 | Conclusion | pending | TBD |
 | 14 | References & Appendices | pending | TBD |
 
+### ADVISORY_BRIDGE.md (Fable's findings)
+- **Updated empirical baseline.** `slackwater-cognition/` on disk is 11,533 lines and 106 test functions, not the 4,152/71 figure in `FABLE_MASTER_PROMPT.md`. The genuinely missing pieces are trust-on-Conductor, temporal→vector, LoRA, `.bottle` protocol, and the browser tier.
+- **Novelty-bias confound as deepest methodological problem.** Any change produces temporary improvement. A naive trust loop will learn, correctly given its evidence, that "changing things helps" — a true but useless conclusion. Fable proposes a **sham intervention arm** (log intervention, don't apply, score anyway) so real effect = treated − sham.
+- **Distillation trap signature.** Selecting training data by `quality > 0.7` where quality is scored by the system's own `QualityScorer` is a closed loop. **Rising train quality with flat held-out quality is the trap closing.**
+- **Latency asymmetry as gradient.** The browser finisher predicts in <50 ms; server Granite validates in ~500 ms. The gap is not a defect but a free, continuous supervision signal: divergence loss.
+- **Clamping as epistemic commitment.** `[0.05, 0.95]` clamps are not defensive programming but the mechanism of corrigibility: no action reaches probability 0 or 1, so evidence can always still arrive.
+- **Multi-timescale interference.** Trust (per-intervention), evolution (daily), and LoRA (weekly) modify overlapping parameters at different periods. Without hysteresis/dwell times they oscillate and none converges.
+- **Open ADRs.** Additive vs. multiplicative confidence update; whether divergence loss belongs to player or global prior; ethics of sham arm on live sessions.
+
 ## Section Drafts Log
 
 - `sections/01_abstract.md` — drafted from REPO_DESIGN.md + DYNAMIC_COGNITION_ARCHITECTURE.md.
