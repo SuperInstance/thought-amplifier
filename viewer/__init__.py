@@ -1,0 +1,1 @@
+"""Thought Amplifier — viewer package."""

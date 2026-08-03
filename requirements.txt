@@ -1,0 +1,9 @@
+# Thought Amplifier — Minimal Dependencies
+# Uses subprocess+curl for HTTP (no requests/httpx needed)
+# Pure Python stdlib for everything else
+
+# No required packages — the system runs on Python 3.10+ stdlib alone.
+# Optional packages that enhance the experience:
+
+# websockets  # Only if you want to use the WebSocket viewer with async
+# rich        # Pretty terminal output (optional, falls back to plain print)

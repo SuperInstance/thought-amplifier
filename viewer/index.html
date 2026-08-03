@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thought Stream — Amplifier</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-hover: #1a1a25;
+            --text: #e0e0e8;
+            --text-dim: #8888a0;
+            --accent: #6c5ce7;
+            --accent-dim: #4834b0;
+            --thought: #61dafb;
+            --directive: #f0a04b;
+            --system: #69db7c;
+            --error: #ff6b6b;
+            --border: #2a2a3a;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(10,10,15,0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .header h1 {
+            font-size: 16px; font-weight: 600;
+            background: linear-gradient(135deg, var(--accent), var(--thought));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .header .stats { display: flex; gap: 16px; font-size: 12px; color: var(--text-dim); }
+        .header .stat { display: flex; align-items: center; gap: 4px; }
+        .header .stat .value { color: var(--text); font-weight: 600; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .status-dot.live { background: var(--system); box-shadow: 0 0 8px var(--system); animation: pulse 2s infinite; }
+        .status-dot.offline { background: var(--error); }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .stream {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .entry {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            animation: fadeIn 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .entry:hover { background: var(--bg-hover); }
+        .entry::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+        }
+        .entry.thought::before { background: var(--thought); }
+        .entry.directive::before { background: var(--directive); }
+        .entry.system::before { background: var(--system); }
+        .entry.mode_output::before { background: var(--accent); }
+        .entry.summary::before { background: var(--accent-dim); }
+        .entry.error::before { background: var(--error); }
+
+        .entry-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+        .entry-type {
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+        .entry-type.thought { color: var(--thought); }
+        .entry-type.directive { color: var(--directive); }
+        .entry-type.system { color: var(--system); }
+        .entry-type.mode_output { color: var(--accent); }
+
+        .entry-time { font-size: 10px; }
+
+        .quality-bar {
+            display: inline-flex; gap: 3px; margin-left: 8px;
+        }
+        .quality-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--border);
+        }
+        .quality-dot.novelty { background: var(--thought); }
+        .quality-dot.specificity { background: var(--directive); }
+        .quality-dot.coherence { background: var(--system); }
+        .quality-dot.engagement { background: var(--accent); }
+
+        .entry-content {
+            font-size: 14px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .entry-meta {
+            margin-top: 8px;
+            font-size: 10px;
+            color: var(--text-dim);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .entry-meta span { display: flex; align-items: center; gap: 3px; }
+        .entry-meta .label { opacity: 0.6; }
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+        }
+        .empty h2 { font-size: 18px; margin-bottom: 8px; color: var(--text); }
+        .empty p { font-size: 13px; max-width: 400px; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ Thought Amplifier</h1>
+        <div class="stats">
+            <div class="stat">
+                <span class="status-dot" id="status-dot"></span>
+                <span id="status-text">Connecting...</span>
+            </div>
+            <div class="stat">
+                Thoughts: <span class="value" id="thought-count">0</span>
+            </div>
+            <div class="stat">
+                Directives: <span class="value" id="directive-count">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="stream" id="stream">
+        <div class="empty" id="empty-state">
+            <h2>Waiting for thoughts...</h2>
+            <p>The stream will appear here in real-time once the amplifier is running.</p>
+        </div>
+    </div>
+
+    <script>
+        const stream = document.getElementById('stream');
+        const emptyState = document.getElementById('empty-state');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const thoughtCount = document.getElementById('thought-count');
+        const directiveCount = document.getElementById('directive-count');
+
+        let thoughts = 0;
+        let directives = 0;
+        const MAX_ENTRIES = 200;
+
+        function formatTime(iso) {
+            const d = new Date(iso);
+            return d.toLocaleTimeString();
+        }
+
+        function getQualityDots(meta) {
+            if (!meta || !meta.quality_detail) return '';
+            const q = meta.quality_detail;
+            const title = (label, val) => ` title="${label}: ${val}"`;
+            return `<span class="quality-bar">
+                <span class="quality-dot novelty"${title('Novelty', q.novelty)}></span>
+                <span class="quality-dot specificity"${title('Specificity', q.specificity)}></span>
+                <span class="quality-dot coherence"${title('Coherence', q.coherence)}></span>
+                <span class="quality-dot engagement"${title('Engagement', q.engagement)}></span>
+            </span>`;
+        }
+
+        function addEntry(data) {
+            if (emptyState) emptyState.remove();
+
+            const type = data.type || 'thought';
+            const content = data.content || '';
+            const meta = data.metadata || {};
+            const time = formatTime(data.timestamp || new Date().toISOString());
+
+            // Update counts
+            if (type === 'thought') { thoughts++; thoughtCount.textContent = thoughts; }
+            if (type === 'directive') { directives++; directiveCount.textContent = directives; }
+
+            const div = document.createElement('div');
+            div.className = `entry ${type}`;
+            div.id = data.id;
+
+            const typeLabel = type.replace(/_/g, ' ');
+            const qualityDots = getQualityDots(meta);
+
+            let metaHtml = '';
+            if (meta.backend) metaHtml += `<span><span class="label">model:</span>${meta.model || meta.backend}</span>`;
+            if (meta.quality !== undefined) metaHtml += `<span><span class="label">quality:</span>${meta.quality}</span>`;
+            if (meta.mode) metaHtml += `<span><span class="label">mode:</span>${meta.mode}</span>`;
+            if (meta.thought_number) metaHtml += `<span><span class="label">#</span>${meta.thought_number}</span>`;
+
+            div.innerHTML = `
+                <div class="entry-header">
+                    <span class="entry-type ${type}">${typeLabel}${qualityDots}</span>
+                    <span class="entry-time">${time}</span>
+                </div>
+                <div class="entry-content">${escapeHtml(content)}</div>
+                ${metaHtml ? `<div class="entry-meta">${metaHtml}</div>` : ''}
+            `;
+
+            stream.insertBefore(div, stream.firstChild);
+
+            // Trim old entries
+            while (stream.children.length > MAX_ENTRIES) {
+                stream.removeChild(stream.lastChild);
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function connect() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const ws = new WebSocket(`${protocol}//${window.location.host}/stream`);
+
+            ws.onopen = () => {
+                statusDot.className = 'status-dot live';
+                statusText.textContent = 'Live';
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    if (msg.type === 'pong') return;
+
+                    if (msg.data) {
+                        addEntry(msg.data);
+                    }
+                } catch (e) {
+                    console.error('Parse error:', e);
+                }
+            };
+
+            ws.onclose = () => {
+                statusDot.className = 'status-dot offline';
+                statusText.textContent = 'Disconnected';
+                setTimeout(connect, 3000);  // Reconnect
+            };
+
+            ws.onerror = () => {
+                statusDot.className = 'status-dot offline';
+                statusText.textContent = 'Error';
+            };
+
+            // Heartbeat
+            setInterval(() => {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'ping' }));
+                }
+            }, 30000);
+        }
+
+        // Load initial data via REST
+        async function loadInitial() {
+            try {
+                const res = await fetch('/api/thoughts');
+                const data = await res.json();
+                if (data && data.length > 0) {
+                    data.reverse().forEach(d => addEntry(d));
+                }
+            } catch (e) {
+                console.log('REST load failed, relying on WebSocket');
+            }
+        }
+
+        loadInitial();
+        connect();
+    </script>
+</body>
+</html>

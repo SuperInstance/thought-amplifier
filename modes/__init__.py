@@ -1,0 +1,1 @@
+"""Thought Amplifier — specialized modes."""
