@@ -86,6 +86,17 @@
         "engagement": 0,
         "total": 2
       }
+    },
+    {
+      "phase": "baseline",
+      "index": 8,
+      "thought": "I perceive towers, possibly lighthouses or communication structures, standing tall against the backdrop of the vast ocean, their purpose evident for guiding sailors and facilitating maritime communication. I would like to explore these landmarks, understanding the historical signific",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 0,
+        "total": 2
+      }
     }
   ]
 }
