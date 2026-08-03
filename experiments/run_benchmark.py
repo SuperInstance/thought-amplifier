@@ -1,129 +1,94 @@
 #!/usr/bin/env python3
-"""Benchmark Granite 3.1 2B vs Qwen 2.5 0.5B on RTX 4050."""
+"""Benchmark Granite 3.1 2B vs Qwen 2.5 0.5B - resilient version."""
 
 import json
 import os
 import time
 import glob
-import urllib.request
+import subprocess
 
-OLLAMA_URL = "http://localhost:11434/api/chat"
 PROMPTS_DIR = "/home/eileen/projects/thought-amplifier/experiments/prompts"
 OUTPUT_FILE = "/home/eileen/projects/thought-amplifier/experiments/exp3_results.json"
-
 MODELS = ["granite3.1-dense:2b", "qwen2.5:0.5b"]
 
-def run_chat(model, prompt_text, max_retries=3):
-    """Run a single chat completion and return metrics."""
+def call_ollama(model, prompt, num_predict=256, timeout=300):
+    """Call ollama API and return parsed response or None."""
     payload = json.dumps({
         "model": model,
-        "messages": [{"role": "user", "content": prompt_text}],
+        "messages": [{"role": "user", "content": prompt}],
         "stream": False,
         "options": {
-            "temperature": 0.7,
-            "top_p": 0.9,
-            "seed": 42,
-            "num_ctx": 2048,
-            "num_predict": 300,
+            "temperature": 0.7, "top_p": 0.9, "seed": 42,
+            "num_ctx": 2048, "num_predict": num_predict,
         }
-    }).encode("utf-8")
-
-    for attempt in range(max_retries):
-        try:
-            req = urllib.request.Request(OLLAMA_URL, data=payload, headers={"Content-Type": "application/json"})
-            start_ns = time.perf_counter_ns()
-            resp = urllib.request.urlopen(req, timeout=300)
-            end_ns = time.perf_counter_ns()
-            data = json.loads(resp.read().decode("utf-8"))
-            latency_ms = (end_ns - start_ns) // 1_000_000
-            break
-        except Exception as e:
-            print(f"    [retry {attempt+1}/{max_retries}] {e}", flush=True)
-            time.sleep(2)
-    else:
-        return {
-            "response": "[ERROR: timed out after retries]",
-            "eval_count": 0,
-            "prompt_eval_count": 0,
-            "total_duration_ns": 0,
-            "load_duration_ns": 0,
-            "prompt_eval_duration_ns": 0,
-            "eval_duration_ns": 0,
-            "latency_ms": 0,
-        }
-
-    return {
-        "response": data["message"]["content"],
-        "eval_count": data.get("eval_count", 0),
-        "prompt_eval_count": data.get("prompt_eval_count", 0),
-        "total_duration_ns": data.get("total_duration", 0),
-        "load_duration_ns": data.get("load_duration", 0),
-        "prompt_eval_duration_ns": data.get("prompt_eval_duration", 0),
-        "eval_duration_ns": data.get("eval_duration", 0),
-        "latency_ms": latency_ms,
-    }
-
-def compute_tps(metrics):
-    """Compute tokens per second from eval_duration."""
-    eval_count = metrics["eval_count"]
-    eval_dur_s = metrics["eval_duration_ns"] / 1e9
-    if eval_dur_s > 0:
-        return eval_count / eval_dur_s
-    return 0.0
+    })
+    try:
+        proc = subprocess.run(
+            ["curl", "-s", "--max-time", str(timeout),
+             "http://localhost:11434/api/chat", "-d", payload],
+            capture_output=True, text=True, timeout=timeout + 10
+        )
+        if proc.returncode != 0 or not proc.stdout.strip():
+            return None
+        return json.loads(proc.stdout)
+    except Exception:
+        return None
 
 def main():
     prompt_files = sorted(glob.glob(os.path.join(PROMPTS_DIR, "*.txt")))
-    print(f"Found {len(prompt_files)} prompts")
-
-    # Warm up models
-    for model in MODELS:
-        print(f"Warming up {model}...")
-        run_chat(model, "Hello")
-        print(f"  {model} ready")
-
+    print(f"Found {len(prompt_files)} prompts\n", flush=True)
     results = []
 
     for model in MODELS:
+        print(f"=== {model} ===", flush=True)
+
+        # Warmup with small generation
+        print("  Warmup...", flush=True)
+        d = call_ollama(model, "Say hello.", num_predict=20, timeout=120)
+        if d:
+            ed = d.get("eval_duration", 1) / 1e9
+            tps = d.get("eval_count", 0) / ed if ed > 0 else 0
+            print(f"  Warm: {d.get('eval_count',0)} tok in {ed:.1f}s = {tps:.1f} tok/s", flush=True)
+        else:
+            print("  Warmup failed, continuing anyway...", flush=True)
+        time.sleep(2)
+
         for pf in prompt_files:
-            prompt_id = os.path.basename(pf).replace(".txt", "")
-            with open(pf) as f:
-                prompt_text = f.read().strip()
+            pid = os.path.basename(pf).replace(".txt", "")
+            prompt = open(pf).read().strip()
+            print(f"  {pid}...", end=" ", flush=True)
 
-            print(f"  Running {model} on {prompt_id}...", end=" ", flush=True)
-            metrics = run_chat(model, prompt_text)
-            tps = compute_tps(metrics)
+            d = call_ollama(model, prompt, num_predict=256, timeout=300)
+            if d is None or "message" not in d:
+                print("FAILED", flush=True)
+                results.append({
+                    "model": model, "prompt_id": pid, "prompt": prompt,
+                    "response": "[FAILED]", "eval_count": 0, "latency_ms": 0,
+                    "tokens_per_sec": 0, "eval_duration_ms": 0, "load_duration_ms": 0,
+                    "prompt_eval_count": 0, "prompt_eval_duration_ms": 0,
+                })
+                continue
 
-            result = {
-                "model": model,
-                "prompt_id": prompt_id,
-                "prompt": prompt_text,
-                "response": metrics["response"],
-                "eval_count": metrics["eval_count"],
-                "prompt_eval_count": metrics["prompt_eval_count"],
-                "latency_ms": metrics["latency_ms"],
-                "load_duration_ms": metrics["load_duration_ns"] // 1_000_000,
-                "prompt_eval_duration_ms": metrics["prompt_eval_duration_ns"] // 1_000_000,
-                "eval_duration_ms": metrics["eval_duration_ns"] // 1_000_000,
+            ed = d.get("eval_duration", 0)
+            ec = d.get("eval_count", 0)
+            tps = (ec / (ed / 1e9)) if ed > 0 else 0
+
+            results.append({
+                "model": model, "prompt_id": pid, "prompt": prompt,
+                "response": d["message"]["content"],
+                "eval_count": ec,
+                "prompt_eval_count": d.get("prompt_eval_count", 0),
+                "latency_ms": d.get("total_duration", 0) // 1_000_000,
+                "load_duration_ms": d.get("load_duration", 0) // 1_000_000,
+                "prompt_eval_duration_ms": d.get("prompt_eval_duration", 0) // 1_000_000,
+                "eval_duration_ms": ed // 1_000_000,
                 "tokens_per_sec": round(tps, 2),
-            }
-            results.append(result)
-            print(f"{metrics['eval_count']} tok, {metrics['latency_ms']}ms, {tps:.1f} tok/s")
+            })
+            print(f"{ec}t {ed//1_000_000}ms {tps:.1f}t/s", flush=True)
 
     with open(OUTPUT_FILE, "w") as f:
         json.dump(results, f, indent=2)
-
-    print(f"\nResults saved to {OUTPUT_FILE}")
-
-    # Quick summary
-    for model in MODELS:
-        model_results = [r for r in results if r["model"] == model]
-        avg_latency = sum(r["latency_ms"] for r in model_results) / len(model_results)
-        avg_tps = sum(r["tokens_per_sec"] for r in model_results) / len(model_results)
-        avg_tokens = sum(r["eval_count"] for r in model_results) / len(model_results)
-        print(f"\n{model}:")
-        print(f"  Avg latency: {avg_latency:.0f}ms")
-        print(f"  Avg tokens/sec: {avg_tps:.2f}")
-        print(f"  Avg output tokens: {avg_tokens:.1f}")
+    print(f"\nSaved {len(results)} results to {OUTPUT_FILE}", flush=True)
 
 if __name__ == "__main__":
     main()
