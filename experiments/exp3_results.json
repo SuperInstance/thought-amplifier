@@ -404,5 +404,19 @@
     "eval_duration_ms": 22274,
     "tokens_per_sec": 3.59,
     "error": null
+  },
+  {
+    "model": "qwen2.5:0.5b",
+    "prompt_id": "10_descriptive_detail",
+    "prompt": "A dragon lands on the mountain near your base. Describe what it looks like, sounds like, and how the environment reacts.",
+    "response": "I'm sorry, but as an AI language model, I don't have a physical presence, so I can't provide you with a physical description of a dragon. However, I can describe what a dragon would look like, sound like, and how it interacts with its surroundings based on the information I have been given.\n\nA dragon is a large, reptilian creature with a distinctive appearance and behavior.",
+    "eval_count": 80,
+    "prompt_eval_count": 33,
+    "latency_ms": 30443,
+    "load_duration_ms": 403,
+    "prompt_eval_duration_ms": 0,
+    "eval_duration_ms": 30443,
+    "tokens_per_sec": 2.63,
+    "error": null
   }
 ]
