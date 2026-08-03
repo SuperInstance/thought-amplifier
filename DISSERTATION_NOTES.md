@@ -123,10 +123,10 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 | 09 | Temporal Cognition & Vector Pipeline | drafted | DYNAMIC_COGNITION_ARCHITECTURE, TEMPO_IS_FIRST_CLASS, TEMPO_FIRST_ARCHITECTURE, REPO_DESIGN, FABLE_MASTER_PROMPT |
 | 10 | Distillation & LoRA | drafted | REPO_DESIGN, FABLE_MASTER_PROMPT, MULTI_MODEL_PANEL_DISCUSSION |
 | 10 | Results | pending | TBD |
-| 11 | Discussion | pending | TBD |
-| 12 | Limitations & Future Work | pending | TBD |
-| 13 | Conclusion | pending | TBD |
-| 14 | References & Appendices | pending | TBD |
+| 11 | System Architecture & Browser Tier | drafted | REPO_DESIGN, MULTI_MODEL_PANEL, DEEPSEEK_BROWSER, BROWSER_NATIVE_AI_RESEARCH, ADVISORY_BRIDGE |
+| 12 | Experiments & Evaluation | drafted | REPO_DESIGN, FABLE_MASTER_PROMPT, ADVISORY_BRIDGE |
+| 13 | Results & Discussion | pending | TBD |
+| 14 | Conclusion | pending | TBD |
 
 ### ADVISORY_BRIDGE.md (Fable's findings)
 - **Updated empirical baseline.** `slackwater-cognition/` on disk is 11,533 lines and 106 test functions, not the 4,152/71 figure in `FABLE_MASTER_PROMPT.md`. The genuinely missing pieces are trust-on-Conductor, temporal→vector, LoRA, `.bottle` protocol, and the browser tier.
@@ -149,3 +149,4 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 - `sections/08_conductor_trust.md` — drafted from REPO_DESIGN.md, DYNAMIC_COGNITION_ARCHITECTURE.md, FABLE_MASTER_PROMPT.md, Lever Runner analysis + integration-plan, SuperInstance ecosystem.
 - `sections/09_temporal_cognition.md` — drafted from DYNAMIC_COGNITION_ARCHITECTURE.md, TEMPO_IS_FIRST_CLASS.md, TEMPO_FIRST_ARCHITECTURE.md, REPO_DESIGN.md, FABLE_MASTER_PROMPT.md.
 - `sections/10_distillation_lora.md` — drafted from REPO_DESIGN.md, FABLE_MASTER_PROMPT.md, MULTI_MODEL_PANEL_DISCUSSION.md.
+- `sections/11_system_architecture.md` — drafted from REPO_DESIGN.md, MULTI_MODEL_PANEL_DISCUSSION.md, DEEPSEEK_BROWSER_DESIGN.md, BROWSER_NATIVE_AI_RESEARCH.md, ADVISORY_BRIDGE.md.
