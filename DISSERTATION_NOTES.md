@@ -26,7 +26,7 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 
 | # | Section | Status | Source Docs |
 |---|---------|--------|-------------|
-| 01 | Abstract | pending | REPO_DESIGN, DYNAMIC_COGNITION_ARCHITECTURE |
+| 01 | Abstract | drafted | REPO_DESIGN, DYNAMIC_COGNITION_ARCHITECTURE |
 | 02 | Introduction | pending | REPO_DESIGN, DYNAMIC_COGNITION_ARCHITECTURE, pincher/analysis |
 | 03 | Literature Review & Related Work | pending | TBD |
 | 04 | Foundational Concepts | pending | TBD |
