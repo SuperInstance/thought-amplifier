@@ -6,3 +6,9 @@
 [ 4] 94.4s | 120 tok | OK | Section 5 - Three-Gate Cascade
      The claim that the three-gate cascade consistently delivers >=50% accurate decisions at zero cost within an hour, as described for uniform or routine 
 
+[ 5] 40.3s | 120 tok | OK | Section 5.3 - Confidence Dynamics
+     The single most serious weakness lies in the lack of theoretical foundation for this confidence update rule, specifically regarding its convergence pr
+
+  [RETRY 1] curl rc=52, waiting 5s...
+  [RECOVERY] Ollama down. Restarting...
+  [RECOVERY] Ollama back online.
