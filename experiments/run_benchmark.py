@@ -1,201 +1,141 @@
 #!/usr/bin/env python3
 """
-Resilient benchmark: restarts Ollama between prompts if needed.
-Runs one model at a time, one prompt at a time, with full health checks.
+EXP3 Benchmark: Granite 3.1 2B vs Qwen 2.5 0.5B
+Using llama-cpp-python directly (bypasses Ollama/dxgkrnl crash).
+Pure CPU inference on AMD Ryzen AI 9 HX 370.
 """
 
 import json
 import os
 import time
 import glob
-import subprocess
-import signal
-import sys
+from llama_cpp import Llama
 
 PROMPTS_DIR = "/home/eileen/projects/thought-amplifier/experiments/prompts"
 OUTPUT_FILE = "/home/eileen/projects/thought-amplifier/experiments/exp3_results.json"
 
-def ensure_ollama():
-    """Ensure Ollama is running and responsive. Restart if needed."""
-    try:
-        r = subprocess.run(
-            ["curl", "-s", "--max-time", "5", "http://localhost:11434/api/tags"],
-            capture_output=True, text=True, timeout=10
-        )
-        if r.returncode == 0 and r.stdout.strip():
-            return True
-    except:
-        pass
+# Model paths (Ollama GGUF blobs)
+MODELS = {
+    "granite3.1-dense:2b": {
+        "path": os.path.expanduser("~/.ollama/models/blobs/sha256-5c56bb0256a2c402e95282a29bb5cb747bb805eda0e14a84b1f6c594a297ec1a"),
+        "n_ctx": 1024,
+        "n_threads": 8,
+    },
+    "qwen2.5:0.5b": {
+        "path": os.path.expanduser("~/.ollama/models/blobs/sha256-970aa74c0a90ef7482477cf803618e776e173c007bf957f635f1015bfcfef0e6"),
+        "n_ctx": 1024,
+        "n_threads": 8,
+    },
+}
 
-    print("    [ollama down, restarting...]", flush=True)
-    # Kill all ollama
-    subprocess.run(["pkill", "-9", "ollama"], capture_output=True)
-    time.sleep(3)
-    # Restart
-    env = os.environ.copy()
-    env["CUDA_VISIBLE_DEVICES"] = ""
-    subprocess.Popen(
-        ["ollama", "serve"],
-        stdin=subprocess.DEVNULL,
-        stdout=open("/tmp/ollama_restart.log", "w"),
-        stderr=subprocess.STDOUT,
-        env=env,
-        start_new_session=True
+NUM_PREDICT = 80  # Max tokens per response
+
+def load_model(name, config):
+    """Load a model with llama-cpp-python."""
+    print(f"  Loading {name}...", flush=True)
+    t0 = time.time()
+    llm = Llama(
+        model_path=config["path"],
+        n_ctx=config["n_ctx"],
+        n_threads=config["n_threads"],
+        n_gpu_layers=0,  # Force CPU only
+        verbose=False,
+        use_mmap=True,
+        use_mlock=False,
     )
-    # Wait for it
-    for i in range(30):
-        time.sleep(2)
-        try:
-            r = subprocess.run(
-                ["curl", "-s", "--max-time", "3", "http://localhost:11434/api/tags"],
-                capture_output=True, text=True, timeout=5
-            )
-            if r.returncode == 0 and r.stdout.strip():
-                print(f"    [ollama up after {i*2}s]", flush=True)
-                return True
-        except:
-            pass
-    print("    [ollama FAILED to restart]", flush=True)
-    return False
+    load_time = time.time() - t0
+    print(f"  Loaded in {load_time:.1f}s", flush=True)
+    return llm, load_time
 
-def call_ollama_raw(model, prompt, num_predict=80, timeout=600):
-    """Call ollama via curl, return parsed dict or None."""
-    payload = json.dumps({
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "stream": False,
-        "options": {"temperature": 0.7, "top_p": 0.9, "seed": 42, "num_ctx": 2048, "num_predict": num_predict}
-    })
-    try:
-        proc = subprocess.run(
-            ["curl", "-s", "--max-time", str(timeout),
-             "http://localhost:11434/api/chat", "-d", payload],
-            capture_output=True, text=True, timeout=timeout + 15
-        )
-        if proc.returncode != 0 or not proc.stdout.strip():
-            return None
-        data = json.loads(proc.stdout)
-        if "message" not in data:
-            return None
-        return data
-    except Exception as e:
-        print(f"    [call error: {e}]", flush=True)
-        return None
+def run_inference(llm, prompt, num_predict=100):
+    """Run inference and return metrics."""
+    t0 = time.perf_counter()
+    response = llm.create_chat_completion(
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=num_predict,
+        temperature=0.7,
+        top_p=0.9,
+        seed=42,
+    )
+    elapsed = time.perf_counter() - t0
 
-def run_prompt(model, prompt, pid="", num_predict=80, max_attempts=3):
-    """Run a single prompt with retries and Ollama restart."""
-    for attempt in range(max_attempts):
-        if not ensure_ollama():
-            continue
+    text = response["choices"][0]["message"]["content"]
+    usage = response.get("usage", {})
+    eval_count = usage.get("completion_tokens", 0)
+    prompt_tokens = usage.get("prompt_tokens", 0)
 
-        result = call_ollama_raw(model, prompt, num_predict=num_predict, timeout=600)
-        if result is not None:
-            ed = result.get("eval_duration", 0)
-            ec = result.get("eval_count", 0)
-            tps = (ec / (ed / 1e9)) if ed > 0 else 0
-            return {
-                "response": result["message"]["content"],
-                "eval_count": ec,
-                "prompt_eval_count": result.get("prompt_eval_count", 0),
-                "latency_ms": result.get("total_duration", 0) // 1_000_000,
-                "load_duration_ms": result.get("load_duration", 0) // 1_000_000,
-                "prompt_eval_duration_ms": result.get("prompt_eval_duration", 0) // 1_000_000,
-                "eval_duration_ms": ed // 1_000_000,
-                "tokens_per_sec": round(tps, 2),
-                "error": None,
-            }
-        else:
-            print(f"    [attempt {attempt+1} failed, ollama may have crashed]", flush=True)
-            # Force restart for next attempt
-            subprocess.run(["pkill", "-9", "ollama"], capture_output=True)
-            time.sleep(3)
+    tps = eval_count / elapsed if elapsed > 0 else 0
 
     return {
-        "response": "[ALL ATTEMPTS FAILED]", "eval_count": 0, "tokens_per_sec": 0,
-        "latency_ms": 0, "eval_duration_ms": 0, "load_duration_ms": 0,
-        "prompt_eval_count": 0, "prompt_eval_duration_ms": 0, "error": "all_attempts_failed",
+        "response": text,
+        "eval_count": eval_count,
+        "prompt_eval_count": prompt_tokens,
+        "latency_ms": int(elapsed * 1000),
+        "load_duration_ms": 0,  # Tracked separately
+        "prompt_eval_duration_ms": 0,
+        "eval_duration_ms": int(elapsed * 1000),
+        "tokens_per_sec": round(tps, 2),
+        "error": None,
     }
 
 def main():
     prompt_files = sorted(glob.glob(os.path.join(PROMPTS_DIR, "*.txt")))
-
-    # Load existing results if any (for resume)
-    results = []
-    done = set()
-    if os.path.exists(OUTPUT_FILE):
-        with open(OUTPUT_FILE) as f:
-            results = json.load(f)
-            done = {(r["model"], r["prompt_id"]) for r in results if r.get("eval_count", 0) > 0}
-        print(f"Loaded {len(results)} existing results, {len(done)} successful", flush=True)
-
     print(f"=== EXP3: Speed vs Quality Tradeoff ===", flush=True)
     print(f"Found {len(prompt_files)} prompts\n", flush=True)
 
-    # Run Qwen first (faster, more stable)
-    for model in ["qwen2.5:0.5b", "granite3.1-dense:2b"]:
-        # Unload other model first
-        if ensure_ollama():
-            subprocess.run(
-                ["curl", "-s", "http://localhost:11434/api/generate",
-                 "-d", json.dumps({"model": "granite3.1-dense:2b" if model == "qwen2.5:0.5b" else "qwen2.5:0.5b", "keep_alive": 0})],
-                capture_output=True, timeout=10
-            )
-            time.sleep(2)
+    results = []
 
-        print(f"\n=== {model} ===", flush=True)
+    for model_name, config in MODELS.items():
+        print(f"\n=== {model_name} ===", flush=True)
+
+        # Load model
+        llm, load_time = load_model(model_name, config)
 
         # Warmup
-        if (model, "__warmup__") not in done:
-            print("  Warmup...", end=" ", flush=True)
-            w = run_prompt(model, "Say hello.", "__warmup__", num_predict=5, max_attempts=3)
-            if w["error"] is None:
-                print(f"{w['eval_count']}t {w['eval_duration_ms']}ms {w['tokens_per_sec']:.2f}t/s", flush=True)
-            else:
-                print("FAILED", flush=True)
+        print("  Warmup...", end=" ", flush=True)
+        w = run_inference(llm, "Say hello.", num_predict=5)
+        print(f"{w['eval_count']}t {w['latency_ms']}ms {w['tokens_per_sec']:.2f}t/s", flush=True)
 
         for i, pf in enumerate(prompt_files):
             pid = os.path.basename(pf).replace(".txt", "")
             prompt = open(pf).read().strip()
-
-            if (model, pid) in done:
-                print(f"  [{i+1}/20] {pid}... SKIP (done)", flush=True)
-                continue
-
             print(f"  [{i+1}/20] {pid}...", end=" ", flush=True)
-            t0 = time.time()
-            r = run_prompt(model, prompt, num_predict=80, max_attempts=3)
-            wall = time.time() - t0
 
-            r.update({"model": model, "prompt_id": pid, "prompt": prompt})
+            r = run_inference(llm, prompt, num_predict=NUM_PREDICT)
+            r["model"] = model_name
+            r["prompt_id"] = pid
+            r["prompt"] = prompt
+            r["load_duration_ms"] = int(load_time * 1000)
             results.append(r)
-            done.add((model, pid))
+            print(f"{r['eval_count']}t {r['latency_ms']}ms {r['tokens_per_sec']:.1f}t/s", flush=True)
 
-            if r["error"]:
-                print(f"FAILED ({wall:.0f}s)", flush=True)
-            else:
-                print(f"{r['eval_count']}t {r['eval_duration_ms']}ms {r['tokens_per_sec']:.1f}t/s (wall {wall:.0f}s)", flush=True)
-
-            # Save after each prompt (crash-safe)
+            # Save after each prompt
             with open(OUTPUT_FILE, "w") as f:
                 json.dump(results, f, indent=2)
+
+        # Unload model to free memory
+        del llm
+        print(f"  Unloaded {model_name}", flush=True)
 
     print(f"\nSaved {len(results)} results to {OUTPUT_FILE}", flush=True)
 
     # Summary
-    for model in ["qwen2.5:0.5b", "granite3.1-dense:2b"]:
-        mr = [r for r in results if r["model"] == model and r.get("eval_count", 0) > 0]
+    for model_name in MODELS:
+        mr = [r for r in results if r["model"] == model_name and r.get("eval_count", 0) > 0]
         if not mr:
-            print(f"\n{model}: ALL FAILED")
+            print(f"\n{model_name}: ALL FAILED")
             continue
         avg_tps = sum(r["tokens_per_sec"] for r in mr) / len(mr)
         avg_tok = sum(r["eval_count"] for r in mr) / len(mr)
-        avg_eval = sum(r["eval_duration_ms"] for r in mr) / len(mr)
         avg_lat = sum(r["latency_ms"] for r in mr) / len(mr)
-        print(f"\n{model}:")
+        min_tps = min(r["tokens_per_sec"] for r in mr)
+        max_tps = max(r["tokens_per_sec"] for r in mr)
+        print(f"\n{model_name}:")
         print(f"  Avg tokens/sec:    {avg_tps:.2f}")
+        print(f"  Min tokens/sec:    {min_tps:.2f}")
+        print(f"  Max tokens/sec:    {max_tps:.2f}")
         print(f"  Avg output tokens: {avg_tok:.1f}")
-        print(f"  Avg eval time:     {avg_eval:.0f}ms ({avg_eval/1000:.1f}s)")
-        print(f"  Avg total latency: {avg_lat:.0f}ms ({avg_lat/1000:.1f}s)")
+        print(f"  Avg latency:       {avg_lat:.0f}ms ({avg_lat/1000:.1f}s)")
         print(f"  Success: {len(mr)}/{len(prompt_files)}")
 
 if __name__ == "__main__":

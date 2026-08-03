@@ -125,7 +125,7 @@ class CloudBridge:
             return False
         if queue_depth < self.overflow_threshold:
             return False
-        if self.neurons.remaining() < self.min_neuron_reserve:
+        if self.neurons.remaining() <= self.min_neuron_reserve:
             logger.debug("Cloud overflow suppressed: low neuron reserve (%d)",
                         self.neurons.remaining())
             return False

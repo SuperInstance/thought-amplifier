@@ -3,7 +3,7 @@
 Runs identical tests against all entries and scores blind."""
 import json, sys, os, time, traceback, hashlib, hmac
 
-COMpetition_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+COMPETITION_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENTRIES = ["kimi", "glm", "claude"]
 
 def score_entry(entry_dir):
@@ -13,7 +13,7 @@ def score_entry(entry_dir):
     
     bottle_path = os.path.join(entry_dir, "bottle.py")
     if not os.path.exists(bottle_path):
-        return {**scores, "details": ["MISSING: bottle.py not found"]}
+        return {**scores, "total": 0, "details": ["MISSING: bottle.py not found"]}
     
     # Read source for static analysis
     with open(bottle_path) as f:

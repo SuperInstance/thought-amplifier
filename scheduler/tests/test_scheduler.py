@@ -20,7 +20,7 @@ import time
 from unittest.mock import MagicMock, patch
 
 # Ensure we can import from the scheduler package
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scheduler import InferenceScheduler, InferenceRequest, Priority, AgentStats
 from fair_use import FairUseTracker, AgentRecord
@@ -303,7 +303,9 @@ def test_cloud_overflow_quota_exhausted():
         overflow_threshold=1,
         min_neuron_reserve=100,
     )
-    # Exhaust quota
+    # Exhaust quota — set date to today first so reset doesn't zero it
+    today = time.strftime("%Y-%m-%d", time.gmtime())
+    bridge.neurons.date = today
     bridge.neurons.neurons_used = 9900
     bridge.neurons.daily_limit = 10000
 

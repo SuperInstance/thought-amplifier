@@ -149,11 +149,20 @@ class PriorityEvolver:
         """
         Get the current priority adjustment for an agent in a context.
         Positive = delay (serve later), negative = expedite (serve sooner).
+        If no context given, returns the mean adjustment across all
+        buckets for this agent.
         """
-        bucket = self._context_bucket_from_dict(context) if context else "default"
         with self._lock:
             agent_policy = self._policy.get(agent, {})
-            adjustment = agent_policy.get(bucket, 0.0)
+            if not agent_policy:
+                return 0.0
+            if context:
+                bucket = self._context_bucket_from_dict(context)
+                adjustment = agent_policy.get(bucket, 0.0)
+            else:
+                # No context — average across all learned buckets
+                vals = list(agent_policy.values())
+                adjustment = sum(vals) / len(vals) if vals else 0.0
             # Clamp
             return max(-self.adjustment_clamp,
                        min(self.adjustment_clamp, adjustment))

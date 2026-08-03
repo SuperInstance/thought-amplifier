@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
 Devil's Advocate Self-Review: 20 thought cycles with Granite 3.1
-Each cycle feeds a dissertation claim and asks Granite to find the weakest point.
+Uses the /api/chat endpoint with long timeouts.
 """
-import json, time, subprocess, sys, os
+import json, time, subprocess, sys, os, urllib.request, urllib.error
 from datetime import datetime
 from pathlib import Path
 
 OUTPUT_JSONL = Path("/home/eileen/projects/thought-amplifier/experiments/SELF_REVIEW_THOUGHTS.jsonl")
 OUTPUT_JSONL.parent.mkdir(parents=True, exist_ok=True)
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
+OLLAMA_URL = "http://localhost:11434/api/chat"
 MODEL = "granite3.1-dense:2b"
 
 THOUGHTS = [
@@ -60,7 +60,7 @@ THOUGHTS = [
         "id": 8,
         "section": "Section 4 - Formal Model",
         "context": "The formal model defines S = (T, C, W, M, Q, B, L) with thought generation, conductor interventions, quality scoring, and conservation laws. The gradient is a structured intervention delta.",
-        "question": "Is this formal model rigorous enough for a PhD dissertation? Does it make specific falsifiable predictions that existing frameworks (POMDPs, meta-RL) cannot make?"
+        "question": "Is this formal model rigorous enough for a PhD dissertation? Does it make specific falsifiable predictions that existing frameworks (POMDPs, meta-RL) cannot?"
     },
     {
         "id": 9,
@@ -137,32 +137,38 @@ THOUGHTS = [
 ]
 
 def call_granite(prompt: str) -> dict:
-    """Call Ollama and return timing + response."""
+    """Call Ollama /api/chat endpoint."""
     payload = json.dumps({
         "model": MODEL,
-        "prompt": prompt,
+        "messages": [{"role": "user", "content": prompt}],
         "stream": False,
-        "options": {"temperature": 0.7, "top_p": 0.9}
-    })
+        "options": {"temperature": 0.7, "top_p": 0.9, "num_predict": 200}
+    }).encode("utf-8")
+    
+    req = urllib.request.Request(OLLAMA_URL, data=payload, headers={"Content-Type": "application/json"})
     
     start = time.time()
-    result = subprocess.run(
-        ["curl", "-s", OLLAMA_URL, "-d", payload],
-        capture_output=True, text=True, timeout=120
-    )
-    elapsed = time.time() - start
-    
     try:
-        resp = json.loads(result.stdout)
-    except json.JSONDecodeError:
-        return {"response": f"CURL_ERROR: {result.stdout[:300]}", "eval_count": 0, "eval_duration_ns": 0, "latency_s": elapsed}
-    
-    return {
-        "response": resp.get("response", f"OLLAMA_ERROR: {json.dumps(resp)[:300]}"),
-        "eval_count": resp.get("eval_count", 0),
-        "eval_duration_ns": resp.get("eval_duration", 0),
-        "latency_s": elapsed
-    }
+        with urllib.request.urlopen(req, timeout=300) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        elapsed = time.time() - start
+        msg = data.get("message", {})
+        return {
+            "response": msg.get("content", "NO_CONTENT"),
+            "eval_count": data.get("eval_count", 0),
+            "eval_duration_ns": data.get("eval_duration", 0),
+            "latency_s": elapsed,
+            "error": None
+        }
+    except Exception as e:
+        elapsed = time.time() - start
+        return {
+            "response": f"ERROR: {str(e)[:200]}",
+            "eval_count": 0,
+            "eval_duration_ns": 0,
+            "latency_s": elapsed,
+            "error": str(e)[:200]
+        }
 
 def build_prompt(thought: dict) -> str:
     return f"""You are a skeptical PhD reviewer examining a dissertation on Dynamic Cognition Amplification (DCA). Find the WEAKEST point in the following claim. Be specific and harsh.
@@ -177,10 +183,16 @@ REVIEWER QUESTION: {thought['question']}
 Respond in 3-5 sentences. Identify the SINGLE most serious weakness."""
 
 def main():
+    # Clear previous output
+    with open(OUTPUT_JSONL, "w") as f:
+        pass
+    
     print(f"=== Devil's Advocate Self-Review ===")
     print(f"=== {datetime.now().isoformat()} ===")
-    print(f"=== Model: {MODEL} ===")
+    print(f"=== Model: {MODEL} (CPU only, no GPU) ===")
+    print(f"=== Expecting ~60-120s per thought ===")
     print()
+    sys.stdout.flush()
     
     records = []
     
@@ -196,7 +208,8 @@ def main():
             "response": result["response"],
             "latency_ms": round(result["latency_s"] * 1000),
             "eval_count": result["eval_count"],
-            "eval_duration_s": round(result["eval_duration_ns"] / 1e9, 3)
+            "eval_duration_s": round(result["eval_duration_ns"] / 1e9, 3),
+            "error": result["error"]
         }
         records.append(record)
         
@@ -204,19 +217,22 @@ def main():
         with open(OUTPUT_JSONL, "a") as f:
             f.write(json.dumps(record) + "\n")
         
-        print(f"[{t['id']:2d}] {result['latency_s']:.2f}s | {result['eval_count']} tokens | {t['section'][:60]}")
-        print(f"     {result['response'][:150]}...")
+        print(f"[{t['id']:2d}] {result['latency_s']:.1f}s | {result['eval_count']} tok | {t['section'][:55]}")
+        resp_preview = result['response'][:120].replace('\n', ' ')
+        print(f"     {resp_preview}...")
         print()
+        sys.stdout.flush()
     
     print(f"=== All 20 thoughts complete ===")
     print(f"=== {datetime.now().isoformat()} ===")
-    print(f"=== Total records: {len(records)} ===")
     
     # Summary stats
     latencies = [r["latency_ms"] for r in records]
     tokens = [r["eval_count"] for r in records]
+    errors = sum(1 for r in records if r["error"])
     print(f"\nLatency: min={min(latencies)}ms max={max(latencies)}ms avg={sum(latencies)//len(latencies)}ms")
     print(f"Tokens:  min={min(tokens)} max={max(tokens)} avg={sum(tokens)//len(tokens)}")
+    print(f"Errors:  {errors}/20")
 
 if __name__ == "__main__":
     main()
