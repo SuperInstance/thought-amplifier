@@ -42,6 +42,17 @@
         "engagement": 0,
         "total": 2
       }
+    },
+    {
+      "phase": "baseline",
+      "index": 4,
+      "thought": "Upon this maritime island, I notice various structures such as lighthouses for guiding ships through treacherous waters, weather stations to monitor ocean conditions, and possibly a harbor for boats and ships. My curiosity piques, making me want",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 0,
+        "total": 2
+      }
     }
   ]
 }
