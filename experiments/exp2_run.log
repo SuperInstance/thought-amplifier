@@ -16,3 +16,6 @@ Phase: baseline
   [ 8/20] (8/80) N=1 S=1 E=0 T=2 elapsed=22.2m eta=3.3h | I perceive towers, possibly lighthouses or communication structures, s...
     retry 1: Remote end closed connection without response
     retry 2: [Errno 104] Connection reset by peer
+  [ 9/20] (9/80) N=1 S=1 E=0 T=2 elapsed=25.8m eta=3.4h | As I stand on this maritime island, I'm struck by the rugged beauty of...
+    retry 1: Remote end closed connection without response
+    retry 2: <urlopen error [Errno 111] Connection refused>

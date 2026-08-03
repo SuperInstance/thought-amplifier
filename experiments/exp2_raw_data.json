@@ -97,6 +97,17 @@
         "engagement": 0,
         "total": 2
       }
+    },
+    {
+      "phase": "baseline",
+      "index": 9,
+      "thought": "As I stand on this maritime island, I'm struck by the rugged beauty of weathered shipwrecks, their hulls a testament to the sea's unforgiving nature. My desire is to explore these relics, feeling the",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 0,
+        "total": 2
+      }
     }
   ]
 }
