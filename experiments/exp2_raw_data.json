@@ -130,6 +130,17 @@
         "engagement": 0,
         "total": 0
       }
+    },
+    {
+      "phase": "baseline",
+      "index": 12,
+      "thought": "[GENERATION_FAILED]",
+      "scores": {
+        "novelty": 0,
+        "specificity": 0,
+        "engagement": 0,
+        "total": 0
+      }
     }
   ]
 }
