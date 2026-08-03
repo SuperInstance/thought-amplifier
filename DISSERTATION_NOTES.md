@@ -20,7 +20,11 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 - **Novelty claim: always-on directed learning.** Traditional ML is collect → train offline → deploy → repeat. DCA is continuous: the model is always playing, always being directed, and the training signal is the stream of consciousness itself.
 
 ### pincher/analysis.md
-*Pending read.*
+- **"Vector DB as runtime, LLM as compiler" inversion.** Pincher stores executable reflexes in sqlite-vec and dispatches known intents in <1 ms at $0; the LLM only fires for novel intents, compiling the interaction into a parameterized template that is re-embedded and stored. This is the empirical precedent for DCA's Tier-0 gate.
+- **Confidence dynamics and thresholds.** Updates are asymmetric and saturating: success pushes confidence toward 1.0 as \(0.05(1-c)\), failure pulls it down as \(-0.10c\), clamped to \([0.05, 0.95]\). Three execution paths follow: Direct (>0.80), Confirm (0.55–0.80), LLM route (<0.55).
+- **Deterministic fallback and security veto.** ONNX embeddings have a SHA-256 trigram/word hash fallback that never fails. A deterministic pattern-based veto engine blocks dangerous commands before execution; this is the prototype of DCA's acting gate.
+- **Three-tier compute as biological metaphor.** Spinal reflex (~50 ms, $0), confirmation (~3 s, ~$0.001), cortical deliberation (~10 s, ~$0.01). Each cortex cycle teaches the spinal cord, so the system converges toward reflex-dominated execution.
+- **Portable agent identity via `.nail`.** A `tar.zst` bundle carries the SQLite reflex DB, identity, and config with BLAKE3 verification. This anticipates DCA's requirement for reproducible, migratable cognitive state.
 
 ## Dissertation Sections
 
@@ -43,4 +47,4 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 
 ## Section Drafts Log
 
-- *No sections drafted yet.*
+- `sections/01_abstract.md` — drafted from REPO_DESIGN.md + DYNAMIC_COGNITION_ARCHITECTURE.md.
