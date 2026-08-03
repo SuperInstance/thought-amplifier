@@ -39,7 +39,7 @@ Compute Capability 8.9
 ```
 The CUDA **driver API** works fine. Ollama can query device count, memory, compute capability.
 
-### 3. CUDA Compute Backend — ❌ Was Missing
+### 3. CUDA Compute Backend — ❌ Was Missing (ROOT CAUSE)
 ```
 ggml backend load all from path: /home/eileen/.local/bin
 backend_ptrs.size() = 1  ← Only CPU!
@@ -49,7 +49,6 @@ The ggml library (which llama.cpp/Ollama uses for tensor operations) only loaded
 Despite Ollama reporting `runner.inference=cuda` and `runner.vram="3.0 GiB"`:
 ```
 llama_kv_cache_unified: layer 0-39: dev = CPU  ← ALL layers on CPU!
-CUDA0 KV buffer size = 0  ← No GPU KV cache
 CPU compute buffer size = 544.01 MiB  ← CPU doing the math
 graph splits = 1  ← Only 1 backend active
 ```
@@ -97,7 +96,8 @@ No effect — the GPU was already visible, the issue was the missing compute bac
 ### Attempt 3: Downloading Official Ollama Package — ✅ FIXED IT
 ```bash
 # Downloaded the official 1.25GB package with bundled CUDA libraries
-curl -L -o /tmp/ollama.tgz "https://github.com/ollama/ollama/releases/download/v0.9.6/ollama-linux-amd64.tgz"
+curl -L -o /tmp/ollama.tgz \
+  "https://github.com/ollama/ollama/releases/download/v0.9.6/ollama-linux-amd64.tgz"
 
 # Extracted and copied CUDA backend libraries
 mkdir -p /home/eileen/.local/lib/ollama
@@ -166,4 +166,81 @@ Added to `~/.bashrc`:
 # Ollama CUDA GPU support - added 2026-08-03
 # Required for RTX 4050 GPU inference in WSL2
 export OLLAMA_LIBRARY_PATH=/home/eileen/.local/lib/ollama
-export LD_LIBRARY_PATH=/home/eileen/.local/lib/ollam
+export LD_LIBRARY_PATH=/home/eileen/.local/lib/ollama${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+```
+
+**Important:** The Ollama service must be started with these environment variables set. If running as a systemd service, add them to the service unit file or use `systemctl edit ollama`.
+
+---
+
+## For Future WSL2 Setups
+
+If setting up Ollama on a fresh WSL2 instance:
+
+1. **Do NOT** just download the bare `ollama` binary — it's CPU-only (32MB)
+2. **DO** download the full package: `ollama-linux-amd64.tgz` (1.25GB) from GitHub releases
+3. **DO** extract the `lib/ollama/` directory and place it alongside the binary
+4. **DO** set `OLLAMA_LIBRARY_PATH` to the directory containing the `.so` files
+5. **DO** verify GPU is actually computing: check `nvidia-smi` shows GPU-Util > 0% during inference
+6. **DO** verify in debug log: `backend_ptrs.size() = 2` (CPU + CUDA), all KV layers on `CUDA0`
+
+### Quick Verification Command
+```bash
+# Should show GPU memory usage spike and GPU-Util > 0%
+/usr/lib/wsl/lib/nvidia-smi & \
+  ollama run granite3.1-dense:2b "Hello" --verbose
+```
+
+### Diagnostic Checklist
+```bash
+# 1. Check GPU is detected
+/usr/lib/wsl/lib/nvidia-smi
+
+# 2. Check CUDA driver library exists
+ls /usr/lib/wsl/lib/libcuda.so*
+
+# 3. Check ggml CUDA backend exists
+ls $OLLAMA_LIBRARY_PATH/libggml-cuda.so
+
+# 4. Check debug log shows GPU backends
+OLLAMA_DEBUG=1 ollama serve 2>&1 | grep "backend_ptrs.size"
+# Should show: backend_ptrs.size() = 2
+
+# 5. Check KV cache is on GPU
+OLLAMA_DEBUG=1 ollama serve 2>&1 | grep "KV.*dev"
+# Should show: layer 0: dev = CUDA0
+```
+
+---
+
+## Impact on DCA Experiments
+
+With GPU now functional at **76.6 tok/s**:
+
+| Model | CPU Speed | GPU Speed | GPU Latency (80 tok) |
+|-------|:---:|:---:|:---:|
+| Granite 3.1 2B | 1.49 tok/s | **76.6 tok/s** | **~1.0s** |
+| Qwen 2.5 0.5B | 3.79 tok/s | **~150+ tok/s** (est.) | **~0.5s** |
+
+**Granite 3.1 2B is now viable for real-time NPC interactions.** The 51× speedup means:
+- No need for model routing tricks (use Granite for everything)
+- Sub-second response times achievable
+- Multiple concurrent inferences possible (6GB VRAM fits Granite + Qwen simultaneously)
+
+### Previous Experiment Conclusions (Updated)
+
+The EXP3 report concluded:
+- "RTX 4050 GPU is completely broken under current WSL2 kernel"
+- "Must use CPU"
+- "62-second response time is unacceptable for interactive gameplay"
+
+**These conclusions are now obsolete.** The GPU was never broken — the Ollama installation was incomplete. With proper CUDA libraries:
+- GPU works perfectly on WSL2
+- No dxgkrnl crashes
+- 51× speedup achieved
+- Real-time inference is possible
+
+---
+
+*Diagnosis completed: 2026-08-03 14:00 AKDT*  
+*GPU fix verified: Granite 3.1 2B @ 76.6 tok/s on RTX 4050 Laptop GPU*
