@@ -155,48 +155,49 @@ class FairUseTracker:
 
         share[agent] = floor + excess * (value / total_value)
         clamped to [0, ceiling]
+
+        Thread-safe. Callers already holding self._lock should use
+        _compute_shares_unlocked() instead.
         """
         with self._lock:
-            agents = list(self._agents.values())
-            if not agents:
-                return {}
+            return self._compute_shares_unlocked()
 
-            # Prune old entries
-            now = time.time()
-            cutoff = now - self.window_s
+    def _compute_shares_unlocked(self) -> dict[str, float]:
+        """Internal: compute shares. Caller must hold self._lock."""
+        agents = list(self._agents.values())
+        if not agents:
+            return {}
 
-            # Total floors
-            total_floor = sum(
-                (a.custom_floor_ms or self.default_floor_ms)
-                for a in agents if a.registered
-            )
+        now = time.time()
+        cutoff = now - self.window_s
 
-            # Currently used
-            used = sum(a.window_gpu_ms(self.window_s) for a in agents)
+        total_floor = sum(
+            (a.custom_floor_ms or self.default_floor_ms)
+            for a in agents if a.registered
+        )
 
-            # Available excess
-            excess = max(0, self.total_capacity_ms - total_floor - used)
+        used = sum(a.window_gpu_ms(self.window_s) for a in agents)
 
-            # Value-weighted redistribution
-            values = {a.agent: a.effective_value() for a in agents}
-            total_value = sum(values.values())
+        excess = max(0, self.total_capacity_ms - total_floor - used)
 
-            shares = {}
-            for a in agents:
-                if not a.registered:
-                    continue
-                floor = a.custom_floor_ms or self.default_floor_ms
-                if total_value > 0:
-                    bonus = excess * (values[a.agent] / total_value)
-                else:
-                    bonus = excess / len(agents)
-                share = floor + bonus
-                # Clamp to ceiling minus what they've already used
-                used_a = a.window_gpu_ms(self.window_s)
-                share = min(share, max(0, self.ceiling_ms - used_a))
-                shares[a.agent] = share
+        values = {a.agent: a.effective_value() for a in agents}
+        total_value = sum(values.values())
 
-            return shares
+        shares = {}
+        for a in agents:
+            if not a.registered:
+                continue
+            floor = a.custom_floor_ms or self.default_floor_ms
+            if total_value > 0:
+                bonus = excess * (values[a.agent] / total_value)
+            else:
+                bonus = excess / len(agents)
+            share = floor + bonus
+            used_a = a.window_gpu_ms(self.window_s)
+            share = min(share, max(0, self.ceiling_ms - used_a))
+            shares[a.agent] = share
+
+        return shares
 
     def check_agent(self, agent_stats, other_agents_stats: list) -> tuple[bool, str]:
         """
@@ -226,7 +227,7 @@ class FairUseTracker:
             # If this agent is well above its floor and others are below,
             # defer to let the under-served agent go first
             if other_agents_stats:
-                shares = self.compute_shares()
+                shares = self._compute_shares_unlocked()
                 my_share = shares.get(agent_name, floor)
                 if used > my_share * 1.5:  # 50% above share
                     # Check if anyone else is significantly under-served
@@ -245,7 +246,7 @@ class FairUseTracker:
 
     def stats(self) -> dict[str, dict]:
         with self._lock:
-            shares = self.compute_shares()
+            shares = self._compute_shares_unlocked()
             result = {}
             for agent, rec in self._agents.items():
                 result[agent] = {
