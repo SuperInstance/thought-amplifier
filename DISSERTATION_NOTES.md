@@ -125,8 +125,8 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 | 10 | Results | pending | TBD |
 | 11 | System Architecture & Browser Tier | drafted | REPO_DESIGN, MULTI_MODEL_PANEL, DEEPSEEK_BROWSER, BROWSER_NATIVE_AI_RESEARCH, ADVISORY_BRIDGE |
 | 12 | Experiments & Evaluation | drafted | REPO_DESIGN, FABLE_MASTER_PROMPT, ADVISORY_BRIDGE |
-| 13 | Results & Discussion | pending | TBD |
-| 14 | Conclusion | pending | TBD |
+| 13 | Results & Discussion | drafted | All prior docs synthesized |
+| 14 | Conclusion | drafted | Synthesis of all prior sections |
 
 ### ADVISORY_BRIDGE.md (Fable's findings)
 - **Updated empirical baseline.** `slackwater-cognition/` on disk is 11,533 lines and 106 test functions, not the 4,152/71 figure in `FABLE_MASTER_PROMPT.md`. The genuinely missing pieces are trust-on-Conductor, temporal→vector, LoRA, `.bottle` protocol, and the browser tier.
@@ -151,3 +151,5 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 - `sections/10_distillation_lora.md` — drafted from REPO_DESIGN.md, FABLE_MASTER_PROMPT.md, MULTI_MODEL_PANEL_DISCUSSION.md.
 - `sections/11_system_architecture.md` — drafted from REPO_DESIGN.md, MULTI_MODEL_PANEL_DISCUSSION.md, DEEPSEEK_BROWSER_DESIGN.md, BROWSER_NATIVE_AI_RESEARCH.md, ADVISORY_BRIDGE.md.
 - `sections/12_experiments_evaluation.md` — drafted from REPO_DESIGN.md, FABLE_MASTER_PROMPT.md, ADVISORY_BRIDGE.md.
+- `sections/13_results_discussion.md` — synthesized from all prior documents and projected claims.
+- `sections/14_conclusion.md` — synthesized conclusion and future-work agenda.
