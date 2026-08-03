@@ -63,9 +63,9 @@
 [16] 4.3s | 0 tok | OK | Section 10.3 - Bottle Ledger Determinism
      NO_CONTENT
 
-predecessor systems to DCA. There
-
-[14] 3.1s | 120 tok | OK | Section 11 - Missing Baselines
+  [RETRY 1] curl rc=52, waiting 5s...
+  [RECOVERY] Ollama down. Restarting...
+sing Baselines
      The single most serious weakness of this claim lies in its failure to provide a direct, empirical comparison with established methodologies such as Re
 
 [15] 5.1s | 120 tok | OK | Section 10.7 - Browser Tier
@@ -77,3 +77,5 @@ predecessor systems to DCA. There
 [17] 1.5s | 0 tok | OK | Section 3.3/12.3 - Quality Scorer Circularity
      NO_CONTENT
 
+  [RETRY 1] curl rc=52, waiting 5s...
+  [RECOVERY] Ollama down. Restarting...
