@@ -362,5 +362,19 @@
     "eval_duration_ms": 22691,
     "tokens_per_sec": 3.53,
     "error": null
+  },
+  {
+    "model": "qwen2.5:0.5b",
+    "prompt_id": "07_causal_reasoning",
+    "prompt": "The water level in the harbor rose suddenly. What are three possible causes, and which is most likely?",
+    "response": "1. **Leakage**: The most likely cause of a sudden increase in the water level in the harbor is a leak. This could be due to an external leak, such as an oil leak from a ship or a gas leak from a pipeline, or a more internal leak, such as a leak from a well or a leak in the piping system.\n\n2. **Decreased drainage**: If",
+    "eval_count": 80,
+    "prompt_eval_count": 29,
+    "latency_ms": 18125,
+    "load_duration_ms": 403,
+    "prompt_eval_duration_ms": 0,
+    "eval_duration_ms": 18125,
+    "tokens_per_sec": 4.41,
+    "error": null
   }
 ]
