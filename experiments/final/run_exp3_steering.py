@@ -109,17 +109,16 @@ Scenario context: {scenario}
 Thought to evaluate: "{thought}"
 
 Rate each dimension as a decimal between 0.0 and 1.0:
-- **novelty**: How original/unexpected is this observation? (0.0 = totally cliché, 1.0 = genuinely surprising insight)
-- **specificity**: How specific is it to THIS scenario? (0.0 = could apply to anything, 1.0 = deeply contextualized)
-- **engagement**: How engaging is it for a player to hear? (0.0 = boring/flat, 1.0 = makes you want to interact)
+- novelty: How original/unexpected is this observation? (0.0 = totally cliché, 1.0 = genuinely surprising insight)
+- specificity: How specific is it to THIS scenario? (0.0 = could apply to anything, 1.0 = deeply contextualized)
+- engagement: How engaging is it for a player to hear? (0.0 = boring/flat, 1.0 = makes you want to interact)
 
-Respond with ONLY a JSON object, no other text:
-{{"novelty": 0.X, "specificity": 0.X, "engagement": 0.X}}"""
+Output format: /nothink\n{{"novelty": 0.X, "specificity": 0.X, "engagement": 0.X}}"""
 
     payload = {
         "model": "Qwen/Qwen3-14B",
         "messages": [{"role": "user", "content": scoring_prompt}],
-        "max_tokens": 100,
+        "max_tokens": 150,
         "temperature": 0.3,  # Low temp for consistent scoring
     }
     
