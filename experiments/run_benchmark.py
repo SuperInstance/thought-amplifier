@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark using ollama Python library - handles connections better."""
+"""Benchmark Granite 3.1 2B vs Qwen 2.5 0.5B - stable CPU-mode runner."""
 
 import json
 import os
@@ -9,93 +9,73 @@ import ollama
 
 PROMPTS_DIR = "/home/eileen/projects/thought-amplifier/experiments/prompts"
 OUTPUT_FILE = "/home/eileen/projects/thought-amplifier/experiments/exp3_results.json"
-MODELS = ["granite3.1-dense:2b", "qwen2.5:0.5b"]
+MODELS = ["qwen2.5:0.5b", "granite3.1-dense:2b"]  # Qwen first (faster)
 
-def run_one(model, prompt, num_predict=150):
-    """Run a single prompt, return result dict."""
+def run_one(model, prompt, num_predict=100):
     try:
-        response = ollama.chat(
+        r = ollama.chat(
             model=model,
             messages=[{"role": "user", "content": prompt}],
             stream=False,
-            options={
-                "temperature": 0.7,
-                "top_p": 0.9,
-                "seed": 42,
-                "num_ctx": 2048,
-                "num_predict": num_predict,
-            }
+            options={"temperature": 0.7, "top_p": 0.9, "seed": 42, "num_ctx": 2048, "num_predict": num_predict}
         )
-        # Get model stats from the response
-        result = {
-            "response": response["message"]["content"],
-            "eval_count": response.get("eval_count", 0),
-            "prompt_eval_count": response.get("prompt_eval_count", 0),
-            "total_duration_ns": response.get("total_duration", 0),
-            "load_duration_ns": response.get("load_duration", 0),
-            "prompt_eval_duration_ns": response.get("prompt_eval_duration", 0),
-            "eval_duration_ns": response.get("eval_duration", 0),
+        ed = r.eval_duration / 1e9 if r.eval_duration else 0
+        ec = r.eval_count or 0
+        tps = ec / ed if ed > 0 else 0
+        return {
+            "response": r.message.content,
+            "eval_count": ec,
+            "prompt_eval_count": r.prompt_eval_count or 0,
+            "latency_ms": (r.total_duration or 0) // 1_000_000,
+            "load_duration_ms": (r.load_duration or 0) // 1_000_000,
+            "prompt_eval_duration_ms": (r.prompt_eval_duration or 0) // 1_000_000,
+            "eval_duration_ms": (r.eval_duration or 0) // 1_000_000,
+            "tokens_per_sec": round(tps, 2),
             "error": None,
         }
-        ed = result["eval_duration_ns"] / 1e9
-        ec = result["eval_count"]
-        result["tokens_per_sec"] = round(ec / ed, 2) if ed > 0 else 0
-        result["latency_ms"] = result["total_duration_ns"] // 1_000_000
-        result["eval_duration_ms"] = result["eval_duration_ns"] // 1_000_000
-        result["load_duration_ms"] = result["load_duration_ns"] // 1_000_000
-        result["prompt_eval_duration_ms"] = result["prompt_eval_duration_ns"] // 1_000_000
-        return result
     except Exception as e:
-        return {
-            "response": f"[ERROR: {e}]",
-            "eval_count": 0, "prompt_eval_count": 0,
-            "total_duration_ns": 0, "load_duration_ns": 0,
-            "prompt_eval_duration_ns": 0, "eval_duration_ns": 0,
-            "tokens_per_sec": 0, "latency_ms": 0,
-            "eval_duration_ms": 0, "load_duration_ms": 0,
-            "prompt_eval_duration_ms": 0,
-            "error": str(e),
-        }
+        return {"response": f"[ERROR: {e}]", "eval_count": 0, "tokens_per_sec": 0,
+                "latency_ms": 0, "eval_duration_ms": 0, "load_duration_ms": 0,
+                "prompt_eval_count": 0, "prompt_eval_duration_ms": 0, "error": str(e)}
 
 def main():
     prompt_files = sorted(glob.glob(os.path.join(PROMPTS_DIR, "*.txt")))
+    print(f"=== EXP3: Speed vs Quality Tradeoff ===", flush=True)
     print(f"Found {len(prompt_files)} prompts\n", flush=True)
     results = []
 
     for model in MODELS:
-        print(f"=== {model} ===", flush=True)
+        print(f"\n=== {model} ===", flush=True)
 
         # Warmup
         print("  Warmup...", end=" ", flush=True)
-        w = run_one(model, "Say hello.", num_predict=10)
+        w = run_one(model, "Say hello.", num_predict=5)
         if w["error"] is None:
-            print(f"{w['eval_count']}t {w['eval_duration_ms']}ms {w['tokens_per_sec']:.1f}t/s", flush=True)
+            print(f"{w['eval_count']}t {w['eval_duration_ms']}ms {w['tokens_per_sec']:.2f}t/s", flush=True)
         else:
             print(f"FAILED: {w['error']}", flush=True)
-        time.sleep(2)
+        time.sleep(1)
 
-        for pf in prompt_files:
+        for i, pf in enumerate(prompt_files):
             pid = os.path.basename(pf).replace(".txt", "")
             prompt = open(pf).read().strip()
-            print(f"  {pid}...", end=" ", flush=True)
+            print(f"  [{i+1}/20] {pid}...", end=" ", flush=True)
+            t0 = time.time()
 
-            r = run_one(model, prompt, num_predict=150)
+            r = run_one(model, prompt, num_predict=100)
+            wall = time.time() - t0
 
-            r.update({
-                "model": model,
-                "prompt_id": pid,
-                "prompt": prompt,
-            })
+            r.update({"model": model, "prompt_id": pid, "prompt": prompt})
             results.append(r)
 
             if r["error"]:
-                print(f"ERROR: {r['error'][:80]}", flush=True)
+                print(f"ERROR ({wall:.0f}s)", flush=True)
             else:
-                print(f"{r['eval_count']}t {r['eval_duration_ms']}ms {r['tokens_per_sec']:.1f}t/s", flush=True)
+                print(f"{r['eval_count']}t {r['eval_duration_ms']}ms {r['tokens_per_sec']:.1f}t/s (wall {wall:.0f}s)", flush=True)
 
     with open(OUTPUT_FILE, "w") as f:
         json.dump(results, f, indent=2)
-    print(f"\nSaved {len(results)} results", flush=True)
+    print(f"\nSaved {len(results)} results to {OUTPUT_FILE}", flush=True)
 
     # Summary
     for model in MODELS:

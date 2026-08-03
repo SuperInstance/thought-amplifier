@@ -20,6 +20,28 @@
         "engagement": 0,
         "total": 2
       }
+    },
+    {
+      "phase": "baseline",
+      "index": 2,
+      "thought": "Surrounded by the rugged beauty of this maritime island, I perceive a network of wooden wharves, each one cradling vessels waiting for their next voyage, while colossal sail-like structures dominate the skyline,",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 0,
+        "total": 2
+      }
+    },
+    {
+      "phase": "baseline",
+      "index": 3,
+      "thought": "Surrounded by the picturesque charm of this maritime island, I perceive towering lighthouses, their rotating beams guiding ships to safety. My desire is to explore these structures further, capturing their unique architectural designs and the serene be",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 0,
+        "total": 2
+      }
     }
   ]
 }
