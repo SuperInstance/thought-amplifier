@@ -85,3 +85,23 @@ The more encouraging read: the *research* production line — design an experime
 **Do these results validate or undermine the DCA thesis?** Neither, cleanly — but if forced to pick a direction, *undermine*, for process reasons rather than content reasons. EXP1 falsifies its stated hypothesis (cognitive hit rate is not lower than command hit rate — it's higher) and leaves its rescue claim (neural embeddings save C2) unproven. EXP2 has not yet produced a single sham-arm data point across two attempts, meaning the one claim (C3) that actually tests whether DCA's central mechanism does anything remains completely untested, not disconfirmed. A dissertation that was already vulnerable to "zero experiments were run, all claims are projected" has, with these two attempts, moved from *zero experiments* to *two attempted experiments, one of which reverses its own hypothesis and one of which never reaches its own control condition*. That is progress on the honesty axis — real data collection is happening, and it's being reported straight, crashes included — but it is not yet progress on the "is the thesis true" axis, because the infrastructure keeps failing before the interesting question gets asked.
 
 **What do they tell us about the production line model?** That the metaphor is currently aspirational at the hardware layer and real at the process layer. The scheduling logic (Logos, per the repo's own tripartite framing) is sound and tested in isolation. The thing it's meant to schedule keeps vanishing. Fix the CUDA reliability problem before trusting any further throughput or priority claims — and, separately, fix the exp2 analysis script's empty-sample bug before trusting any further p-value this pipeline produces. Both are infrastructure problems, not thesis problems, and both are cheaper to fix than either experiment was to run.
+
+---
+
+## What to do next
+
+In order — each step is a precondition for the one after it, so do not skip ahead:
+
+1. **Fix Ollama/CUDA reliability before rerunning anything.** Verify with the same check `ADVISORY_BRIDGE.md` already specified: `curl localhost:11434/api/generate` with a trivial prompt, confirm `>20 tok/s` and `size_vram > 0` via `/api/ps`, *before* relaunching any experiment. Two independent EXP2 runs have now died the same way — the earlier documented fix either wasn't applied or didn't hold, so verify, don't assume.
+
+2. **Fix the empty-sample statistics bug in `exp2_analyze.py`/`update_report.py`** so that n=0 phases report "no data" instead of a fabricated `0.000 ± 0.000` that then feeds a t-test. This is a five-minute fix (guard on `n > 0` before computing comparison stats) and it's currently capable of producing a confident-looking null result from a phase that was never run. Fix before the next EXP2 attempt, not after, or the same misreading happens again.
+
+3. **Rerun EXP2 with the CUDA fix verified, interleaved phases, and abort-on-failure rather than record-on-failure** (per `ADVISORY_BRIDGE.md`'s own recommendation, still unactioned) — order b,i,r,s,b,i,r,s,… so a crash at generation 10 costs 10 samples across all four arms instead of destroying entire arms, as happened here twice. This is the run that actually tests the thesis; nothing above this point does.
+
+4. **Add the Conductor-vs-random-intervention arm** to whatever EXP2 run finally completes — the one comparison `CLAUDE_REVIEW.md` identifies as decisive and that still isn't in the design. Cheap to add once the four-arm harness is working; expensive to bolt on afterward.
+
+5. **Do not rerun EXP1's neural-embedding check as an afterthought.** If C2 is going to be claimed as supported, rerun it properly: n=100 (not 8), real Granite-generated thoughts (not template fill-ins), a full threshold-sensitivity sweep at the neural embedding, and drop "cross-validation" as the label for what it is. Until then, treat C2 as falsified-as-tested with an unverified rescue hypothesis, not as supported.
+
+6. **Fix the Mann-Whitney directionality in EXP1's writeup** (or standardize on two-sided tests throughout) — small, but it's the second statistics-pipeline bug found in two experiments, which is itself a signal: before either team member trusts the next p-value this project produces, it's worth one pass reviewing the analysis scripts specifically, separate from rerunning the experiments themselves.
+
+These map directly onto items #1, #2, and #6 in `ethos/STRATEGIC_PRIORITIES.md`; this evaluation is independent empirical confirmation that #1 (the GPU/CUDA fix) is still the blocking item, and it surfaces one thing that document didn't have evidence for yet: the analysis pipeline itself needs a correctness pass before its output can be trusted.

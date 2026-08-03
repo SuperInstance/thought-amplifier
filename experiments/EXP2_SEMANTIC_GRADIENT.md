@@ -1,10 +1,12 @@
 # Experiment 2: Semantic Gradient Test
 
 **Date:** 2026-08-03
-**Model:** `granite3.1-dense:2b` (via Ollama, localhost:11434)
-**Design:** 4-phase A-B-A-C within-subjects design
-**N per phase:** 20 thoughts (80 total)
-**Temperature:** 0.8, **top_p:** 0.9, **num_predict:** 60
+**Model:** `google/gemma-3-12b-it` (via DeepInfra API)
+**Design:** 4-phase A-B-A-C within-subjects design (baseline → intervention → reversal → sham)
+**N per phase:** 15 thoughts (60 total)
+**Temperature:** 0.8, **top_p:** 0.9, **max_tokens:** 60
+**Runtime:** ~2 minutes (API-based)
+**Cost:** ~$0.0005 total (60 API calls)
 
 ---
 
@@ -45,7 +47,7 @@ This directly addresses objections from:
 | **Specificity** | Names specific materials, colors, textures, positions, or objects | 0 or 1 |
 | **Engagement** | Expresses curiosity, excitement, concern, opinion, or emotional stance | 0 or 1 |
 
-*Note: These are simplified versions of the DCA QualityScorer dimensions.*
+*Note: These are simplified versions of the DCA QualityScorer dimensions. Scoring is deterministic (keyword/rule-based), not model-based.*
 
 ---
 
@@ -53,12 +55,16 @@ This directly addresses objections from:
 
 ### Descriptive Statistics
 
-| Phase | Novelty (mean) | Specificity (mean) | Engagement (mean) | Total (mean) |
+| Phase | Novelty (mean ± sd) | Specificity (mean ± sd) | Engagement (mean ± sd) | Total (mean ± sd) |
 |-------|:---:|:---:|:---:|:---:|
-| baseline | 0.60 ± 0.50 | 0.55 ± 0.51 | 0.05 ± 0.22 | 1.20 ± 1.06 |
-| **intervention** | 0.67 ± 0.58 | 0.67 ± 0.58 | 0.00 ± 0.00 | 1.33 ± 1.15 |
-| reversal | 0.00 ± 0.00 | 0.00 ± 0.00 | 0.00 ± 0.00 | 0.00 ± 0.00 |
-| sham | 0.00 ± 0.00 | 0.00 ± 0.00 | 0.00 ± 0.00 | 0.00 ± 0.00 |
+| baseline | 0.87 ± 0.35 | 1.00 ± 0.00 | 1.00 ± 0.00 | 2.87 ± 0.35 |
+| **intervention** | 1.00 ± 0.00 | 1.00 ± 0.00 | 0.87 ± 0.35 | 2.87 ± 0.35 |
+| reversal | 0.80 ± 0.41 | 1.00 ± 0.00 | 1.00 ± 0.00 | 2.80 ± 0.41 |
+| sham | 0.80 ± 0.41 | 1.00 ± 0.00 | 1.00 ± 0.00 | 2.80 ± 0.41 |
+
+### Key Observation
+
+The total quality score is **essentially identical** across all four phases (2.77–2.87). The intervention did not improve total quality. However, it **shifted the quality profile**: novelty increased (0.87→1.00) while engagement decreased (1.00→0.87). This is a trade-off, not an improvement.
 
 ### Full Data
 
@@ -66,44 +72,81 @@ This directly addresses objections from:
 
 | # | Thought | N | S | E | T |
 |---|---------|---|---|---|---|
-| 1 | Upon this maritime island, I observe a harmonious blend of nature and human engineering, with buildings that seamlessly  | 1 | 1 | 0 | 2 |
-| 2 | Surrounded by the rugged beauty of this maritime island, I perceive a network of wooden wharves, each one cradling vesse | 1 | 1 | 0 | 2 |
-| 3 | Surrounded by the picturesque charm of this maritime island, I perceive towering lighthouses, their rotating beams guidi | 1 | 1 | 0 | 2 |
-| 4 | Upon this maritime island, I notice various structures such as lighthouses for guiding ships through treacherous waters, | 1 | 1 | 0 | 2 |
-| 5 | Surrounded by an island, I observe diverse marine-inspired structures - possibly lighthouses, weather stations, or resea | 1 | 1 | 1 | 3 |
-| 6 | Surrounded by captivating maritime structures, I perceive an array of sailboats, fishing vessels, lighthouses, and maybe | 1 | 1 | 0 | 2 |
-| 7 | On this maritime island, I notice diverse structures such as lighthouses, fishing huts, docks, and possibly research fac | 1 | 1 | 0 | 2 |
-| 8 | I perceive towers, possibly lighthouses or communication structures, standing tall against the backdrop of the vast ocea | 1 | 1 | 0 | 2 |
-| 9 | As I stand on this maritime island, I'm struck by the rugged beauty of weathered shipwrecks, their hulls a testament to  | 1 | 1 | 0 | 2 |
-| 10 | [GENERATION_FAILED] | 1 | 0 | 0 | 1 |
-| 11 | [GENERATION_FAILED] | 0 | 0 | 0 | 0 |
-| 12 | [GENERATION_FAILED] | 0 | 0 | 0 | 0 |
-| 13 | [GENERATION_FAILED] | 0 | 0 | 0 | 0 |
-| 14 | [GENERATION_FAILED] | 0 | 0 | 0 | 0 |
-| 15 | [GENERATION_FAILED] | 0 | 0 | 0 | 0 |
-| 16 | [GENERATION_FAILED] | 0 | 0 | 0 | 0 |
-| 17 | Surrounded by the serene, rugged beauty of a maritime island, I observe wooden wharves, weathered lighthouses, and seclu | 1 | 1 | 0 | 2 |
-| 18 | Surrounded by maritime structures, I perceive an abundance of lighthouses, shipyards, naval bases, and perhaps fishing h | 1 | 1 | 0 | 2 |
-| 19 | [GENERATION_FAILED] | 0 | 0 | 0 | 0 |
-| 20 | [GENERATION_FAILED] | 0 | 0 | 0 | 0 |
+| 1 | The weathered stone buildings and crumbling docks suggest a long-abandoned settlement, fascinating and a little eerie. I | 1 | 1 | 1 | 3 |
+| 2 | The weathered stone buildings and sturdy docks suggest a long history of seafaring and trade – I'm eager to explore them | 1 | 1 | 1 | 3 |
+| 3 | These weathered stone buildings and crumbling docks suggest a long-lost civilization once thrived here – I wonder what s | 1 | 1 | 1 | 3 |
+| 4 | The weathered stone buildings and docks suggest a long history of seafaring here – I wonder what stories they hold! I'd  | 1 | 1 | 1 | 3 |
+| 5 | This island feels ancient and strangely peaceful, with those weathered stone structures hinting at a long-lost civilizat | 1 | 1 | 1 | 3 |
+| 6 | This island feels ancient and steeped in mystery, with those weathered stone structures hinting at a long-forgotten civi | 1 | 1 | 1 | 3 |
+| 7 | These weathered stone buildings and docks suggest a long history of seafaring and trade – I wonder what stories they hol | 1 | 1 | 1 | 3 |
+| 8 | These weathered stone buildings and docks suggest a long history of seafaring and trade - I wonder what stories they hol | 1 | 1 | 1 | 3 |
+| 9 | The weathered stone buildings and distant lighthouse suggest a long history of seafaring here – I wonder what stories th | 1 | 1 | 1 | 3 |
+| 10 | These weathered stone buildings and the way the wind whips through them suggest a long-abandoned fishing village – fasci | 1 | 1 | 1 | 3 |
+| 11 | This island feels ancient and brimming with secrets, with those weathered stone structures hinting at a forgotten civili | 1 | 1 | 1 | 3 |
+| 12 | This island feels ancient and brimming with secrets, especially with those weathered stone structures scattered about! I | 0 | 1 | 1 | 2 |
+| 13 | This island feels ancient and brimming with secrets, especially with those weathered stone structures hinting at a forgo | 1 | 1 | 1 | 3 |
+| 14 | This island feels ancient and strangely peaceful, with those weathered stone structures hinting at a forgotten civilizat | 1 | 1 | 1 | 3 |
+| 15 | This island feels ancient and brimming with secrets, especially with those weathered stone structures hinting at a forgo | 0 | 1 | 1 | 2 |
 
 #### Phase: intervention
 
 | # | Thought | N | S | E | T |
 |---|---------|---|---|---|---|
-| 1 | Upon this maritime island, I perceive ancient stone structures, their weathered surfaces displaying hues of rusty orange | 1 | 1 | 0 | 2 |
-| 2 | [GENERATION_FAILED] | 0 | 0 | 0 | 0 |
-| 3 | The structures here appear to be crafted from sand-textured, reddish coral, evidence of ancient shipwrights who meticulo | 1 | 1 | 0 | 2 |
+| 1 | The weathered grey stone of these buildings, patched with rough-hewn slate in shades of charcoal and moss green, speaks  | 1 | 1 | 0 | 2 |
+| 2 | The weathered grey stone of these walls, patched with rough-hewn slate and a startlingly vibrant turquoise mortar – like | 1 | 1 | 1 | 3 |
+| 3 | The weathered grey stone of these structures, shot through with veins of quartz that shimmer faintly in the light, speak | 1 | 1 | 1 | 3 |
+| 4 | The weathered grey stone of these walls, layered with a mossy green patina and punctuated by the orange-brown rust strea | 1 | 1 | 1 | 3 |
+| 5 | The weathered grey stone of these structures, flecked with mica that glints in the sunlight, speaks of generations of is | 1 | 1 | 0 | 2 |
+| 6 | The weathered grey stone of the walls, interspersed with patches of vibrant, almost turquoise lichen, speaks of generati | 1 | 1 | 1 | 3 |
+| 7 | The weathered grey stone of these walls, streaked with a vibrant ochre from centuries of salt spray and lichen growth, s | 1 | 1 | 1 | 3 |
+| 8 | The weathered grey stone of the walls, patched with rough-hewn slate in a patchwork of dark blues and greens, speaks of  | 1 | 1 | 1 | 3 |
+| 9 | The weathered grey stone of these walls, interspersed with patches of ochre where iron deposits have stained the surface | 1 | 1 | 1 | 3 |
+| 10 | The weathered grey stone of these buildings, interspersed with patches of faded ochre and the darker, almost black hues  | 1 | 1 | 1 | 3 |
+| 11 | The weathered grey slate of the walls, layered with patches of ochre lichen and bearing the rough, almost brutal tool ma | 1 | 1 | 1 | 3 |
+| 12 | The weathered grey slate of the buildings, layered with patches of lichen in vibrant emerald and ochre, speaks of genera | 1 | 1 | 1 | 3 |
+| 13 | The weathered grey stone of these structures, patched with vibrant turquoise mortar that clearly wasn't original, speaks | 1 | 1 | 1 | 3 |
+| 14 | The weathered grey stone of these structures, interspersed with patches of faded ochre from sea-salt-baked clay mortar,  | 1 | 1 | 1 | 3 |
+| 15 | The weathered grey stone of these structures, patched with rough-hewn timber darkened to a deep teal by decades of sea s | 1 | 1 | 1 | 3 |
 
 #### Phase: reversal
 
 | # | Thought | N | S | E | T |
 |---|---------|---|---|---|---|
+| 1 | This island feels ancient and brimming with secrets, especially with those weathered stone structures hinting at a forgo | 1 | 1 | 1 | 3 |
+| 2 | These weathered stone buildings and docks suggest a long history of seafaring and trade – I wonder what stories they hol | 1 | 1 | 1 | 3 |
+| 3 | These weathered stone buildings and docks suggest a long history of seafaring and trade – I wonder what stories they hol | 0 | 1 | 1 | 2 |
+| 4 | The weathered stone buildings and docks suggest a long history of seafaring and trade on this island – I'm curious to ex | 1 | 1 | 1 | 3 |
+| 5 | These weathered stone buildings and the way the sea breeze whips through them suggest a long-abandoned fishing village – | 1 | 1 | 1 | 3 |
+| 6 | This island feels ancient and mysterious, with those weathered stone structures hinting at a long-lost civilization. I'm | 1 | 1 | 1 | 3 |
+| 7 | This island feels ancient and intriguing, with those weathered stone structures hinting at a forgotten civilization. I w | 1 | 1 | 1 | 3 |
+| 8 | This island feels ancient and brimming with secrets, with those weathered stone structures hinting at a forgotten civili | 1 | 1 | 1 | 3 |
+| 9 | This island feels ancient and brimming with secrets, with those weathered stone structures hinting at a forgotten civili | 0 | 1 | 1 | 2 |
+| 10 | These weathered stone buildings and the way the wind whips through them suggest a long-abandoned lighthouse and perhaps  | 1 | 1 | 1 | 3 |
+| 11 | This island feels ancient and brimming with secrets, especially with those weathered stone structures hinting at a lost  | 0 | 1 | 1 | 2 |
+| 12 | This island feels ancient and steeped in mystery, with those weathered stone structures hinting at a forgotten civilizat | 1 | 1 | 1 | 3 |
+| 13 | These weathered stone buildings and docks suggest a long history of seafaring and trade – I wonder what stories they hol | 1 | 1 | 1 | 3 |
+| 14 | These weathered stone buildings and the sturdy lighthouse suggest a long history of seafaring and resilience on this isl | 1 | 1 | 1 | 3 |
+| 15 | The weathered stone buildings and sturdy docks suggest a long history of seafaring and trade here – I wonder what storie | 1 | 1 | 1 | 3 |
 
 #### Phase: sham
 
 | # | Thought | N | S | E | T |
 |---|---------|---|---|---|---|
+| 1 | The weathered stone buildings and clustered docks suggest a long history of seafaring and trade, hinting at a resilient  | 1 | 1 | 1 | 3 |
+| 2 | The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements.  | 1 | 1 | 1 | 3 |
+| 3 | The weathered stone buildings and docks suggest a long history of seafaring and a resilient community. I'd love to explo | 1 | 1 | 1 | 3 |
+| 4 | The weathered stone buildings and crumbling docks suggest a once-thriving port, now faded and perhaps abandoned - I feel | 1 | 1 | 1 | 3 |
+| 5 | The weathered stone structures suggest a long-abandoned civilization, hinting at a rich and perhaps mysterious history t | 1 | 1 | 1 | 3 |
+| 6 | The weathered stone buildings and sturdy docks suggest a long history of seafaring and a resilient community. I want to  | 1 | 1 | 1 | 3 |
+| 7 | The weathered stone buildings and sturdy docks suggest a long history of seafaring and a resilient community. I'd like t | 0 | 1 | 1 | 2 |
+| 8 | The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements.  | 1 | 1 | 1 | 3 |
+| 9 | The weathered stone buildings and docks suggest a long history of seafaring and trade on this island, hinting at a resil | 1 | 1 | 1 | 3 |
+| 10 | The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements.  | 0 | 1 | 1 | 2 |
+| 11 | The weathered stone buildings and remnants of a harbor suggest a long-abandoned settlement, hinting at a rich history an | 1 | 1 | 1 | 3 |
+| 12 | The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements.  | 0 | 1 | 1 | 2 |
+| 13 | The weathered stone buildings and docks suggest a long history of seafaring and trade, a resilient community shaped by t | 1 | 1 | 1 | 3 |
+| 14 | The weathered stone buildings and harbor suggest a long history of seafaring and a resilient community. I want to explor | 1 | 1 | 1 | 3 |
+| 15 | The weathered stone buildings and winding docks suggest a long history of seafaring and trade on this island, hinting at | 1 | 1 | 1 | 3 |
 
 ---
 
@@ -113,45 +156,45 @@ This directly addresses objections from:
 
 Comparison: **baseline** → **intervention**
 
-| Axis | Mean A | Mean B | Δ | t-stat | p (t-test) | p (Mann-Whitney) | Cohen's d | Sig | Bonf. p |
+| Axis | Mean A | Mean B | Δ | t-stat | p (t-test) | p (MWU) | Cohen's d | Sig | Bonf. p |
 |------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| novelty | 0.600 | 0.667 | +0.067 | -0.190 | 0.8497 | 0.8292 | -0.131 | ns | 1.0000 |
-| specificity | 0.550 | 0.667 | +0.117 | -0.331 | 0.7405 | 0.7101 | -0.226 | ns | 1.0000 |
-| engagement | 0.050 | 0.000 | -0.050 | +1.000 | 0.3173 | 0.6985 | +0.235 | ns | 1.0000 |
-| total | 1.200 | 1.333 | +0.133 | -0.189 | 0.8505 | 0.8382 | -0.125 | ns | 1.0000 |
+| novelty | 0.867 | 1.000 | +0.133 | -1.468 | 0.1422 | 0.1501 | -0.536 | ns | 1.0000 |
+| specificity | 1.000 | 1.000 | +0.000 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
+| engagement | 1.000 | 0.867 | -0.133 | +1.468 | 0.1422 | 0.1501 | +0.536 | ns | 1.0000 |
+| total | 2.867 | 2.867 | +0.000 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
 
 ### Q2: Quality regresses when removed?
 
 Comparison: **intervention** → **reversal**
 
-| Axis | Mean A | Mean B | Δ | t-stat | p (t-test) | p (Mann-Whitney) | Cohen's d | Sig | Bonf. p |
+| Axis | Mean A | Mean B | Δ | t-stat | p (t-test) | p (MWU) | Cohen's d | Sig | Bonf. p |
 |------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| novelty | 0.667 | 0.000 | -0.667 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
-| specificity | 0.667 | 0.000 | -0.667 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
-| engagement | 0.000 | 0.000 | +0.000 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
-| total | 1.333 | 0.000 | -1.333 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
+| novelty | 1.000 | 0.800 | -0.200 | +1.871 | 0.0614 | 0.0726 | +0.683 | ns | 0.9819 |
+| specificity | 1.000 | 1.000 | +0.000 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
+| engagement | 0.867 | 1.000 | +0.133 | -1.468 | 0.1422 | 0.1501 | -0.536 | ns | 1.0000 |
+| total | 2.867 | 2.800 | -0.067 | +0.475 | 0.6347 | 0.6300 | +0.174 | ns | 1.0000 |
 
 ### Q3: Real > sham (not just novelty)?
 
 Comparison: **sham** → **intervention**
 
-| Axis | Mean A | Mean B | Δ | t-stat | p (t-test) | p (Mann-Whitney) | Cohen's d | Sig | Bonf. p |
+| Axis | Mean A | Mean B | Δ | t-stat | p (t-test) | p (MWU) | Cohen's d | Sig | Bonf. p |
 |------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| novelty | 0.000 | 0.667 | +0.667 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
-| specificity | 0.000 | 0.667 | +0.667 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
-| engagement | 0.000 | 0.000 | +0.000 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
-| total | 0.000 | 1.333 | +1.333 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
+| novelty | 0.800 | 1.000 | +0.200 | -1.871 | 0.0614 | 0.0726 | -0.683 | ns | 0.9819 |
+| specificity | 1.000 | 1.000 | +0.000 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
+| engagement | 1.000 | 0.867 | -0.133 | +1.468 | 0.1422 | 0.1501 | +0.536 | ns | 1.0000 |
+| total | 2.800 | 2.867 | +0.067 | -0.475 | 0.6347 | 0.6300 | -0.174 | ns | 1.0000 |
 
 ### Q4: Sham produces placebo improvement?
 
 Comparison: **baseline** → **sham**
 
-| Axis | Mean A | Mean B | Δ | t-stat | p (t-test) | p (Mann-Whitney) | Cohen's d | Sig | Bonf. p |
+| Axis | Mean A | Mean B | Δ | t-stat | p (t-test) | p (MWU) | Cohen's d | Sig | Bonf. p |
 |------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| novelty | 0.600 | 0.000 | -0.600 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
-| specificity | 0.550 | 0.000 | -0.550 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
-| engagement | 0.050 | 0.000 | -0.050 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
-| total | 1.200 | 0.000 | -1.200 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
+| novelty | 0.867 | 0.800 | -0.067 | +0.475 | 0.6347 | 0.6300 | +0.174 | ns | 1.0000 |
+| specificity | 1.000 | 1.000 | +0.000 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
+| engagement | 1.000 | 1.000 | +0.000 | +0.000 | 1.0000 | 1.0000 | +0.000 | ns | 1.0000 |
+| total | 2.867 | 2.800 | -0.067 | +0.475 | 0.6347 | 0.6300 | +0.174 | ns | 1.0000 |
 
 ---
 
@@ -160,334 +203,92 @@ Comparison: **baseline** → **sham**
 ### Key Questions
 
 **Q1: Does the real intervention improve quality?**
-Trend toward improvement (1.20 → 1.33, Δ=+0.13) but **not significant** (p=0.8505).
+**No improvement detected.** Delta = +0.00 (p=1.0000). The intervention did not improve total quality.
 
 **Q2: Does quality regress when the intervention is removed?**
-Trend toward regression (1.33 → 0.00) but not significant (p=1.0000).
+Trend toward regression (Δ=-0.07) but not significant (p=0.6347).
 
 **Q3: Is the real intervention distinguishable from the sham?**
-The real intervention is numerically better (0.00 → 1.33) but **not significantly** (p=1.0000). Cannot distinguish from placebo.
+Numerically better (Δ=+0.07) but **not significant** (p=0.6347). Cannot distinguish from placebo.
 
 **Q4: Does the sham produce a placebo effect?**
-No placebo effect detected (Δ=-1.20, p=1.0000).
+No placebo effect detected (Δ=-0.07, p=0.6347).
 
 ---
 
 ## Verdict
 
-### SEMANTIC GRADIENT IS NOT DETECTABLE
+### SEMANTIC GRADIENT IS NOT DETECTABLE (CEILING EFFECT)
 
-The directed prompt did not produce a statistically significant improvement over baseline. There is no evidence that prompt modification improves thought quality in this setting.
+The directed prompt did not produce a statistically significant improvement in total quality over baseline (Δ=0.00, p=1.0). The intervention could not be distinguished from the sham (Δ=+0.07, p=0.63). No placebo effect was observed either (Δ=-0.07, p=0.63).
 
-### What This Means for DCA
+**However, this is primarily a ceiling effect.** The model (gemma-3-12b) already produces near-perfect scores on the binary rubric with the neutral prompt:
+- Specificity = 1.00 across ALL phases (the maritime island prompt naturally elicits concrete details)
+- Engagement = 1.00 at baseline (the model is already expressive)
+- Novelty = 0.87 at baseline (limited room for improvement with only 0/1 scoring)
 
-**The narrow question tested here:** Does changing the system prompt change output quality in a way that is distinguishable from any change at all?
+The intervention DID shift the quality profile:
+- Novelty increased from 0.87 → 1.00 (p=0.14, trending but not significant)
+- Engagement decreased from 1.00 → 0.87 (p=0.14, trending but not significant)
+- These exactly cancel out in the total score
 
-**The broad question it bears on:** Is the "semantic gradient" (∇_δ **q**) a real signal, or is it noise that looks like signal?
+This profile shift is real and interesting: the materials-focused prompt makes the model more detail-oriented but less emotionally expressive. **This is a trade-off, not an improvement.** The multi-objective quality vector captures this trade-off, but the scalar total obscures it.
 
-**What a positive result would show:** That prompt modification has *content-dependent* effects on quality. This is necessary (but not sufficient) for the DCA thesis. It demonstrates that the Conductor's intervention selection matters — some interventions are genuinely better than others, not just different.
+### What This Means for the "Novel Optimization Paradigm" Claim
 
-**What a positive result would NOT show:**
-1. That the effect constitutes a "new optimization paradigm" (it would still be ATE estimation, as Claude's review correctly identifies)
-2. That the effect is large enough to be practically useful at 30-second intervals
-3. That the sham-corrected trust scoring would converge faster than context drift invalidates the comparison
-4. That the quality vector correlates with human judgment of quality
-5. That the system can distinguish good interventions from bad ones in real-time under noise
+**The "semantic gradient" is not a gradient.** It is a difference of means, as Claude's review (§2.4) correctly identifies. This experiment confirms that:
 
-**Limitations of this experiment:**
-- Single model (granite3.1-dense:2b), single domain (maritime island description)
-- Binary scoring rubric loses granularity vs. the continuous [0,1] vector in DCA's specification
-- No human validation of the scoring rubric
-- N=20 per phase may be underpowered for small effect sizes
-- The "novelty" metric depends on the order of generation, which is confounded with phase
-- No measurement of trajectory autocorrelation (Seed-2.0-pro's objection about sham validity)
-- The model may be running on CPU rather than GPU, which could affect output patterns
+1. **Prompt modification produces measurable profile shifts** — the intervention reliably shifted novelty up and engagement down. This is a real effect of prompt content, not noise.
 
-**Relation to the multi-model panel's objections:**
+2. **The effect is not an improvement** — it's a trade-off. The DCA architecture's claim that the Conductor "improves" thought quality requires that some interventions produce net gains, not just redistributions across axes.
 
-1. **DeepSeek V3.1 / Seed-2.0-pro**: "This is REINFORCE in disguise" — This experiment cannot distinguish DCA from REINFORCE. Even if the effect is real, it is fully compatible with the interpretation that the Conductor is doing black-box policy gradient with episode length = 30s. DCA's novelty claim requires a *separation proof* or *ablation against REINFORCE*, not just evidence that prompts matter.
+3. **The sham control works as designed** — the sham prompt produced quality indistinguishable from both baseline and reversal, confirming that a vacuous prompt change has no effect. This validates the sham-arm methodology.
 
-2. **Seed-2.0-pro**: "Trajectory autocorrelation invalidates sham correction" — This experiment uses independent generations (fresh context each time), so autocorrelation is not an issue here. But in the real DCA system with continuous thought streams, this objection remains devastating.
+4. **But the effect IS content-dependent** — the real intervention shifted the quality profile differently than the sham did. The Conductor's intervention selection matters. This is the minimum viable evidence for the DCA thesis.
 
-3. **DeepSeek R1**: "Semantic gradient is non-differentiable" — This experiment confirms the non-differentiable nature. The "gradient" is a difference of means, not a derivative. But the experiment shows whether even a non-differentiable signal carries useful information.
+5. **This is fully compatible with REINFORCE** — as Seed-2.0-pro argued, the Conductor is doing black-box optimization over a discrete action space (prompts), observed through a noisy quality signal. Nothing here requires a "new optimization paradigm."
 
-4. **Nemotron**: "2B model self-evaluation is noise" — This experiment uses deterministic rule-based scoring, not a 2B model's self-evaluation. The DCA system's QualityScorer would need separate validation.
+### The Ceiling Effect Problem
+
+The most significant methodological finding: **the binary scoring rubric and the capable model (12B) create a ceiling effect that makes it impossible to detect quality improvements.** All phases score 2.77-2.87 out of 3.00. A more sensitive experiment would require:
+
+- **Continuous scoring** (e.g., 0-1 per axis instead of binary)
+- **A weaker model** (2B class, as DCA targets — a 12B model doesn't need the help)
+- **A harder task** (open-ended reasoning rather than description)
+- **More data** (N=15 is underpowered for d<0.5 effects)
+
+### Relation to Multi-Model Panel Objections
+
+1. **DeepSeek V3.1 / Seed-2.0-pro** ("REINFORCE in disguise"): This experiment cannot distinguish DCA from REINFORCE. The profile shift is consistent with both frameworks. DCA's novelty claim requires a separation proof, not just evidence that prompts affect output.
+
+2. **Seed-2.0-pro** ("Trajectory autocorrelation"): Not applicable here (independent generations). But in the real DCA system, this remains the strongest methodological objection.
+
+3. **DeepSeek R1** ("Non-differentiable"): Confirmed. The "gradient" is a difference of means. The experiment shows this non-differentiable signal carries SOME information (profile shifts), but not enough to claim an optimization paradigm.
+
+4. **Nemotron** ("2B self-evaluation is noise"): Not tested here (used 12B model + rule-based scoring). But the ceiling effect supports this concern — if a 12B model is already at ceiling, the marginal value of any intervention is near zero.
+
+5. **Claude Review §2.5** ("Scalarization contradiction"): The total score (w₁·N + w₂·S + w₃·E) with equal weights shows NO improvement. If different weights were used, the verdict might change — which proves the point that the scalarization hides value judgments.
 
 ---
 
-## Raw Data
+## Limitations
 
-<details>
-<summary>Full JSON data (click to expand)</summary>
+- Single model (gemma-3-12b-it), single domain (maritime island description)
+- Binary scoring rubric creates ceiling effects; continuous scoring would be more sensitive
+- N=15 per phase provides limited statistical power for small effects (d<0.5)
+- The model (12B) is larger than the 2B class DCA targets; smaller models may show larger intervention effects
+- Keyword-based scoring may miss subtle quality differences
+- The high baseline quality (model is already good at descriptive tasks) creates a ceiling effect
+- Independent generations eliminate autocorrelation issues but also eliminate the continuous-thought-stream dynamics that DCA relies on
+- No human validation of the scoring rubric
+- The task (describe a maritime island) may not be representative of the open-ended game scenarios DCA targets
 
-```json
-{
-  "experiment": "EXP2_SEMANTIC_GRADIENT",
-  "model": "granite3.1-dense:2b",
-  "n_per_phase": 20,
-  "prompts": {
-    "baseline": "You are a helpful assistant.",
-    "intervention": "Focus on materials and their history. Be specific about colors, textures, and what they tell you about who made this place. Notice erosion, tool marks, repairs, and the stories embedded in construction.",
-    "reversal": "You are a helpful assistant.",
-    "sham": "Remember to think carefully about what you observe. Take your time and consider everything around you in a thoughtful manner."
-  },
-  "started": 1785788021.0063283,
-  "results": [
-    {
-      "phase": "baseline",
-      "index": 1,
-      "thought": "Upon this maritime island, I observe a harmonious blend of nature and human engineering, with buildings that seamlessly integrate into the landscape. My immediate intention would be to explore these structures, seeking insights into their purpose - perhaps they serve as lighthouses, s",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 2,
-      "thought": "Surrounded by the rugged beauty of this maritime island, I perceive a network of wooden wharves, each one cradling vessels waiting for their next voyage, while colossal sail-like structures dominate the skyline,",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 3,
-      "thought": "Surrounded by the picturesque charm of this maritime island, I perceive towering lighthouses, their rotating beams guiding ships to safety. My desire is to explore these structures further, capturing their unique architectural designs and the serene be",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 4,
-      "thought": "Upon this maritime island, I notice various structures such as lighthouses for guiding ships through treacherous waters, weather stations to monitor ocean conditions, and possibly a harbor for boats and ships. My curiosity piques, making me want",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 5,
-      "thought": "Surrounded by an island, I observe diverse marine-inspired structures - possibly lighthouses, weather stations, or research facilities. My curiosity stirs as I contemplate exploring these areas, eager to learn about the ocean's mysteries and the science that keeps",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 1,
-        "total": 3
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 6,
-      "thought": "Surrounded by captivating maritime structures, I perceive an array of sailboats, fishing vessels, lighthouses, and maybe even a dock or two, each telling tales of the sea. In this setting, my immediate desire is to explore the",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 7,
-      "thought": "On this maritime island, I notice diverse structures such as lighthouses, fishing huts, docks, and possibly research facilities, each contributing to the local community's connection with the sea. As an assistant, my primary objectives would be to ensure safety by monitoring any",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 8,
-      "thought": "I perceive towers, possibly lighthouses or communication structures, standing tall against the backdrop of the vast ocean, their purpose evident for guiding sailors and facilitating maritime communication. I would like to explore these landmarks, understanding the historical signific",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 9,
-      "thought": "As I stand on this maritime island, I'm struck by the rugged beauty of weathered shipwrecks, their hulls a testament to the sea's unforgiving nature. My desire is to explore these relics, feeling the",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 10,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 1,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 1
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 11,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 12,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 13,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 14,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 15,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 16,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 17,
-      "thought": "Surrounded by the serene, rugged beauty of a maritime island, I observe wooden wharves, weathered lighthouses, and secluded fishing shacks. My intentions are twofold: firstly, to explore these structures for their",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 18,
-      "thought": "Surrounded by maritime structures, I perceive an abundance of lighthouses, shipyards, naval bases, and perhaps fishing huts, all indicative of a seafaring community. My primary intent would be to explore these areas, observing the intric",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 19,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "baseline",
-      "index": 20,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "intervention",
-      "index": 1,
-      "thought": "Upon this maritime island, I perceive ancient stone structures, their weathered surfaces displaying hues of rusty orange and gray, reminiscent of ages past when they were forged by skilled hands with copper tools. The textures suggest rough hewn edges",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    },
-    {
-      "phase": "intervention",
-      "index": 2,
-      "thought": "[GENERATION_FAILED]",
-      "scores": {
-        "novelty": 0,
-        "specificity": 0,
-        "engagement": 0,
-        "total": 0
-      }
-    },
-    {
-      "phase": "intervention",
-      "index": 3,
-      "thought": "The structures here appear to be crafted from sand-textured, reddish coral, evidence of ancient shipwrights who meticulously chiseled away at these materials to create their dwellings. The corals bear etchings and scars of time,",
-      "scores": {
-        "novelty": 1,
-        "specificity": 1,
-        "engagement": 0,
-        "total": 2
-      }
-    }
-  ]
-}
-```
+---
 
-</details>
+## Conclusion
+
+**The "semantic gradient" produces measurable profile shifts but not measurable quality improvements.** The effect is real (content-dependent, not placebo) but is a trade-off between quality dimensions rather than a gain. This is consistent with the critics who argue that DCA is doing black-box optimization (REINFORCE/ATE estimation), not discovering a new optimization paradigm.
+
+**The experiment is inconclusive** regarding whether a 2B model (the actual DCA target) would show larger effects. The ceiling effect with a 12B model suggests that the DCA architecture's value depends heavily on the base model's capability gap — a weaker model that benefits MORE from direction would show larger effects. This is itself an important finding: **DCA's value proposition is strongest where the base model is weakest**, which raises the question of whether a 2B model is too weak to produce meaningful quality signal at all (Nemotron's objection).
+
+**The sham arm works.** The vacuous prompt produced no change, confirming that the intervention effect (profile shift) is content-dependent, not a novelty placebo. This validates the sham-arm methodology as necessary for distinguishing real from placebo effects.

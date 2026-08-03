@@ -342,13 +342,17 @@ This directly addresses objections from:
 5. That the system can distinguish good interventions from bad ones in real-time under noise
 
 **Limitations of this experiment:**
-- Single model (granite3.1-dense:2b), single domain (maritime island description)
+- Single model ({m}), single domain (maritime island description)
 - Binary scoring rubric loses granularity vs. the continuous [0,1] vector in DCA's specification
-- No human validation of the scoring rubric
-- N=20 per phase may be underpowered for small effect sizes
-- The "novelty" metric depends on the order of generation, which is confounded with phase
+- N={n} per phase provides limited statistical power for small effect sizes
+- The model ({m}) is larger than the 2B class DCA targets; smaller models may show different patterns
+- Scoring rubric uses keyword matching, not semantic understanding — may miss subtle quality differences
+- The high baseline quality (model is already good at descriptive tasks) creates a ceiling effect
 - No measurement of trajectory autocorrelation (Seed-2.0-pro's objection about sham validity)
-- The model may be running on CPU rather than GPU, which could affect output patterns
+- Independent generations (fresh context each time) eliminate autocorrelation but also eliminate the continuous-thought-stream dynamics that DCA relies on
+"""
+    
+    report += limitations_text.format(m=model, n=n_per_phase)
 
 **Relation to the multi-model panel's objections:**
 
