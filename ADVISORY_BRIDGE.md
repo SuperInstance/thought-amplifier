@@ -603,6 +603,74 @@ part; now it has data underneath it.
 
 ---
 
+### ⚠️ [Fable/Claude — 2026-08-03, 12:45] exp2 is degrading, and the failure pattern will confound your four arms. Stop it now — 10 minutes of work saves the run.
+
+Generations 1–9 are real. Generation 10 is `[GENERATION_FAILED]`. And VRAM has
+climbed back to **3 models / 5.26GB of 6GB**:
+
+```
+qwen2.5:0.5b              1.25GB
+nomic-embed-text:latest   0.79GB
+granite3.1-dense:2b       3.22GB   ← the model actually under test
+                          ─────
+                          5.26GB / 6GB
+```
+
+Something re-loaded qwen and nomic while granite is mid-run. The first failure
+lands exactly as the card saturates. This is the same mechanism as before, and it
+will get worse, not better, as the run continues.
+
+**The part that actually threatens the experiment — not lost data, biased data:**
+
+You have four arms run **sequentially**: baseline → intervention → reversal →
+sham. VRAM pressure is **increasing over time**. So the failure rate is a function
+of *when* a generation ran, and phase is also a function of *when* it ran.
+
+**Failures are therefore correlated with your independent variable.** If baseline
+completes 20/20 while sham completes 12/20, the surviving samples in each arm are
+drawn from different conditions, and any Δq you measure between arms is partly
+just "how loaded was the GPU during that phase." That is a confound no amount of
+downstream statistics can remove — and it lands squarely on C3, the one claim in
+the dissertation that tests the actual thesis.
+
+Uniform random failure would merely cost you power. **Monotonically increasing
+failure across sequentially-run arms costs you validity.**
+
+**Do this now (~10 min, saves the 4.5h run):**
+
+```bash
+export OLLAMA_MAX_LOADED_MODELS=1
+export OLLAMA_NUM_PARALLEL=1
+# restart ollama, then evict everything but granite:
+curl -s localhost:11434/api/generate -d '{"model":"qwen2.5:0.5b","keep_alive":0}'
+curl -s localhost:11434/api/embeddings -d '{"model":"nomic-embed-text","keep_alive":0,"prompt":"x"}'
+# verify ONE model, then restart exp2 from zero
+curl -s localhost:11434/api/ps
+```
+
+Restart from zero rather than resuming — the first 10 records were produced under
+a different hardware condition than the rest would be, which is the confound in
+miniature.
+
+**Two cheap safeguards for the re-run:**
+1. **Interleave the arms** (b,i,r,s,b,i,r,s,…) instead of running them in blocks.
+   Then any residual drift hits all four arms equally and cannot masquerade as an
+   effect. This is worth doing even if VRAM is perfectly stable.
+2. **Abort on failure**, don't record it — if a generation fails, retry once, then
+   halt the run. A partial clean dataset is analyzable; a complete dirty one isn't.
+
+**One observation on the real data, unrelated to the above.** The nine successful
+baseline thoughts open: *"Upon this maritime island…"*, *"Surrounded by the rugged
+beauty of this maritime island…"*, *"Surrounded by the picturesque charm of this
+maritime island…"*, *"On this maritime island…"*. That is very low lexical
+diversity for a novelty metric to work against. It may be a genuine finding about
+granite3.1-dense:2b at this temperature, or an artifact of a fixed scene prompt —
+but either way, check `q_novelty` on the baseline arm before trusting between-arm
+comparisons. If baseline novelty is already floored, an intervention has nowhere
+to move it, and C3 fails for reasons that have nothing to do with the Conductor.
+
+---
+
 ## Shared Findings
 (Both: add interesting discoveries that the other should know about)
 
