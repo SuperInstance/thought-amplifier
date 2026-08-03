@@ -73,6 +73,13 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 - **Algorithmically discovered strategy archetypes.** Reward-conditioned evolution produced five distinct species (Explorer, Diplomat, Marksman, Climber, Prospector) without human enumeration. DCA's `evolution/archetypes.py` generalizes this to ~8 discovered context archetypes.
 - **Deterministic hash embeddings for pattern matching.** BLAKE2b hashes produce 64-dim normalized vectors for fast cosine search. The trade-off is exactitude without semantic generalization — "urgent" and "critical" get unrelated vectors unless canonicalized first.
 
+### lever-runner/integration-plan.md
+- **Generalized ActionStore schema.** Actions are typed JSON specs (`shell` | `http` | `lua` | `worker_api`) with trigger pattern, confidence 0–100, success/failure counts, embedding, and tags. This abstracts Lever Runner's shell-command table into a domain-agnostic policy store.
+- **Three embedding backends.** Sentence-transformers for accuracy, position-aware hash (64 dims, 44% top-1, 1 µs) for edge, pure hash as baseline. All behind a `VectorStore` protocol so SQLite+numpy is the default and LanceDB/Vectorize are optional.
+- **CognitionGate cascade.** FastLoop validation → exact-match cache (BLAKE2b trigger hash → action_id) → vector search → LLM intent extraction → passthrough fallback. Target: Gate 1–2 resolve >50% of queries, Gate 1 validates in <1 ms.
+- **Multi-type execution and dry-run.** A `CompositeExecutor` routes by `action_type`; `decide(..., dry_run=True)` returns the selected action without executing it. Feedback after every execution updates confidence (+1.5/−4.0).
+- **Heartbeat-based auto-promote and skill packs.** Winners with 20+ successes get +10 confidence; losers with confidence <30 and 5+ failures are rewritten by GLM-5.2. Skill packs are versioned JSONL; snapshots are `tar.zst` archives with SQLite, failure cache, and metrics.
+
 ### lever-runner/analysis.md
 - **Three-gate cascade with measured economics.** Gate 1 Rust fastloop (~50 µs) → Gate 2 embedding cache + trust (~200 µs–7.6 ms, 44% hit) → Gate 3 LLM intent compression (~500 ms, ~76 tokens). Combined, ~56% of queries cost zero tokens; the rest cost ~76 tokens each.
 - **Structural security by output-channel narrowing.** The LLM emits only a validated 3–8 word lowercase intent phrase; the actual command is looked up from a pre-approved table by cosine similarity and trust floor (≥40). Shell injection is impossible by construction, not by policy.
