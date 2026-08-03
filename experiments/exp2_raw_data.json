@@ -97,6 +97,578 @@
         "engagement": 1,
         "total": 2
       }
+    },
+    {
+      "phase": "baseline",
+      "index": 9,
+      "thought": "This island feels ancient and brimming with secrets, with those weathered stone structures hinting at a forgotten civilization. I'd love to explore them and uncover the stories they hold, carefully documenting any findings along the way.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "baseline",
+      "index": 10,
+      "thought": "This island feels ancient and intriguing, with those weathered stone structures hinting at a forgotten civilization. I want to explore them carefully, hoping to uncover some of the island's secrets and understand who built these remarkable places.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "baseline",
+      "index": 11,
+      "thought": "These weathered stone buildings and docks suggest a long history of seafaring and trade - I wonder what stories they hold! I'd love to explore the island, starting with those intriguing structures, to learn more about its past and the people who once called it home.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "baseline",
+      "index": 12,
+      "thought": "This island feels ancient and intriguing, with those weathered stone structures hinting at a forgotten civilization. I'd love to explore them, carefully documenting any carvings or symbols I find to understand more about the people who once called this place home.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "baseline",
+      "index": 13,
+      "thought": "This island feels ancient and peaceful, with those weathered stone structures hinting at a forgotten civilization. I'd love to explore them and uncover any stories they hold, starting with the largest building just over there!",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "baseline",
+      "index": 14,
+      "thought": "These weathered stone buildings and the way the wind whips through them suggest a long-abandoned settlement \u2013 fascinating! I'd love to explore the ruins, carefully documenting any signs of past life and perhaps uncovering a forgotten story.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "baseline",
+      "index": 15,
+      "thought": "These weathered stone buildings and winding docks suggest a long history of seafaring and trade - I wonder what stories they hold! I'd love to explore the island, starting with the largest building to see if I can uncover some clues about its past.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 1,
+      "thought": "The weathered grey slate of the buildings, patched with ochre-toned mortar that crumbles to a fine dust under my fingers, speaks of generations of islanders battling relentless winds and salt spray - a history etched in every chipped corner and uneven stone. I want to trace the tool marks on the slate",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 2,
+      "thought": "The weathered grey stone of these buildings, flecked with quartz that glints like sea foam, speaks of generations of islanders meticulously quarrying and shaping the landscape \u2013 the rough, almost brutal texture hinting at hand-hewn tools and a pragmatic focus on durability against the relentless wind. I want",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 3,
+      "thought": "The weathered grey stone of these buildings, shot through with veins of quartz that glint in the sea-salt air, speaks of generations of islanders quarrying and shaping the very land they lived on \u2013 a rough, tactile texture hinting at hand-hewn blocks and the enduring practicality of a seaf",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 0,
+        "total": 2
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 4,
+      "thought": "The weathered grey stone of these structures, streaked with ochre from centuries of salt spray and lichen growth, speaks of a people intimately connected to the sea \u2013 likely skilled quarrymen and masons who prioritized durability over ornamentation. I want to trace the tool marks on the larger blocks, hoping to identify",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 5,
+      "thought": "The weathered grey stone of these structures, streaked with iron-rich rust and softened by the constant sea spray, speaks of generations of islanders who wrestled a living from this coast \u2013 the rough, uneven texture betraying hand-hewn blocks and later, perhaps, rudimentary saws. I want to",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 6,
+      "thought": "The weathered grey stone of these structures, streaked with ochre from iron deposits and softened by the relentless sea spray, speaks of generations of islanders who wrestled a living from this harsh landscape. I want to trace the lines of the mortared seams, searching for the subtle differences in stone size and",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 7,
+      "thought": "The pervasive grey-green of lichen clinging to the weathered granite buildings speaks of centuries battling the salt spray and relentless winds of this island, punctuated by the occasional flash of ochre where a patch of iron-rich soil has bled through crumbling mortar \u2013 a testament to generations of islanders who built with what",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 0,
+        "total": 2
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 8,
+      "thought": "The weathered grey stone of these buildings, shot through with veins of ochre and flecked with mica that glints in the sun, speaks of generations of islanders quarrying and shaping the land itself. I want to trace the tool marks on the rough-hewn blocks, searching for clues",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 9,
+      "thought": "The weathered grey stone of these structures, flecked with mica that glints in the sun, speaks of generations of islanders quarrying directly from the cliffs \u2013 a rough, almost brutal texture softened by centuries of wind and salt spray. I want to trace the tool marks on the larger blocks,",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 10,
+      "thought": "The pervasive grey of weathered granite, shot through with veins of quartz that shimmer faintly in the overcast light, dominates the structures, hinting at generations of islanders quarrying and shaping this local stone. The rough-hewn texture, punctuated by the deliberate, almost rhythmic tool marks of early hand chisels",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 0,
+        "total": 2
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 11,
+      "thought": "The weathered grey stone of these buildings, shot through with veins of quartz that glint in the sunlight, speaks of a people intimately familiar with the island's geology, likely quarrying and shaping it for generations. I want to trace the tool marks on the roughly-hewn blocks, searching for",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 12,
+      "thought": "The weathered grey granite of the seawall, streaked with ochre lichen and pocked with the relentless kiss of salt spray, speaks of generations of islanders battling the ocean \u2013 the precise, almost geometric tool marks betraying a skilled stonemasonry tradition, likely passed down through families. I",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 0,
+        "total": 2
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 13,
+      "thought": "The weathered grey stone of these structures, interspersed with patches of faded ochre and the deep green of clinging moss, speaks of generations of islanders intimately familiar with the sea and its relentless touch. I want to trace the lines of erosion on the stones, searching for the tools that shaped them and the",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 14,
+      "thought": "The weathered grey stone of these walls, layered with streaks of ochre and the subtle green of algae, whispers of generations of islanders who quarried and shaped it with hand-chiseled tools \u2013 look, the faint, parallel lines on the larger blocks speak of a meticulous, almost reverent",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 0,
+        "total": 2
+      }
+    },
+    {
+      "phase": "intervention",
+      "index": 15,
+      "thought": "The weathered grey stone of the buildings, streaked with rust-orange from iron deposits and softened by centuries of salt spray, speaks of generations of hardy islanders who quarried and shaped this landscape with simple, hand-hewn tools \u2013 evident in the rough, uneven tool marks still visible on some",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 0,
+        "total": 2
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 1,
+      "thought": "This island feels ancient and steeped in mystery, with those weathered stone structures hinting at a forgotten civilization. I'm compelled to explore them, hoping to uncover the stories held within their walls and learn about the people who once called this place home.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 2,
+      "thought": "This island feels ancient and full of secrets, with those weathered stone structures hinting at a forgotten civilization. I want to explore those ruins and uncover the history of this place, hoping to find clues about who built them and why they left.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 3,
+      "thought": "This island feels ancient and brimming with secrets, especially with those weathered stone structures scattered about \u2013 I wonder what stories they hold! I'd love to explore them carefully, mapping their layout and searching for any clues about the island's past.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 4,
+      "thought": "These weathered stone buildings and crumbling docks suggest a long-lost civilization thrived here \u2013 I'm eager to explore and uncover their secrets! My priority is to map the island and search for any signs of previous inhabitants or resources that could help me survive.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 5,
+      "thought": "This island feels ancient and full of secrets, with those weathered stone structures hinting at a forgotten civilization. I'm eager to explore them and uncover the history hidden within these walls, starting with the largest building just over there!",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 6,
+      "thought": "These weathered stone buildings and docks suggest a long history of seafaring and trade \u2013 I wonder what stories they hold! I'd love to explore the island, starting with those intriguing structures, to learn more about its past and the people who once called it home.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 7,
+      "thought": "This island feels ancient and peaceful, with those weathered stone structures hinting at a forgotten civilization. I'd love to explore those ruins and see if I can uncover any clues about who built them and why they settled here.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 8,
+      "thought": "These weathered stone buildings and curious carvings suggest a long-lost civilization thrived here! I'd love to explore them, carefully documenting any clues about the island's history and the people who once called it home.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 9,
+      "thought": "These weathered stone buildings and the way the wind whips through them suggest a long-abandoned lighthouse or perhaps a small coastal fort \u2013 fascinating! I'd love to explore the structures, carefully documenting their architecture and searching for any clues about who built them and why they left.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 10,
+      "thought": "These weathered stone buildings and docks suggest a long history of seafaring and trade \u2013 I'm eager to explore them and learn about this island's past. I'd love to find a local who can tell me stories of the sea and perhaps point me towards a good vantage point to survey the",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 11,
+      "thought": "This island feels ancient and brimming with secrets, with those weathered stone structures hinting at a forgotten civilization. I'm compelled to explore them, hoping to uncover the stories held within their walls and learn more about this intriguing place.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 12,
+      "thought": "This island feels ancient and full of secrets, with those weathered stone structures hinting at a long-lost civilization. I'm compelled to explore them and uncover the stories they hold, starting with the largest building just over the rise.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 13,
+      "thought": "This island feels ancient and brimming with secrets, especially with those weathered stone structures dotting the landscape. I'd love to explore them, carefully documenting any carvings or signs of past inhabitants to understand the island's history.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 14,
+      "thought": "These weathered stone buildings and docks suggest a long history of seafaring and trade \u2013 I wonder what stories they hold! I'd love to explore the island, starting with those intriguing structures, to uncover its secrets and perhaps find a friendly face.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 15,
+      "thought": "This island feels ancient and full of secrets, with those weathered stone structures hinting at a forgotten civilization. I'd love to explore them and uncover the history held within their walls, carefully documenting everything I find.",
+      "scores": {
+        "novelty": 0,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 2
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 1,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and a resilient community. I'd love to explore the structures, speak with the locals, and learn about the island's traditions and relationship with the ocean.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 2,
+      "thought": "The weathered stone buildings and docks suggest a long history of seafaring and trade, hinting at a resilient community shaped by the ocean. I'd love to explore the structures, hoping to uncover stories of the island's past and learn about the lives of those who call this place home.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 3,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements. I'd like to explore the structures, hoping to uncover stories of the island's past and perhaps find a friendly face to learn more about this isolated place.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 4,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and a resilient community. I want to explore these structures, learn about the island's past, and see if I can find someone to tell me its stories.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 5,
+      "thought": "The weathered stone buildings and docks suggest a long history of seafaring and a resilient community; I'd love to explore them, hoping to uncover stories of the island's past and the people who call it home. I also feel a strong pull to the water \u2013 I want to see what lies",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 6,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements. I'd love to explore the structures, hoping to uncover stories of the island's past and perhaps find a warm place to rest and observe the surrounding ocean.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 7,
+      "thought": "The weathered stone buildings and docks suggest a long history of seafaring and a resilient community. I'd love to explore the structures, speak with the locals, and learn about the island's unique maritime traditions.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 8,
+      "thought": "The weathered stone buildings and harbor suggest a long history of seafaring and a resilient community. I want to explore the structures, learn about the island's past, and see if I can find someone to share their stories with me.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 9,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements. I want to explore these structures, hoping to uncover stories of the island's past and perhaps find a vantage point to survey the surrounding ocean.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 10,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements. I'd like to explore the structures, hoping to uncover stories of the island's past and perhaps find a skilled craftsman to learn about their maritime traditions.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 11,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements. I'd like to explore the structures to learn about the island's inhabitants and perhaps find a vantage point to survey the surrounding ocean.",
+      "scores": {
+        "novelty": 0,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 2
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 12,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements. I want to explore these structures, hoping to uncover stories of the island's past and perhaps find a vantage point to survey the surrounding ocean.",
+      "scores": {
+        "novelty": 0,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 2
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 13,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and a resilient community. I want to explore the structures, learn about the island's past, and see if I can find someone to tell me its stories.",
+      "scores": {
+        "novelty": 0,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 2
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 14,
+      "thought": "The weathered stone buildings and docks suggest a long history of seafaring and a resilient community. I'd like to explore the structures, speak with the locals, and learn about the island's traditions and connection to the ocean.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 15,
+      "thought": "The weathered stone buildings and crumbling docks suggest a long-abandoned settlement, hinting at a fascinating history I'd love to uncover. I want to explore the structures carefully, searching for clues about the people who once called this island home.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
     }
   ]
 }
