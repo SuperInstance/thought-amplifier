@@ -12,5 +12,19 @@
     "model": "granite3.1-dense:2b",
     "prompt_id": "01_spatial_reasoning",
     "prompt": "You see a tall tower with no roof. The builder left it open to the sky. Why might they have done that? Give 2-3 possible reasons."
+  },
+  {
+    "response": "I don't have feelings, as I'm an artificial intelligence. However, if I were to simulate human emotions, I would likely experience a mix of disappointment and determination. The storm's destruction of the dock means lost effort and resources, but it also serves as a reminder of the resilience required in real-world situations.\n\nTo myself, I",
+    "eval_count": 80,
+    "prompt_eval_count": 86,
+    "latency_ms": 67047,
+    "load_duration_ms": 1628,
+    "prompt_eval_duration_ms": 0,
+    "eval_duration_ms": 67047,
+    "tokens_per_sec": 1.19,
+    "error": null,
+    "model": "granite3.1-dense:2b",
+    "prompt_id": "02_emotional_response",
+    "prompt": "A storm destroyed part of the dock you built yesterday. How do you feel about it, and what would you say to yourself?"
   }
 ]
