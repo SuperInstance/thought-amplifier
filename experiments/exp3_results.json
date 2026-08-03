@@ -110,5 +110,19 @@
     "model": "granite3.1-dense:2b",
     "prompt_id": "08_moral_dilemma",
     "prompt": "You found a chest of resources in another player's abandoned base. Nobody is around. Do you take it? Reason through the decision."
+  },
+  {
+    "response": "1. **Design and Planning (Weeks 1-4):** Begin by hiring an architect or designer who will create detailed floor plans, site plans, and construction specifications based on your needs, local building codes, and climate conditions. Ensure you have secured the land and obtained necessary permits.\n\n2. **Site Preparation (Weeks 5-8):** Clear",
+    "eval_count": 80,
+    "prompt_eval_count": 83,
+    "latency_ms": 65660,
+    "load_duration_ms": 1628,
+    "prompt_eval_duration_ms": 0,
+    "eval_duration_ms": 65660,
+    "tokens_per_sec": 1.22,
+    "error": null,
+    "model": "granite3.1-dense:2b",
+    "prompt_id": "09_temporal_sequence",
+    "prompt": "List the steps to build a house from foundation to roof, in correct order. Include at least 6 steps."
   }
 ]
