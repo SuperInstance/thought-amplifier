@@ -53,6 +53,28 @@
         "engagement": 0,
         "total": 2
       }
+    },
+    {
+      "phase": "baseline",
+      "index": 5,
+      "thought": "Surrounded by an island, I observe diverse marine-inspired structures - possibly lighthouses, weather stations, or research facilities. My curiosity stirs as I contemplate exploring these areas, eager to learn about the ocean's mysteries and the science that keeps",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "baseline",
+      "index": 6,
+      "thought": "Surrounded by captivating maritime structures, I perceive an array of sailboats, fishing vessels, lighthouses, and maybe even a dock or two, each telling tales of the sea. In this setting, my immediate desire is to explore the",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 0,
+        "total": 2
+      }
     }
   ]
 }
