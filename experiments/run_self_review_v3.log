@@ -24,3 +24,19 @@
 
   [RETRY 1] curl rc=52, waiting 5s...
   [RECOVERY] Ollama down. Restarting...
+  [RECOVERY] Ollama back online.
+[12] 5.1s | 120 tok | OK | Section 10.1 - Core/Adapter Split
+     The claim's assertion of absolute, unwavering substrate independence through port contracts is highly questionable. While this design may effectively 
+
+[13] 5.0s | 120 tok | OK | Section 12.1 - Projected Results
+     The single most serious weakness in this claim lies in its assumption of transferability between project systems and Dynamic Cognition Amplification (
+
+[14] 4.9s | 120 tok | OK | Section 11 - Missing Baselines
+     The single most serious weakness lies in the absence of direct comparisons to established methods like Reinforcement Learning with Human Feedback (RLH
+
+[15] 4.8s | 120 tok | OK | Section 10.7 - Browser Tier
+     The claim's assertion that the browser finisher model runs on WebGPU, generating divergence loss as a teaching signal, hinges on the assumption of wid
+
+[16] 3.3s | 120 tok | OK | Section 10.3 - Bottle Ledger Determinism
+     The claim that the .bottle ledger achieves byte-for-byte replay determinism under the null adapter is a significant assertion, yet it's highly questio
+
