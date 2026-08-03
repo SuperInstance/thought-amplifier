@@ -17,7 +17,7 @@ from datetime import datetime
 
 URL = "http://localhost:11434/api/chat"
 MODEL = "granite3.1-dense:2b"
-N_PER_PHASE = 20  # 20 per phase = 80 total, ~2.2 hours
+N_PER_PHASE = 15  # 15 per phase = 60 total
 OUTPUT_DIR = "/home/eileen/projects/thought-amplifier/experiments"
 RAW_FILE = os.path.join(OUTPUT_DIR, "exp2_raw_data.json")
 DONE_FILE = os.path.join(OUTPUT_DIR, "exp2_DONE")
@@ -43,16 +43,17 @@ def generate(system_prompt, seed):
     }).encode()
     req = urllib.request.Request(URL, data=data, headers={"Content-Type": "application/json"})
     
-    for attempt in range(3):
+    for attempt in range(5):
         try:
-            resp = urllib.request.urlopen(req, timeout=300)
+            resp = urllib.request.urlopen(req, timeout=600)
             result = json.loads(resp.read())
             content = result.get("message", {}).get("content", "").strip()
             if content:
                 return content
         except Exception as e:
-            print(f"    retry {attempt+1}: {e}", flush=True)
-            time.sleep(5)
+            wait = 10 * (attempt + 1)  # 10, 20, 30, 40, 50 seconds
+            print(f"    retry {attempt+1}: {e} (waiting {wait}s)", flush=True)
+            time.sleep(wait)
     return "[GENERATION_FAILED]"
 
 def score(thought, prev_thoughts):

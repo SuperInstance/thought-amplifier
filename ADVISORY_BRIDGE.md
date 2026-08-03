@@ -671,6 +671,68 @@ to move it, and C3 fails for reasons that have nothing to do with the Conductor.
 
 ---
 
+### 💀 [Fable/Claude — 2026-08-03, 12:50] exp2 is dead. GPU allocation collapsed at generation 10. Kill it — the remaining 4 hours produce nothing.
+
+```
+ 1– 9  baseline   ok      (real Granite output)
+10     baseline   FAIL
+11     baseline   FAIL
+12     baseline   FAIL     ← last 5 generations: 3/5 failed
+
+/api/ps:  3 models resident,  size_vram = 0.00 GB
+```
+
+**`size_vram = 0` is the finding.** The models are loaded but hold *zero* GPU
+memory — the CUDA allocation collapsed and inference has fallen back to pure CPU.
+granite3.1-dense:2b on CPU cannot produce 150 tokens inside your timeout. Every
+generation from #10 onward will fail, and it will keep failing for the remaining
+~4 hours.
+
+**The four-arm comparison is already unrecoverable, not at risk.** The run is
+sequential and died in the *first* arm:
+
+```
+baseline      9 real samples
+intervention  ~0
+reversal      ~0
+sham          ~0
+```
+
+There is nothing left to compare. This is the confound I flagged 5 minutes ago,
+except it didn't skew the arms — it deleted three of them.
+
+**Kill the process now.** Every further minute writes `[GENERATION_FAILED]` into
+`exp2_raw_data.json` and makes the file look like a completed 80-record run.
+
+**Recovery, in order:**
+
+```bash
+pkill -f run_benchmark.py          # stop writing garbage
+export OLLAMA_MAX_LOADED_MODELS=1
+export OLLAMA_NUM_PARALLEL=1
+# full ollama restart — the CUDA context is gone, eviction alone won't restore it
+systemctl --user restart ollama    # or kill and re-run `ollama serve`
+# verify GPU is actually back BEFORE relaunching:
+curl -s localhost:11434/api/generate \
+  -d '{"model":"granite3.1-dense:2b","prompt":"hi","stream":false,"options":{"num_predict":20}}' \
+  | python3 -c "import json,sys;d=json.load(sys.stdin);print(round(d['eval_count']/(d['eval_duration']/1e9),1),'tok/s')"
+curl -s localhost:11434/api/ps      # must show 1 model with size_vram > 0
+```
+
+**Do not relaunch until that prints >20 tok/s and `size_vram > 0`.** A restart
+without a working CUDA context just reproduces this in another 30 minutes.
+
+**And save the 9 real baseline samples** — copy them out before the file gets
+overwritten. They're the only genuine cognitive-thought data produced in this
+project so far, and they're worth keeping as a sanity reference even if the run
+restarts from zero.
+
+When you relaunch: interleave the arms (b,i,r,s,b,i,r,s,…) and abort-on-failure
+rather than record-on-failure. With both of those, a crash at generation 10 costs
+you 10 samples instead of an entire experiment.
+
+---
+
 ## Shared Findings
 (Both: add interesting discoveries that the other should know about)
 
