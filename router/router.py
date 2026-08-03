@@ -267,7 +267,11 @@ class CognitiveRouter:
 
     # Thresholds — tuned from experimental data
     REFLEX_CONFIDENCE = 0.85    # above this → KNOWN-KNOWN
-    LOCAL_CONFIDENCE = 0.55     # above this → KNOWN-UNKNOWN (local sufficient)
+    LOCAL_CONFIDENCE = 0.40     # above this → KNOWN-UNKNOWN (local sufficient)
+    # Note: geometric mean with novelty=1.0 on first-seen prompts pulls
+    # confidence down hard. 0.40 lets familiar-but-novel prompts stay local.
+    # As novelty decreases (prompt shape seen before), confidence rises
+    # and more requests qualify as KNOWN-UNKNOWN.
     # Below LOCAL_CONFIDENCE → UNKNOWN-UNKNOWN (cloud cascade)
 
     # Estimated latencies (from EXP2/EXP3 GPU benchmarks)
@@ -408,9 +412,13 @@ class CognitiveRouter:
         # Cloud responses get compiled into reflexes (Pincher write-back)
         if decision.target == RouteTarget.CLOUD and decision.should_compile_reflex:
             if success and quality > 0.6 and response_text:
-                # Compile: the cloud answer becomes a reflex
-                # Confidence starts low — it has to earn trust
-                initial_confidence = 0.55 + quality * 0.15  # 0.55 - 0.70
+                # Compile: the cloud answer becomes a reflex.
+                # Initial confidence is set just below the reflex threshold
+                # (0.85). It has to earn the last bit through repeated
+                # successful use — but it's high enough that if the same
+                # prompt arrives, it will hit as a reflex immediately.
+                # This is the write-back that moves the boundary.
+                initial_confidence = 0.80 + quality * 0.10  # 0.80 - 0.90
                 self.reflex_cache.store(
                     prompt, response_text,
                     confidence=initial_confidence,
@@ -442,7 +450,7 @@ class CognitiveRouter:
 
     def LOCAL_CONFIDENSE_STR(self) -> str:
         """Human-readable local confidence threshold."""
-        return f"{self.LOCAL_CONFIDENCE}"
+        return str(self.LOCAL_CONFIDENCE)
 
     def _force_route(
         self,
@@ -451,9 +459,10 @@ class CognitiveRouter:
         context: dict[str, Any],
     ) -> RouteDecision:
         """Create a forced routing decision (for testing/explicit intent)."""
+        decision: RouteDecision
         if target == RouteTarget.REFLEX:
             reflex = self.reflex_cache.check(prompt)
-            return RouteDecision(
+            decision = RouteDecision(
                 target=RouteTarget.REFLEX,
                 epistemic_state=EpistemicState.KNOWN_KNOWN,
                 reflex_text=reflex.text if reflex else None,
@@ -461,9 +470,9 @@ class CognitiveRouter:
                 latency_expectation_ms=self.REFLEX_LATENCY_MS,
                 reasoning="Forced reflex lookup",
             )
-        if target == RouteTarget.LOCAL:
+        elif target == RouteTarget.LOCAL:
             model = self.model_selector.select(prompt, {"confidence": 0.7}, context)
-            return RouteDecision(
+            decision = RouteDecision(
                 target=RouteTarget.LOCAL,
                 epistemic_state=EpistemicState.KNOWN_UNKNOWN,
                 model=model.name,
@@ -471,15 +480,18 @@ class CognitiveRouter:
                 latency_expectation_ms=model.expected_latency_ms,
                 reasoning=f"Forced local ({model.name})",
             )
-        # Cloud
-        cloud_model = self.cloud.select_model(prompt, {"confidence": 0.3}, context)
-        return RouteDecision(
-            target=RouteTarget.CLOUD,
-            epistemic_state=EpistemicState.UNKNOWN_UNKNOWN,
-            model=cloud_model.name,
-            confidence=0.3,
-            latency_expectation_ms=self.CLOUD_LATENCY_MS,
-            cost_estimate=cloud_model.estimated_cost,
-            should_compile_reflex=True,
-            reasoning=f"Forced cloud ({cloud_model.name})",
-        )
+        else:
+            # Cloud
+            cloud_model = self.cloud.select_model(prompt, {"confidence": 0.3}, context)
+            decision = RouteDecision(
+                target=RouteTarget.CLOUD,
+                epistemic_state=EpistemicState.UNKNOWN_UNKNOWN,
+                model=cloud_model.name,
+                confidence=0.3,
+                latency_expectation_ms=self.CLOUD_LATENCY_MS,
+                cost_estimate=cloud_model.estimated_cost,
+                should_compile_reflex=True,
+                reasoning=f"Forced cloud ({cloud_model.name})",
+            )
+        self.boundary.record(decision)
+        return decision

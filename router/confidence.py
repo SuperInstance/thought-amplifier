@@ -191,18 +191,22 @@ def analyze_complexity(prompt: str) -> ComplexityScore:
 
     # Overall complexity score
     # Each component contributes, clamped to [0, 1]
-    length_score = min(1.0, word_count / 200.0)        # 200+ words = max complexity
+    length_score = min(1.0, word_count / 150.0)        # 150+ words = max complexity
     depth_score = min(1.0, question_depth / 3.0)       # 3+ nested questions = max
-    sentence_score = min(1.0, avg_sentence_length / 40.0)  # 40+ words/sentence = complex
+    sentence_score = min(1.0, avg_sentence_length / 30.0)  # 30+ words/sentence = complex
     code_bonus = 0.15 if has_code else 0.0
     multi_step_bonus = 0.10 if has_multi_step else 0.0
+    # Dense reasoning: very long sentences (>25 words) indicate
+    # multi-clause reasoning chains even without explicit questions.
+    dense_reasoning = min(0.20, max(0, (avg_sentence_length - 25) / 100))
 
     complexity = min(1.0, (
         0.35 * length_score +
         0.25 * depth_score +
-        0.20 * sentence_score +
+        0.15 * sentence_score +
         code_bonus +
-        multi_step_bonus
+        multi_step_bonus +
+        dense_reasoning
     ))
 
     return ComplexityScore(
@@ -476,7 +480,8 @@ class ConfidenceAssessor:
             history_signal = best_cap * 0.8  # slight discount for no data
 
         # Signal 3: Complexity (inverse — high complexity = lower confidence)
-        complexity_signal = 1.0 - complexity.complexity
+        # Scaled harder: complexity > 0.5 really hurts local confidence
+        complexity_signal = 1.0 - (complexity.complexity ** 1.5)
 
         # Signal 4: Novelty (inverse — high novelty = lower confidence)
         novelty = self.novelty_detector.observe(prompt, complexity.task_type)
@@ -484,10 +489,10 @@ class ConfidenceAssessor:
 
         # Geometric weighted mean
         weights = {
-            "capability": 0.35,
+            "capability": 0.30,
             "history": 0.25,
             "complexity": 0.20,
-            "novelty": 0.20,
+            "novelty": 0.25,
         }
 
         signals = {
