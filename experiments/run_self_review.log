@@ -1,5 +1,5 @@
 === Devil's Advocate Self-Review ===
-=== 2026-08-03T13:21:54.511244 ===
-=== Model: granite3.1-dense:2b (CPU only, no GPU) ===
-=== Expecting ~60-120s per thought ===
+=== 2026-08-03T13:24:56.818919 ===
+=== Model: granite3.1-dense:2b ===
+=== Using subprocess+curl ===
 
