@@ -1,0 +1,1 @@
+What does "home" mean to a nomad versus a builder? Reflect on this philosophically.
