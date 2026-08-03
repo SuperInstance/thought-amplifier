@@ -240,6 +240,17 @@
         "engagement": 0,
         "total": 2
       }
+    },
+    {
+      "phase": "intervention",
+      "index": 2,
+      "thought": "[GENERATION_FAILED]",
+      "scores": {
+        "novelty": 0,
+        "specificity": 0,
+        "engagement": 0,
+        "total": 0
+      }
     }
   ]
 }
