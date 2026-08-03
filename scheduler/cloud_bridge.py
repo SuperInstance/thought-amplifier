@@ -96,6 +96,7 @@ class CloudBridge:
         self.model = model
         self.overflow_threshold = overflow_threshold
         self.cooldown_s = cooldown_s
+        self.min_neuron_reserve = min_neuron_reserve
         self.neurons = NeuronUsage()
         self._last_error: float = 0.0
         self._lock = threading.Lock()
