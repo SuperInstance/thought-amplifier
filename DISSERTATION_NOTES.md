@@ -19,6 +19,13 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 - **T-minus / MIDI temporal encoding.** Game events are canonized into beat-based sequences (`B8:E72:v85 → ...`) and embedded with the same bge-m3 model used for skills, enabling vector search over *rhythms of play*.
 - **Novelty claim: always-on directed learning.** Traditional ML is collect → train offline → deploy → repeat. DCA is continuous: the model is always playing, always being directed, and the training signal is the stream of consciousness itself.
 
+### BROWSER_NATIVE_AI_RESEARCH.md
+- **Chrome built-in AI APIs.** Gemini Nano (~2.7B params, Chrome 138+) exposes purpose-built APIs: Prompt, Summarization, Writer, Rewriter, Translation, Language Detection. Requirements are steep (~22 GB disk, GPU >4 GB or CPU ≥16 GB), so capability detection and fallbacks are mandatory.
+- **WebGPU/WebNN + Transformers.js/WebLLM.** Browser-native inference of Phi-3-mini 3.8B / Qwen2.5-1.5B is feasible. The recommended path is Side Panel Extension + SSE (Phase 1, 1–2 weeks), then layer WebGPU inference.
+- **Local persistence primitives.** IndexedDB and OPFS store journals, model weights, and cached results. `navigator.storage.persist()` mitigates browser storage eviction.
+- **Graceful degradation chain.** WebGPU inference → WASM inference → Chrome built-in AI → server-side API → cached read-only journal. Every browser-native feature must have a fallback.
+- **Browser as ambient AI runtime.** Side panel stays open while browsing/playing; Web Audio sonifies thoughts; TTS narrates; WebGL visualizes. The browser becomes a multi-sensory, privacy-preserving cognitive extension — but only when hardware permits.
+
 ### DEEPSEEK_BROWSER_DESIGN.md
 - **Browser as full AI runtime.** WebGPU inference, IndexedDB journaling, Service Worker caching/sync, and WebRTC mesh together can make the browser self-contained after initial load — zero backend, zero ongoing cost.
 - **Shadow DOM as cognitive encapsulation.** Scenario 4 maps each thought type (`explore`, `build`, `inspect`, `speak`, `reflect`) to a custom element with its own shadow DOM. The browser's custom-element system becomes a native cognitive taxonomy.
@@ -37,6 +44,13 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 - **Lucineer production stack context.** Live Cloudflare Worker relay, D1 memory, Vectorize with 35 Luau skills, R2 buckets, 17 build templates, and a 5-model DeepInfra brain pipeline. This is the substrate Slackwater/DCA is meant to improve, not replace.
 - **Character-first design.** Lucineer is an opinionated craftsman, not a servant. The game is the spec; constraint produces thought the way chord changes produce jazz. This justifies qualitative objectives (engagement, specificity) over task-completion metrics.
 - **Live gaps vs. cognition gaps.** The brief lists product gaps (no Studio playtest, no polish, no progression) separately from the cognition gaps DCA targets (no reflex compiler, no trust scoring, no temporal→vector pipeline).
+
+### TEMPO_FIRST_ARCHITECTURE.md
+- **`SharedSessionTempoMap` as single source of truth.** Fields include `baseBPM`, `swingFactor`, `rootMidiNote`, `ppq=96`, `currentTick`, `fermataActive`, `currentChordProgression`, `spatialLatticeOrigin`, `activeCountdowns`, `globalFrictionScore`, `tideLevel`, `stormIntensity`, and `activeEraOverride`.
+- **Single-writer `TempoService`.** Only the core `TempoService` can update the tempo map, preventing race conditions when tide, storm, and aurora events would otherwise write concurrently.
+- **T-Minus predictive prep.** Agents register countdown callbacks tied to `targetTick` and pre-position one tick early. This eliminates frame-by-frame polling and ensures player/agent lockstep.
+- **Free Energy Principle friction metric.** `globalFrictionScore` measures desync across players/agents. An agent drifting >2 ticks from its target loses 20% productivity and emits dissonant MIDI notes, making misalignment perceptible.
+- **Failure-mode mitigations.** Desync is handled by client-side prediction + server reconciliation with integer tick math; tempo thrashing is prevented by smooth BPM transitions over 5–10 s with hysteresis bands.
 
 ### TEMPO_IS_FIRST_CLASS.md
 - **Tempo as a first-class substrate.** MIDI encodes not only *what* happens but *when* and *how*: tick, velocity, channel, tempo, groove. A build command becomes a moment — recreatable, transferable, and alive — rather than a mere coordinate.
@@ -105,8 +119,9 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 | 05 | Formal Model | drafted | REPO_DESIGN, DYNAMIC_COGNITION_ARCHITECTURE, FABLE_MASTER_PROMPT, Pincher, Lever Runner, ZeroClaw, SuperInstance |
 | 06 | Three-Gate Cascade & Reflex Compiler | drafted | REPO_DESIGN, Pincher, Lever Runner, FABLE_MASTER_PROMPT |
 | 07 | Evolution Engine & Compiled Policies | drafted | REPO_DESIGN, ZeroClaw analysis, ZeroClaw integration-plan, FABLE_MASTER_PROMPT |
-| 08 | Conductor & Trust Scoring | pending | TBD |
-| 09 | Experiments & Evaluation | pending | TBD |
+| 08 | Conductor & Trust Scoring | drafted | REPO_DESIGN, DYNAMIC_COGNITION_ARCHITECTURE, FABLE_MASTER_PROMPT, Lever Runner analysis + integration-plan, SuperInstance |
+| 09 | Temporal Cognition & Vector Pipeline | drafted | DYNAMIC_COGNITION_ARCHITECTURE, TEMPO_IS_FIRST_CLASS, TEMPO_FIRST_ARCHITECTURE, REPO_DESIGN, FABLE_MASTER_PROMPT |
+| 10 | Distillation & LoRA | drafted | REPO_DESIGN, FABLE_MASTER_PROMPT, MULTI_MODEL_PANEL_DISCUSSION |
 | 10 | Results | pending | TBD |
 | 11 | Discussion | pending | TBD |
 | 12 | Limitations & Future Work | pending | TBD |
@@ -122,3 +137,6 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 - `sections/05_formal_model.md` — drafted from REPO_DESIGN.md, DYNAMIC_COGNITION_ARCHITECTURE.md, FABLE_MASTER_PROMPT.md, Pincher, Lever Runner, ZeroClaw, SuperInstance ecosystem.
 - `sections/06_three_gate_cascade.md` — drafted from REPO_DESIGN.md, Pincher, Lever Runner, FABLE_MASTER_PROMPT.md.
 - `sections/07_evolution_engine.md` — drafted from REPO_DESIGN.md, ZeroClaw analysis, ZeroClaw integration-plan, FABLE_MASTER_PROMPT.md.
+- `sections/08_conductor_trust.md` — drafted from REPO_DESIGN.md, DYNAMIC_COGNITION_ARCHITECTURE.md, FABLE_MASTER_PROMPT.md, Lever Runner analysis + integration-plan, SuperInstance ecosystem.
+- `sections/09_temporal_cognition.md` — drafted from DYNAMIC_COGNITION_ARCHITECTURE.md, TEMPO_IS_FIRST_CLASS.md, TEMPO_FIRST_ARCHITECTURE.md, REPO_DESIGN.md, FABLE_MASTER_PROMPT.md.
+- `sections/10_distillation_lora.md` — drafted from REPO_DESIGN.md, FABLE_MASTER_PROMPT.md, MULTI_MODEL_PANEL_DISCUSSION.md.
