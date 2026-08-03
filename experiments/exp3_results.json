@@ -124,5 +124,19 @@
     "model": "granite3.1-dense:2b",
     "prompt_id": "09_temporal_sequence",
     "prompt": "List the steps to build a house from foundation to roof, in correct order. Include at least 6 steps."
+  },
+  {
+    "response": "As a dragon, a majestic and formidable creature, descends upon the mountain range near my base, it evokes an awe-inspiring spectacle.\n\nThe dragon, towering over the landscape, resembles a living, breathing piece of mythology. Its scales shimmer in hues of iridescent blues",
+    "eval_count": 80,
+    "prompt_eval_count": 88,
+    "latency_ms": 66360,
+    "load_duration_ms": 1628,
+    "prompt_eval_duration_ms": 0,
+    "eval_duration_ms": 66360,
+    "tokens_per_sec": 1.21,
+    "error": null,
+    "model": "granite3.1-dense:2b",
+    "prompt_id": "10_descriptive_detail",
+    "prompt": "A dragon lands on the mountain near your base. Describe what it looks like, sounds like, and how the environment reacts."
   }
 ]
