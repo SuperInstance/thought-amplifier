@@ -339,6 +339,83 @@
         "engagement": 1,
         "total": 3
       }
+    },
+    {
+      "phase": "reversal",
+      "index": 1,
+      "thought": "This island feels ancient and brimming with secrets, especially with those weathered stone structures hinting at a forgotten civilization. I want to explore them carefully, hoping to uncover clues about the island's history and perhaps find a way to chart a safe course off this place.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 2,
+      "thought": "These weathered stone buildings and docks suggest a long history of seafaring and trade \u2013 I wonder what stories they hold! I'd love to explore the island, starting with those intriguing structures, to uncover its secrets and perhaps find a friendly face.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 3,
+      "thought": "These weathered stone buildings and docks suggest a long history of seafaring and trade \u2013 I wonder what stories they hold! I'd love to explore the island, starting with those intriguing structures, to uncover its secrets and perhaps find a friendly face.",
+      "scores": {
+        "novelty": 0,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 2
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 4,
+      "thought": "The weathered stone buildings and docks suggest a long history of seafaring and trade on this island \u2013 I'm curious to explore them and learn about the people who once lived here. I'd love to chart the coastline and see what other hidden coves and landmarks this island holds!",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 5,
+      "thought": "These weathered stone buildings and the way the sea breeze whips through them suggest a long-abandoned fishing village \u2013 fascinating! I'd love to explore the structures, see if I can uncover any clues about the people who once lived here and perhaps find a good vantage point to survey the island.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 6,
+      "thought": "This island feels ancient and mysterious, with those weathered stone structures hinting at a long-lost civilization. I'm compelled to explore them and uncover the secrets they hold, hoping to piece together the island's history.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 7,
+      "thought": "This island feels ancient and intriguing, with those weathered stone structures hinting at a forgotten civilization. I want to explore them carefully, documenting any carvings or signs of past inhabitants to understand their story.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
     }
   ]
 }
