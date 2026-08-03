@@ -13,6 +13,9 @@ from datetime import datetime
 RAW_FILE = "/home/eileen/projects/thought-amplifier/experiments/exp2_raw_data.json"
 REPORT_FILE = "/home/eileen/projects/thought-amplifier/experiments/EXP2_SEMANTIC_GRADIENT.md"
 
+# Filter out failed generations
+VALID_ONLY = True
+
 def mean(vals):
     return sum(vals) / len(vals) if vals else 0
 
@@ -102,8 +105,10 @@ def main():
         data = json.load(f)
     
     results = data["results"]
+    # Filter out any failed generations
+    results = [r for r in results if "[GENERATION_FAILED]" not in r["thought"]]
     model = data.get("model", "unknown")
-    n_per_phase = data.get("n_per_phase", "?")
+    n_per_phase = len([r for r in results if r["phase"] == "baseline"])
     
     phases = ["baseline", "intervention", "reversal", "sham"]
     scores_by_phase = {}
@@ -145,10 +150,11 @@ def main():
     report = f"""# Experiment 2: Semantic Gradient Test
 
 **Date:** {datetime.now().strftime('%Y-%m-%d')}
-**Model:** `{model}` (via Ollama, localhost:11434)
-**Design:** 4-phase A-B-A-C within-subjects design
+**Model:** `{model}` (via DeepInfra API)
+**Design:** 4-phase A-B-A-C within-subjects design (baseline → intervention → reversal → sham)
 **N per phase:** {n_per_phase} thoughts ({n_per_phase * 4} total)
-**Temperature:** 0.8, **top_p:** 0.9, **num_predict:** 60
+**Temperature:** 0.8, **top_p:** 0.9, **max_tokens:** 60
+**Runtime:** ~2 minutes (API-based)
 
 ---
 
