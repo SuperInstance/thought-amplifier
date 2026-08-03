@@ -6,3 +6,70 @@
 [ 1] 100.1s | 120 tok | Abstract - New Subfield Claim
      The claim that Dynamic Cognition Amplification (DCA) constitutes a novel subfield of Machine Learning (ML) is questionable, given its apparent resembl
 
+[ 2] 84.2s | 120 tok | Section 3.3 - Quality Vector
+     The single most serious weakness lies in the lack of empirical evidence validating the four axes as a comprehensive representation for quality vector.
+
+[ 3] 78.2s | 120 tok | Section 3.6/7.3 - Sham Interventions
+     The most serious weakness in this claim lies in its assumption that sham interventions can effectively isolate causal effects when the system state is
+
+[ 4] 22.2s | 0 tok | Section 5 - Three-Gate Cascade
+     CURL_ERROR (rc=52): 
+
+[ 5] 0.0s | 0 tok | Section 5.3 - Confidence Dynamics
+     CURL_ERROR (rc=7): 
+
+[ 6] 0.0s | 0 tok | Section 6.4 - Evolution Score Update
+     CURL_ERROR (rc=7): 
+
+[ 7] 0.0s | 0 tok | Section 7.4 - Trust Asymmetry
+     CURL_ERROR (rc=7): 
+
+[ 8] 0.0s | 0 tok | Section 4 - Formal Model
+     CURL_ERROR (rc=7): 
+
+[ 9] 0.0s | 0 tok | Section 9 - LoRA Distillation
+     CURL_ERROR (rc=7): 
+
+[10] 0.0s | 0 tok | Section 4.8 - Conservation Laws
+     CURL_ERROR (rc=7): 
+
+[11] 0.0s | 0 tok | Section 8 - Tempo/MIDI Encoding
+     CURL_ERROR (rc=7): 
+
+[12] 0.0s | 0 tok | Section 10.1 - Core/Adapter Split
+     CURL_ERROR (rc=7): 
+
+[13] 0.0s | 0 tok | Section 12.1 - Projected Results
+     CURL_ERROR (rc=7): 
+
+[14] 0.0s | 0 tok | Section 11 - Missing Baselines
+     CURL_ERROR (rc=7): 
+
+[15] 0.0s | 0 tok | Section 10.7 - Browser Tier
+     CURL_ERROR (rc=7): 
+
+[16] 0.0s | 0 tok | Section 10.3 - Bottle Ledger Determinism
+     CURL_ERROR (rc=7): 
+
+[17] 0.0s | 0 tok | Section 3.3/12.3 - Quality Scorer Circularity
+     CURL_ERROR (rc=7): 
+
+[18] 0.0s | 0 tok | Section 12.4 - Quality Axes Sensitivity
+     CURL_ERROR (rc=7): 
+
+[19] 0.0s | 0 tok | Section 13.2 - Rejection of Scalar Objectives
+     CURL_ERROR (rc=7): 
+
+[20] 0.0s | 0 tok | Overall - Dissertation Assessment
+     CURL_ERROR (rc=7): 
+
+=== All 20 thoughts complete ===
+=== 2026-08-03T13:36:54.089308 ===
+
+--- Summary ---
+Total thoughts: 20
+Errors: 0
+Successful: 20
+Latency: min=6ms max=100065ms avg=14240ms
+Tokens:  min=0 max=120 avg=18
+Total generation time: 192.7s
