@@ -13,7 +13,11 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 - **Five subsystems and their actual gaps.** Reflex compiler, evolution engine, trust scoring (the real gap — scoring Conductor interventions, not cascade gates), temporal→vector pipeline, and LoRA distillation. Trust is highest value per line because the Conductor has been modifying prompts/parameters blindly.
 
 ### DYNAMIC_COGNITION_ARCHITECTURE.md
-*Pending read.*
+- **Three-layer cognitive stack.** The Local Thinker (Granite 3.1 2B, ~1–2 thoughts/s) produces a continuous stream of consciousness; the Conductor (GLM-5.2 / DeepSeek V3, every 30–60 s) performs deep meta-learning; the Game/World provides observations and outcomes. This split is the anatomical basis for DCA.
+- **Algorithmic action selection from generative intent.** The LLM emits a 3–8 word "lean" (e.g., `inspect tower_top`); a lightweight, pre-approved policy table converts it to concrete action. This is the structural security property that prevents unconstrained tool execution.
+- **Quality as loss function.** Play quality is decomposed into novelty, specificity, emotional engagement, and spatial awareness. The Conductor's objective is qualitative improvement of thoughts, not minimization of a pre-defined numeric loss.
+- **T-minus / MIDI temporal encoding.** Game events are canonized into beat-based sequences (`B8:E72:v85 → ...`) and embedded with the same bge-m3 model used for skills, enabling vector search over *rhythms of play*.
+- **Novelty claim: always-on directed learning.** Traditional ML is collect → train offline → deploy → repeat. DCA is continuous: the model is always playing, always being directed, and the training signal is the stream of consciousness itself.
 
 ### pincher/analysis.md
 *Pending read.*
