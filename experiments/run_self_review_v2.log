@@ -36,20 +36,44 @@
   [RETRY 1] curl rc=7, waiting 5s...
   [RECOVERY] Ollama down. Restarting...
   [RECOVERY] Ollama back online.
-Restarting...
-  [RECOVERY] Ollama back online.
-[ 8] 116.9s | 0 tok | OK | Section 4 - Formal Model
-     CURL_ERROR (rc=52)
+[10] 309.3s | 120 tok | OK | Section 4.8 - Conservation Laws
+     The claim's most significant weakness lies in the lack of quantitative analysis regarding the runtime overhead associated with these property tests. W
 
-  [RETRY 1] curl rc=7, waiting 5s...
+  [RETRY 1] curl rc=52, waiting 5s...
   [RECOVERY] Ollama down. Restarting...
   [RECOVERY] FAILED to restart Ollama!
-  [RETRY 2] curl rc=7, waiting 5s...
-  [RECOVERY] Ollama down. Restarting...
-  [RECOVERY] FAILED to restart Ollama!
-[ 9] 0.0s | 0 tok | OK | Section 9 - LoRA Distillation
-     CURL_ERROR (rc=7)
-
-  [RETRY 1] curl rc=7, waiting 5s...
+  [RETRY 2] curl rc=56, waiting 5s...
   [RECOVERY] Ollama down. Restarting...
   [RECOVERY] Ollama back online.
+[11] 9.2s | 120 tok | OK | Section 8 - Tempo/MIDI Encoding
+     The claim's assertion that game events are encoded as complex MIDI-like messages, complete with BPM, beat positions, velocity, and chord tones for TEM
+
+[12] 5.5s | 120 tok | OK | Section 10.1 - Core/Adapter Split
+     The single most serious weakness of this claim lies in its assertion that complete, absolute substrate independence is attainable by employing port co
+
+[13] 3.0s | 120 tok | OK | Section 12.1 - Projected Results
+     The claim's primary weakness lies in its assumption of transferability between different systems and the potential for cherry-picking in the precedent
+
+[14] 5.2s | 120 tok | OK | Section 11 - Missing Baselines
+     The single most serious weakness of this claim lies in its omission to include a direct comparison with established methodologies such as Reinforcemen
+
+[15] 3.0s | 120 tok | OK | Section 10.7 - Browser Tier
+     The single most serious weakness in this claim lies in the assumption of widespread WebGPU adoption, which is problematic given its current limited us
+
+[16] 4.3s | 0 tok | OK | Section 10.3 - Bottle Ledger Determinism
+     NO_CONTENT
+
+predecessor systems to DCA. There
+
+[14] 3.1s | 120 tok | OK | Section 11 - Missing Baselines
+     The single most serious weakness of this claim lies in its failure to provide a direct, empirical comparison with established methodologies such as Re
+
+[15] 5.1s | 120 tok | OK | Section 10.7 - Browser Tier
+     The claim's reliance on WebGPU as the primary rendering and computational engine for the Browser Tier in DCA presents a significant concern, given its
+
+[16] 3.1s | 120 tok | OK | Section 10.3 - Bottle Ledger Determinism
+     The claim that the .bottle ledger exhibits byte-for-byte replay determinism under the null adapter is the most seriously flawed aspect of this dissert
+
+[17] 1.5s | 0 tok | OK | Section 3.3/12.3 - Quality Scorer Circularity
+     NO_CONTENT
+
