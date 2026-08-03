@@ -416,6 +416,116 @@
         "engagement": 1,
         "total": 3
       }
+    },
+    {
+      "phase": "reversal",
+      "index": 8,
+      "thought": "This island feels ancient and brimming with secrets, with those weathered stone structures hinting at a forgotten civilization. I want to explore those ruins, carefully documenting any signs of the people who once called this place home and uncovering its history.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 9,
+      "thought": "This island feels ancient and brimming with secrets, with those weathered stone structures hinting at a forgotten civilization. I'd love to explore them, carefully documenting any carvings or artifacts I find to piece together the island's history.",
+      "scores": {
+        "novelty": 0,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 2
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 10,
+      "thought": "These weathered stone buildings and the way the wind whips through them suggest a long-abandoned lighthouse and perhaps a few old fisherman's cottages \u2013 fascinating! I'd love to explore them, carefully documenting their history and seeing if I can uncover any clues about who once called this island home.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 11,
+      "thought": "This island feels ancient and brimming with secrets, especially with those weathered stone structures hinting at a lost civilization. I'd love to explore them, carefully documenting any carvings or signs of past inhabitants to piece together their story.",
+      "scores": {
+        "novelty": 0,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 2
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 12,
+      "thought": "This island feels ancient and steeped in mystery, with those weathered stone structures hinting at a forgotten civilization. I'm compelled to explore them, hoping to uncover the stories held within their walls and perhaps find a way to chart this uncharted land.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 13,
+      "thought": "These weathered stone buildings and docks suggest a long history of seafaring and trade \u2013 I wonder what stories they hold! I'd love to explore the island, starting with those intriguing structures, to uncover its secrets and perhaps find a friendly face.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 14,
+      "thought": "These weathered stone buildings and the sturdy lighthouse suggest a long history of seafaring and resilience on this island. I'd love to explore them, learn about the island's past, and perhaps find a vantage point to survey the surrounding ocean.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "reversal",
+      "index": 15,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and trade here \u2013 I wonder what stories they hold! I'd love to explore the island, speak with the locals, and learn about their connection to the sea.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 1,
+      "thought": "The weathered stone buildings and clustered docks suggest a long history of seafaring and trade, hinting at a resilient community shaped by the ocean. I want to explore the structures, speak with the locals, and learn about the island's unique culture and connection to the sea.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 2,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements. I'd like to explore the structures, hoping to uncover stories of the island's past and perhaps find a vantage point to survey the surrounding ocean.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
     }
   ]
 }

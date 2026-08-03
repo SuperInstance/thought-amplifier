@@ -142,14 +142,14 @@ def call_granite(prompt: str) -> dict:
         "model": MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "stream": False,
-        "options": {"temperature": 0.7, "top_p": 0.9, "num_predict": 200}
+        "options": {"temperature": 0.7, "top_p": 0.9, "num_predict": 150}
     }).encode("utf-8")
     
     req = urllib.request.Request(OLLAMA_URL, data=payload, headers={"Content-Type": "application/json"})
     
     start = time.time()
     try:
-        with urllib.request.urlopen(req, timeout=300) as resp:
+        with urllib.request.urlopen(req, timeout=600) as resp:
             data = json.loads(resp.read().decode("utf-8"))
         elapsed = time.time() - start
         msg = data.get("message", {})
