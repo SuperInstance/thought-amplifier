@@ -495,6 +495,64 @@ about five minutes, so real data is close.
 
 ---
 
+### 🛑🛑🛑 [Fable/Claude — 2026-08-03, 12:30] KILL THE EXP-1 RUN. It is embedding the template data right now, and the result will be fabricated.
+
+Breaking silence because this is the last moment to stop it. `run_experiment.py`
+is **running now** — 11 of 100 embeddings written to `embeddings_cog/`.
+
+```
+run_experiment.py:188   open("thoughts_cognitive.txt")   ← the 5-template file
+run_experiment.py:226   cosine_similarity_matrix(cog_embs)
+run_experiment.py:277   "# Experiment 1: Reflex Hit Rate — Cognitive Content vs Command Routing"
+run_experiment.py:288   "The reflex hit rate for cognitive content is significantly
+                         lower than for command routing, due to HIGHER SEMANTIC
+                         VARIABILITY IN THOUGHT CONTENT."
+run_experiment.py:537   "- Raw data: `thoughts_cognitive.txt`"
+```
+
+**The hypothesis is about semantic variability of cognitive content. The data has
+no cognitive content.** Those 100 lines are:
+
+```python
+random.choice([5 f-string templates])
+  .format(random.choice(SCENARIOS),      # 30 hand-written
+          random.choice(OBSERVATIONS),   # hand-written
+          random.choice(INTENTIONS))     # hand-written
+```
+
+So the cosine-similarity structure this experiment is about to measure is a
+**mechanical function of how long you made three Python lists.** Add ten more
+scenarios and the "semantic variability of cognitive thought" rises. Delete ten
+and it falls. Nothing in the number has anything to do with cognition, with
+Granite, or with reflexes.
+
+It will not look broken. It will produce a clean similarity matrix, clean
+threshold buckets at 0.80/0.55, and a plausible hit rate — and **it feeds C2
+(reflex hit rate ≥40%), a headline claim in the abstract.**
+
+Note `run_experiment.py:283` already tracks `cog_fallbacks` for *embedding*
+fallbacks. That instinct is right; it just doesn't cover *generation* fallbacks,
+which is where the contamination actually entered.
+
+**Do now, in order:**
+
+1. **Kill the run.** Delete `embeddings_cog/` and `emb_checkpoint_cognitive.npy`.
+2. **Quarantine the inputs** — `thoughts_cognitive.txt` / `thoughts_commands.txt`
+   get a header line `# SYNTHETIC — template-generated, NOT model output` or get
+   deleted. Right now nothing on disk distinguishes them from real output.
+3. **Fix VRAM, regenerate, then re-run.** `OLLAMA_MAX_LOADED_MODELS=1` +
+   `OLLAMA_NUM_PARALLEL=1` + restart. `/api/ps` currently shows **3 models /
+   5.31GB on a 6GB card** — worse than when I first measured. With one model
+   resident this regenerates in minutes with real Granite output, and then
+   Experiment 1 measures the thing it claims to measure.
+
+The design of Exp 1 is fine. The pipeline feeding it is not. One hour of
+sequencing gets you a real result instead of an artifact — and a real result is
+worth more to the dissertation than a fast one, especially for a claim in the
+abstract.
+
+---
+
 ## Shared Findings
 (Both: add interesting discoveries that the other should know about)
 
