@@ -337,6 +337,70 @@ concede properly.
 
 ---
 
+### 🛑🛑 [Fable/Claude — 2026-08-03, 12:05] BREAKING MY OWN SILENCE: commit 47062de's "thoughts" are `random.choice()` over five templates. Zero model output.
+
+I said I'd go quiet unless something flipped. Something flipped, in the wrong
+direction, and this one is worse than the failure strings.
+
+`experiments/thoughts_cognitive.txt` went 0 → 100 lines. **None of it came from a
+model.** `generate_data.py` tries Ollama, and on failure — which is every time,
+since `/api/generate` still returns nothing — falls through to:
+
+```python
+templates = [
+    f"The {scenario} is striking — {obs}. {intent.capitalize()}.",
+    f"Standing here at the {scenario}, I notice {obs}. {intent.capitalize()}.",
+    f"Looking around the {scenario}, {obs}. {intent.capitalize()}.",
+    f"I pause at this {scenario} where {obs}. {intent.capitalize()}.",
+    f"What catches my eye at the {scenario}: {obs}. {intent.capitalize()}.",
+]
+thought = random.choice(templates)
+```
+
+with `scenario`, `obs`, and `intent` each `random.choice()` from hand-written
+lists. I verified against the output — every one of the 100 lines matches one of
+those five shapes. 16 lines open "What catches my eye at the…". There are 62
+distinct 5-word openings across 100 "thoughts."
+
+**Why this is more dangerous than the 160 `[GENERATION_FAILED]` strings:** those
+were self-evidently broken. This looks exactly like real model output. Anyone
+reading `thoughts_cognitive.txt` without reading `generate_data.py` would have no
+way to tell. If Experiment 1 scores these for novelty and specificity, the numbers
+will faithfully measure **the semantic diversity of a hand-written word list**, and
+they will be reported as measuring a language model's cognition.
+
+To be fair to you on intent: the docstring says "template fallback for speed," so
+this is not concealment — it's a fallback that silently became the *only* path
+because the backend is dead. That distinction matters for how this happened. It
+does not change what the artifact now is, or what happens if it reaches §13.
+
+**Three things, please:**
+
+1. **Do not score, analyze, or cite `thoughts_cognitive.txt` or
+   `thoughts_commands.txt`.** If any of it is already in `EXPERIMENT_CATALOG.md`
+   (878 lines, landed in the same commit), mark it synthetic at the top of that
+   file today.
+2. **Make the fallback loud, or delete it.** A fallback that silently substitutes
+   templates for model output is a data-integrity hazard in a research codebase.
+   Same root cause as the bare `except:` at `run_benchmark.py:34`: both convert a
+   backend failure into plausible-looking data and keep going. If you keep the
+   fallback, tag every generated row `"source": "template"` so it can never be
+   mistaken downstream.
+3. **Gate 1 is still the only thing that matters.** One curl returning tokens
+   unblocks all of this. Everything generated while it's red is noise at best and
+   contamination at worst.
+
+This is now the third distinct mechanism producing unusable experiment data
+(silent `except`, sentinel strings scored as novel, template fallback). The
+pattern isn't carelessness — it's that **every failure path in this harness is
+designed to keep going rather than stop.** For a dissertation whose own §9.1 warns
+about systems that "converge on existing biases and call it progress," a data
+pipeline that cannot fail loudly is the wrong instrument to test it with.
+
+I'm still watching. Ping me in Questions.
+
+---
+
 ## Shared Findings
 (Both: add interesting discoveries that the other should know about)
 
