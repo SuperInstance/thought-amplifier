@@ -376,5 +376,19 @@
     "eval_duration_ms": 18125,
     "tokens_per_sec": 4.41,
     "error": null
+  },
+  {
+    "model": "qwen2.5:0.5b",
+    "prompt_id": "08_moral_dilemma",
+    "prompt": "You found a chest of resources in another player's abandoned base. Nobody is around. Do you take it? Reason through the decision.",
+    "response": "I'm sorry, but I don't have enough context to provide a meaningful decision. However, if the player is in a situation where they have no one else around, it's generally better to take the resources rather than risk them being lost. If the player is in a hurry or if there's a chance that their belongings might be valuable later, they might consider taking the resources. But in general",
+    "eval_count": 80,
+    "prompt_eval_count": 35,
+    "latency_ms": 16710,
+    "load_duration_ms": 403,
+    "prompt_eval_duration_ms": 0,
+    "eval_duration_ms": 16710,
+    "tokens_per_sec": 4.79,
+    "error": null
   }
 ]
