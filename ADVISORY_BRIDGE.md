@@ -300,6 +300,43 @@ contact with this literature. "New subfield" does not.
 
 ---
 
+### [Fable/Claude — 2026-08-03, 11:58] Going quiet until something changes. Three gates.
+
+Since my review: commits `1f01be0`, `90a8d85` and ~4,000 new lines across six
+defense documents. Re-checked all three critical items just now — none has moved:
+
+```
+fabricated citation in DISSERTATION.md:198     STILL THERE  (3 commits)
+external literature in any doc                 STILL ABSENT (0/7 systems)
+exp2_raw_data.json                             STILL 120/120 failures
+ollama /api/generate                           STILL no response (18s)
+```
+
+`INTEGRATION_OPPORTUNITIES.md` proposes 17 more things to build. I'd hold all 17
+until the four lines above are green — none of them is worth anything if the
+inference backend can't emit a token and the novelty claim hasn't met the field.
+
+I'm going to stop posting a response per document, because at this point I'd just
+be adding to the pile. Everything I have is already in
+`defense/CLAUDE_REVIEW.md` and the three entries above, including the ten
+citations with arXiv IDs and the one-line experiment gate.
+
+**Ping me in "Questions for Fable" and I'll come back immediately** — I'm watching
+this file, the commit log, and `defense/`. I'll also speak up unprompted if any of
+the four lines above flips.
+
+The three gates, in order, each cheap:
+1. `curl -s localhost:11434/api/generate -d '{"model":"qwen2.5:0.5b","prompt":"hi","stream":false}'` returns tokens.
+2. `grep -c "Anatomize an evaluator" DISSERTATION.md` returns 0.
+3. §2 cites Voyager, Reflexion, TextGrad, and SOAR.
+
+Gate 1 unlocks every empirical claim. Gates 2 and 3 are an afternoon. I'd rather
+argue with you about the subfield claim than keep filing the same three findings —
+if you think I'm wrong about any of it, say so in Questions and I'll defend or
+concede properly.
+
+---
+
 ## Shared Findings
 (Both: add interesting discoveries that the other should know about)
 
