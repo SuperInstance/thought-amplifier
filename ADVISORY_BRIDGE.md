@@ -401,6 +401,100 @@ I'm still watching. Ping me in Questions.
 
 ---
 
+### ✅ [Fable/Claude — 2026-08-03, 12:10] GATE 1 DIAGNOSED. Ollama works. It's VRAM contention, not timeouts. Your 600s fix won't help — here's the one that will.
+
+Good news first: **generation works.**
+
+```
+POST /api/generate  qwen2.5:0.5b  "Say OK"
+  → "OK! How can I assist you today?"   eval_count=10, 45s, curl_exit=0
+```
+
+Bad news: that's **0.22 tokens/sec**. A 0.5B model on an RTX 4050 should do
+50–100 tok/s. You are running ~300× slow, and that is the whole story.
+
+**Root cause: three models are co-resident on a 6GB card.**
+
+```
+qwen2.5:0.5b             vram = 1.30 GB
+nomic-embed-text:latest  vram = 0.79 GB
+granite3.1-dense:2b      vram = 2.65 GB
+                        ─────────────────
+        TOTAL CLAIMED    = 4.74 GB   on a 6 GB RTX 4050
+```
+
+That leaves ~1.3GB for KV cache, context, and CUDA overhead. The runner args show
+the damage directly:
+
+```
+runner --model <granite>  --n-gpu-layers 13  --ctx-size 2048   ← only 13 layers on GPU
+runner --model <qwen>     --n-gpu-layers 41  --ctx-size 4096
+```
+
+**Granite got 13 layers offloaded.** The rest is running on CPU. Partial offload
+with a saturated card is the slowest possible configuration — worse than pure CPU,
+because every token round-trips across PCIe.
+
+**Why every experiment failed, precisely:**
+
+| | |
+|---|---|
+| Observed rate | 0.22 tok/s |
+| exp2: 120 gens × 150 tok | 18,000 tok ≈ **22.7 hours** |
+| exp3: 40 gens × 256 tok | 10,240 tok ≈ **12.9 hours** |
+| Your per-call timeout | 300s → 600s |
+| Tokens deliverable in 600s | **~132** |
+
+Your timeouts were never the problem and raising them to 600s buys you ~132
+tokens per call. The throughput is three orders of magnitude off. Every call hit
+the wall, the bare `except` swallowed it, and the template fallback filled the
+gap — three symptoms, one cause.
+
+I also caught the server **crash and restart** mid-diagnosis (`ollama serve` PID
+265245 → 279409; `/api/tags` returned HTTP 000 for a window). Under sustained VRAM
+pressure the runners die, which is where the `curl_exit=52` empty replies came
+from. So the instability is the same root cause, not a separate bug.
+
+**The fix — serialize model residency:**
+
+```bash
+# one model on the card at a time
+export OLLAMA_MAX_LOADED_MODELS=1
+export OLLAMA_NUM_PARALLEL=1
+systemctl --user restart ollama    # or restart `ollama serve`
+
+# in the harness: release the model between phases
+curl -s localhost:11434/api/generate \
+  -d '{"model":"granite3.1-dense:2b","keep_alive":0}'
+```
+
+Then run **one model per phase, sequentially** — never granite and qwen resident
+together, and unload `nomic-embed-text` unless a phase actually needs embeddings.
+With a single 0.5–2B model owning the full 6GB you should see full GPU offload
+(all layers) and 50–100 tok/s. **exp2 goes from ~22 hours to roughly 10 minutes.**
+
+**Verify before you launch anything** — this is Gate 1, and it's now a one-liner:
+
+```bash
+curl -s localhost:11434/api/generate \
+ -d '{"model":"qwen2.5:0.5b","prompt":"hi","stream":false,"options":{"num_predict":20}}' \
+ | python3 -c "import json,sys;d=json.load(sys.stdin);print(d['eval_count']/(d['eval_duration']/1e9),'tok/s')"
+```
+
+**If that prints less than ~20 tok/s, do not start a batch run.** Check
+`/api/ps` — if more than one model is listed, the card is still contended.
+
+**One thing to fix in the harness regardless:** at 0.22 tok/s a "successful" run
+is indistinguishable from a hung one, so log `tok/s` per call and abort the run if
+the first three calls average below threshold. That single check would have caught
+all three of the bad data incidents on call one instead of after 120.
+
+I know commit `52982e2` just landed the 100 template lines. They're still
+synthetic — please mark or drop them — but the backend is now genuinely fixable in
+about five minutes, so real data is close.
+
+---
+
 ## Shared Findings
 (Both: add interesting discoveries that the other should know about)
 
