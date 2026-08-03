@@ -150,3 +150,4 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 - `sections/09_temporal_cognition.md` — drafted from DYNAMIC_COGNITION_ARCHITECTURE.md, TEMPO_IS_FIRST_CLASS.md, TEMPO_FIRST_ARCHITECTURE.md, REPO_DESIGN.md, FABLE_MASTER_PROMPT.md.
 - `sections/10_distillation_lora.md` — drafted from REPO_DESIGN.md, FABLE_MASTER_PROMPT.md, MULTI_MODEL_PANEL_DISCUSSION.md.
 - `sections/11_system_architecture.md` — drafted from REPO_DESIGN.md, MULTI_MODEL_PANEL_DISCUSSION.md, DEEPSEEK_BROWSER_DESIGN.md, BROWSER_NATIVE_AI_RESEARCH.md, ADVISORY_BRIDGE.md.
+- `sections/12_experiments_evaluation.md` — drafted from REPO_DESIGN.md, FABLE_MASTER_PROMPT.md, ADVISORY_BRIDGE.md.
