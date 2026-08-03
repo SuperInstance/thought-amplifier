@@ -108,6 +108,28 @@
         "engagement": 0,
         "total": 2
       }
+    },
+    {
+      "phase": "baseline",
+      "index": 10,
+      "thought": "[GENERATION_FAILED]",
+      "scores": {
+        "novelty": 1,
+        "specificity": 0,
+        "engagement": 0,
+        "total": 1
+      }
+    },
+    {
+      "phase": "baseline",
+      "index": 11,
+      "thought": "[GENERATION_FAILED]",
+      "scores": {
+        "novelty": 0,
+        "specificity": 0,
+        "engagement": 0,
+        "total": 0
+      }
     }
   ]
 }

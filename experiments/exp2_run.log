@@ -19,3 +19,11 @@ Phase: baseline
   [ 9/20] (9/80) N=1 S=1 E=0 T=2 elapsed=25.8m eta=3.4h | As I stand on this maritime island, I'm struck by the rugged beauty of...
     retry 1: Remote end closed connection without response
     retry 2: <urlopen error [Errno 111] Connection refused>
+    retry 3: <urlopen error [Errno 111] Connection refused>
+  [10/20] (10/80) N=1 S=0 E=0 T=1 elapsed=27.5m eta=3.2h | [GENERATION_FAILED]...
+    retry 1: <urlopen error [Errno 111] Connection refused>
+    retry 2: Remote end closed connection without response
+    retry 3: <urlopen error [Errno 111] Connection refused>
+  [11/20] (11/80) N=0 S=0 E=0 T=0 elapsed=28.5m eta=3.0h | [GENERATION_FAILED]...
+    retry 1: <urlopen error [Errno 111] Connection refused>
+    retry 2: <urlopen error [Errno 111] Connection refused>
