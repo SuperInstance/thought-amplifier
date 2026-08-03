@@ -6,7 +6,11 @@ Follow the read → note → write → section workflow. Never hold more than 3 
 ## Document Takeaways
 
 ### REPO_DESIGN.md
-*Pending read.*
+- **Substrate independence via hard core/adapter split.** `amplifier/` speaks only `Observation`, `Thought`, `Action`, `Outcome`; game-specific logic is banished to `adapters/`. This separation is the central architectural claim and the precondition for treating DCA as a general subfield rather than a single-game hack.
+- **The four-line thesis of continuous cognition.** Training signal = stream of consciousness; loss = play quality (novelty, specificity, engagement, spatial awareness); gradient = prompt/parameter adjustment every 30 s; model update = reflex compilation, policy breeding, trust accrual, and LoRA baking happening in parallel loops.
+- **Recurring three-gate cascade.** Every expensive operation is preceded by a free gate and a cheap gate: reflex (<1 ms) → compiled policy (O(1)) → LLM (~500 ms). The same pattern recurs at conducting and acting. A fallback ladder makes ≥50% decisions at $0 a runtime invariant, not a budget aspiration.
+- **`.bottle` as the interpretability spine.** Typed envelopes with `caused_by` links turn the loop into a DAG; the append-only ledger makes a stochastic loop deterministic-for-replay. These are the mechanisms that make 100% interpretability and conservation-law enforcement possible.
+- **Five subsystems and their actual gaps.** Reflex compiler, evolution engine, trust scoring (the real gap — scoring Conductor interventions, not cascade gates), temporal→vector pipeline, and LoRA distillation. Trust is highest value per line because the Conductor has been modifying prompts/parameters blindly.
 
 ### DYNAMIC_COGNITION_ARCHITECTURE.md
 *Pending read.*
