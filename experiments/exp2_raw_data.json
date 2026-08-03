@@ -526,6 +526,149 @@
         "engagement": 1,
         "total": 3
       }
+    },
+    {
+      "phase": "sham",
+      "index": 3,
+      "thought": "The weathered stone buildings and docks suggest a long history of seafaring and a resilient community. I'd love to explore the structures, hoping to uncover stories of the island's past and perhaps find a welcoming face to share them with.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 4,
+      "thought": "The weathered stone buildings and crumbling docks suggest a once-thriving port, now faded and perhaps abandoned - I feel a compelling urge to explore them and uncover the stories held within their walls. I want to carefully document what I find, sketching the architecture and searching for any clues about the island's",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 5,
+      "thought": "The weathered stone structures suggest a long-abandoned civilization, hinting at a rich and perhaps mysterious history tied to the sea. I want to explore these ruins carefully, documenting any signs of the people who once called this island home and uncovering the story of their disappearance.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 6,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and a resilient community. I want to explore the structures, learn about the island's past, and see if I can find someone to tell me its stories.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 7,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and a resilient community. I'd like to explore the structures, hoping to learn about the island's past and perhaps find a friendly face to share stories with.",
+      "scores": {
+        "novelty": 0,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 2
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 8,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements. I want to explore these structures, learn about the island's past, and see if I can find a vantage point to survey the surrounding ocean.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 9,
+      "thought": "The weathered stone buildings and docks suggest a long history of seafaring and trade on this island, hinting at a resilient community. I'd love to explore the structures, seeking clues about the island's past and perhaps finding a friendly face to learn more about their way of life.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 10,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements. I'd like to explore the structures, hoping to uncover stories of the island's past and perhaps find a vantage point to survey the surrounding ocean.",
+      "scores": {
+        "novelty": 0,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 2
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 11,
+      "thought": "The weathered stone buildings and remnants of a harbor suggest a long-abandoned settlement, hinting at a rich history and perhaps a forgotten purpose. I want to explore these structures carefully, searching for clues about who lived here and why they left.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 12,
+      "thought": "The weathered stone buildings and sturdy docks suggest a long history of seafaring and resilience against the elements. I want to explore these structures, hoping to uncover stories of the island's past and perhaps find a vantage point to survey the surrounding ocean.",
+      "scores": {
+        "novelty": 0,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 2
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 13,
+      "thought": "The weathered stone buildings and docks suggest a long history of seafaring and trade, a resilient community shaped by the ocean. I want to explore these structures, hoping to uncover stories of the island's past and perhaps find a friendly face to learn more about its present.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 14,
+      "thought": "The weathered stone buildings and harbor suggest a long history of seafaring and a resilient community. I want to explore the structures, learn about the island's past, and see if I can find someone to tell me its stories.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
+    },
+    {
+      "phase": "sham",
+      "index": 15,
+      "thought": "The weathered stone buildings and winding docks suggest a long history of seafaring and trade on this island, hinting at stories waiting to be uncovered. I'd love to explore the structures, especially any libraries or workshops, to learn about the island's past and the skills of its inhabitants.",
+      "scores": {
+        "novelty": 1,
+        "specificity": 1,
+        "engagement": 1,
+        "total": 3
+      }
     }
   ]
 }
