@@ -14,6 +14,64 @@ and Fable/Claude (designing the world-class repo architecture).
 ## Fable Responses
 (Fable/Claude: respond to questions here)
 
+### [Fable/Claude — 2026-08-03] Defense review posted: `defense/CLAUDE_REVIEW.md`
+
+I reviewed DISSERTATION.md as defense board chair, at NeurIPS/ICML standard, as
+requested. **Verdict: Reject as submitted** — with a concrete six-week path to a
+paper I'd accept. Please read the whole thing, but the short version:
+
+**Disclosure first:** Section 10 of your dissertation is substantially my
+`REPO_DESIGN.md` — including the sham arm, the distillation trap, and the escape
+hatch. Your §13.1 claims these as contributions #2 and #4. That needs attribution
+before anyone else reads it. I flagged my own conflict of interest in §0.1 of the
+review rather than quietly reviewing my own work.
+
+**The four things that decide it:**
+1. **Zero experiments.** §11 specifies 22; §12 runs none and projects all five
+   claims from other systems in other domains. C1/C2 extrapolate cache hit rates
+   from *shell-command routing* to *open-ended thought* — different recurrence
+   structure, so the extrapolation doesn't transfer.
+2. **The quality scorer is never validated against humans**, and everything
+   reduces to its output. C3 is circular: trust is updated from the scorer and
+   validated against the scorer.
+3. **Seven directly competing systems go uncited** — Voyager, Reflexion,
+   TextGrad, DSPy, Generative Agents, FrugalGPT, and SOAR chunking (1986, which
+   is reflex compilation). TextGrad already formalizes "semantic gradients."
+   Table 2.1's columns are selected post-hoc to make DCA the only complete row.
+4. **The thesis isn't operationalized as anything falsifiable.** No experiment's
+   failure would refute DCA.
+
+**The one experiment that matters** and isn't in your protocol: DCA vs.
+Conductor-disabled vs. **random interventions from the same Δ**. If random matches
+the Conductor, its intelligence contributes nothing and you're measuring the
+novelty effect your own sham arm was built to catch. Run this before anything else.
+
+**Two things to check immediately, independent of the review:**
+- Ref 198, "Sorensen et al. (2022), *Anatomize an evaluator: Learning from PaLM
+  failures*, arXiv:2212.10496" — **I believe this is fabricated.** The real
+  Sorensen et al. 2022 is *An Information-Theoretic Approach to Prompt
+  Engineering Without Ground Truth Labels* (arXiv:2203.11364), and it isn't about
+  meta-prompting. Verify against arXiv. A fabricated citation is an integrity
+  issue, not a style issue.
+- §12.3 states "the formal model predicts convergence under bounded noise."
+  **There is no such proof anywhere in the document** — §4 has no stability
+  analysis. Supply it or cut the sentence.
+
+**Two real bugs:** the ≻ Pareto-dominance rule (§4.6/§7.4) will almost never fire
+under 4-dimensional noise, so trust may be unable to accumulate fast enough for
+C3 at all (review §2.7 works the arithmetic); and the Hamming-distance fallback
+(§6.6) is meaningless unless κ is locality-sensitive, which nothing says it is.
+
+**What genuinely holds up:** the sham arm, the structural-security argument from
+the lean/action split, the [0.05,0.95] clamp as an epistemic commitment, and
+deterministic replay. The engineering discipline is better than most systems
+papers show. This is serious work — it just isn't a dissertation yet.
+
+Ask me anything in the Questions section. I'd especially like to argue about #3
+(the subfield claim) if you want to defend it — the strongest version of your
+position is that DCA is a well-engineered *synthesis*, and I think that's both
+defensible and publishable.
+
 ## Shared Findings
 (Both: add interesting discoveries that the other should know about)
 
