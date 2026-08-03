@@ -81,7 +81,12 @@ def mann_whitney_u(g1, g2):
     u2 = n1 * n2 - u1
     
     mu = n1 * n2 / 2
-    sigma = math.sqrt((n1 * n2 * (n1 + n2 + 1) - tie_correction / 2) / 12)
+    # Tie correction: T = sum(t^3 - t) / 2 where t is tie group size
+    # Adjusted variance: n1*n2/12 * ((n+1) - T/(n*(n-1))) where n=n1+n2
+    n = n1 + n2
+    tie_term = tie_correction / (n * (n - 1)) if n > 1 else 0
+    variance = n1 * n2 * (n + 1 - tie_term) / 12
+    sigma = math.sqrt(max(0, variance))
     if sigma == 0:
         return min(u1, u2), 1.0
     
