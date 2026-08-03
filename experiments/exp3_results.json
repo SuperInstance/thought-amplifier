@@ -26,5 +26,19 @@
     "model": "granite3.1-dense:2b",
     "prompt_id": "02_emotional_response",
     "prompt": "A storm destroyed part of the dock you built yesterday. How do you feel about it, and what would you say to yourself?"
+  },
+  {
+    "response": "In this scenario, I would prioritize \"finishing the bridge\" over gathering wood or exploring the cave. Here's why:\n\n1. The bridge is already in progress, which means you've already expended some time and resources on its construction. Completing it would be a more efficient use of the remaining daylight, as it directly contributes to the overall goal of the",
+    "eval_count": 80,
+    "prompt_eval_count": 100,
+    "latency_ms": 75957,
+    "load_duration_ms": 1628,
+    "prompt_eval_duration_ms": 0,
+    "eval_duration_ms": 75957,
+    "tokens_per_sec": 1.05,
+    "error": null,
+    "model": "granite3.1-dense:2b",
+    "prompt_id": "03_planning",
+    "prompt": "You have 10 minutes of daylight left in the game. You can either: gather wood, finish building a bridge, or explore a cave you found. What do you prioritize and why?"
   }
 ]
