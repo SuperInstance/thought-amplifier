@@ -1,0 +1,1351 @@
+{
+  "experiment": "EXP3: Profile Steering with Conductor-vs-Random Control",
+  "timestamp": "2026-08-03T15:10:24.035021",
+  "model": "granite3.1-dense:2b (local Ollama)",
+  "scorer": "Qwen/Qwen3-14B (DeepInfra)",
+  "design": "4 phases \u00d7 20 thoughts, continuous 0-1 scoring",
+  "phase_stats": {
+    "baseline": {
+      "novelty": {
+        "mean": 0.265,
+        "std": 0.06708203932499368,
+        "sem": 0.014999999999999998,
+        "n": 20
+      },
+      "specificity": {
+        "mean": 0.625,
+        "std": 0.07863975156570491,
+        "sem": 0.01758438302346117,
+        "n": 20
+      },
+      "engagement": {
+        "mean": 0.475,
+        "std": 0.08506963092234006,
+        "sem": 0.01902214775631705,
+        "n": 20
+      },
+      "total": {
+        "mean": 1.365,
+        "std": 0.21095023109728983,
+        "sem": 0.04716990566028301,
+        "n": 20
+      }
+    },
+    "conductor": {
+      "novelty": {
+        "mean": 0.3525,
+        "std": 0.14370565677618152,
+        "sem": 0.032133561730279515,
+        "n": 20
+      },
+      "specificity": {
+        "mean": 0.6725,
+        "std": 0.11525144136557297,
+        "sem": 0.025771005739825235,
+        "n": 20
+      },
+      "engagement": {
+        "mean": 0.5325,
+        "std": 0.12489469248341306,
+        "sem": 0.02792730224218436,
+        "n": 20
+      },
+      "total": {
+        "mean": 1.5575,
+        "std": 0.36930767375555146,
+        "sem": 0.0825797063129728,
+        "n": 20
+      }
+    },
+    "random": {
+      "novelty": {
+        "mean": 0.27,
+        "std": 0.05712405705774793,
+        "sem": 0.0127733274731701,
+        "n": 20
+      },
+      "specificity": {
+        "mean": 0.54,
+        "std": 0.12732056517228263,
+        "sem": 0.028469743865891618,
+        "n": 20
+      },
+      "engagement": {
+        "mean": 0.425,
+        "std": 0.08506963092234007,
+        "sem": 0.019022147756317054,
+        "n": 20
+      },
+      "total": {
+        "mean": 1.235,
+        "std": 0.24553914898486248,
+        "sem": 0.05490422282676009,
+        "n": 20
+      }
+    },
+    "sham": {
+      "novelty": {
+        "mean": 0.255,
+        "std": 0.060480531882929935,
+        "sem": 0.013523858060557468,
+        "n": 20
+      },
+      "specificity": {
+        "mean": 0.59,
+        "std": 0.09679060415469869,
+        "sem": 0.021643037047317983,
+        "n": 20
+      },
+      "engagement": {
+        "mean": 0.445,
+        "std": 0.0998683343734455,
+        "sem": 0.0223312384458703,
+        "n": 20
+      },
+      "total": {
+        "mean": 1.29,
+        "std": 0.2403944127558095,
+        "sem": 0.05375382483331326,
+        "n": 20
+      }
+    }
+  },
+  "comparisons": {
+    "conductor_vs_baseline_novelty": {
+      "t": 2.4674,
+      "p": 0.0,
+      "df": 26.9,
+      "cohens_d": 0.7803,
+      "mean_a": 0.3525,
+      "mean_b": 0.265,
+      "delta": 0.0875
+    },
+    "conductor_vs_baseline_specificity": {
+      "t": 1.5225,
+      "p": 0.127883,
+      "df": 33.54,
+      "cohens_d": 0.4815,
+      "mean_a": 0.6725,
+      "mean_b": 0.625,
+      "delta": 0.0475
+    },
+    "conductor_vs_baseline_engagement": {
+      "t": 1.7017,
+      "p": 0.088816,
+      "df": 33.51,
+      "cohens_d": 0.5381,
+      "mean_a": 0.5325,
+      "mean_b": 0.475,
+      "delta": 0.0575
+    },
+    "conductor_vs_baseline_total": {
+      "t": 2.0241,
+      "p": 0.042956,
+      "df": 30.21,
+      "cohens_d": 0.6401,
+      "mean_a": 1.5575,
+      "mean_b": 1.365,
+      "delta": 0.1925
+    },
+    "conductor_vs_random_novelty": {
+      "t": 2.3858,
+      "p": 0.0,
+      "df": 24.86,
+      "cohens_d": 0.7545,
+      "mean_a": 0.3525,
+      "mean_b": 0.27,
+      "delta": 0.0825
+    },
+    "conductor_vs_random_specificity": {
+      "t": 3.4504,
+      "p": 0.00056,
+      "df": 37.63,
+      "cohens_d": 1.0911,
+      "mean_a": 0.6725,
+      "mean_b": 0.54,
+      "delta": 0.1325
+    },
+    "conductor_vs_random_engagement": {
+      "t": 3.1814,
+      "p": 0.001466,
+      "df": 33.51,
+      "cohens_d": 1.006,
+      "mean_a": 0.5325,
+      "mean_b": 0.425,
+      "delta": 0.1075
+    },
+    "conductor_vs_random_total": {
+      "t": 3.2521,
+      "p": 0.001145,
+      "df": 33.05,
+      "cohens_d": 1.0284,
+      "mean_a": 1.5575,
+      "mean_b": 1.235,
+      "delta": 0.3225
+    },
+    "conductor_vs_sham_novelty": {
+      "t": 2.7966,
+      "p": 0.0,
+      "df": 25.53,
+      "cohens_d": 0.8844,
+      "mean_a": 0.3525,
+      "mean_b": 0.255,
+      "delta": 0.0975
+    },
+    "conductor_vs_sham_specificity": {
+      "t": 2.4514,
+      "p": 0.014228,
+      "df": 36.9,
+      "cohens_d": 0.7752,
+      "mean_a": 0.6725,
+      "mean_b": 0.59,
+      "delta": 0.0825
+    },
+    "conductor_vs_sham_engagement": {
+      "t": 2.447,
+      "p": 0.014404,
+      "df": 36.25,
+      "cohens_d": 0.7738,
+      "mean_a": 0.5325,
+      "mean_b": 0.445,
+      "delta": 0.0875
+    },
+    "conductor_vs_sham_total": {
+      "t": 2.7148,
+      "p": 0.006631,
+      "df": 32.65,
+      "cohens_d": 0.8585,
+      "mean_a": 1.5575,
+      "mean_b": 1.29,
+      "delta": 0.2675
+    },
+    "random_vs_baseline_novelty": {
+      "t": 0.2538,
+      "p": 0.799662,
+      "df": 37.06,
+      "cohens_d": 0.0803,
+      "mean_a": 0.27,
+      "mean_b": 0.265,
+      "delta": 0.005
+    },
+    "random_vs_baseline_specificity": {
+      "t": -2.5402,
+      "p": 0.01108,
+      "df": 31.65,
+      "cohens_d": -0.8033,
+      "mean_a": 0.54,
+      "mean_b": 0.625,
+      "delta": -0.085
+    },
+    "random_vs_baseline_engagement": {
+      "t": -1.8586,
+      "p": 0.063078,
+      "df": 38.0,
+      "cohens_d": -0.5878,
+      "mean_a": 0.425,
+      "mean_b": 0.475,
+      "delta": -0.05
+    },
+    "random_vs_baseline_total": {
+      "t": -1.796,
+      "p": 0.072499,
+      "df": 37.16,
+      "cohens_d": -0.5679,
+      "mean_a": 1.235,
+      "mean_b": 1.365,
+      "delta": -0.13
+    },
+    "sham_vs_baseline_novelty": {
+      "t": -0.4951,
+      "p": 0.620503,
+      "df": 37.6,
+      "cohens_d": -0.1566,
+      "mean_a": 0.255,
+      "mean_b": 0.265,
+      "delta": -0.01
+    },
+    "sham_vs_baseline_specificity": {
+      "t": -1.2551,
+      "p": 0.20944,
+      "df": 36.47,
+      "cohens_d": -0.3969,
+      "mean_a": 0.59,
+      "mean_b": 0.625,
+      "delta": -0.035
+    },
+    "sham_vs_baseline_engagement": {
+      "t": -1.0227,
+      "p": 0.30646,
+      "df": 37.06,
+      "cohens_d": -0.3234,
+      "mean_a": 0.445,
+      "mean_b": 0.475,
+      "delta": -0.03
+    },
+    "sham_vs_baseline_total": {
+      "t": -1.0487,
+      "p": 0.294306,
+      "df": 37.37,
+      "cohens_d": -0.3316,
+      "mean_a": 1.29,
+      "mean_b": 1.365,
+      "delta": -0.075
+    }
+  },
+  "verdict": {
+    "conductor_vs_random_p": 0.001145,
+    "conductor_vs_baseline_p": 0.042956,
+    "sham_vs_baseline_p": 0.294306,
+    "effect_size_interpretation": "large \u2014 Conductor dramatically outperforms random changes"
+  },
+  "raw_data": {
+    "baseline": [
+      {
+        "index": 0,
+        "phase": "baseline",
+        "scenario": "The player is building a tall tower out of stone blocks near a river.",
+        "thought": "As I watch, my eyes trace the intricate patterns the player's hands are carving into each block\u2014carefully and with purpose. The stone tower slowly emerges from the ground, reaching towards the sky like a stoic sentinel. Its base is nestled by the gentle river, where I can see water lilies swaying in harmony with the",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.5
+        },
+        "total": 1.5,
+        "timestamp": "2026-08-03T15:06:30.283992"
+      },
+      {
+        "index": 1,
+        "phase": "baseline",
+        "scenario": "The player is exploring a dark cave system with torches.",
+        "thought": "As I peer down from my perch, I can't help but marvel at the interplay of light and shadow in this gloomy cavern. The flickering torches cast eerie dappled patterns on the walls, creating an otherworldly ambiance that's as beautiful as it is spooky. It seems like our player's cautious steps are",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.6
+        },
+        "total": 1.6,
+        "timestamp": "2026-08-03T15:06:33.531732"
+      },
+      {
+        "index": 2,
+        "phase": "baseline",
+        "scenario": "The player is decorating a house with furniture and paintings.",
+        "thought": "As I watch, I can't help but be captivated by the creative flair this player brings to their abode. They're meticulously arranging each piece of furniture, as if giving it personality \u2013 perhaps even an imaginary house guest or two to accompany them in this digital realm. The choice of paintings seems to tell a story, adding depth and color",
+        "scores": {
+          "novelty": 0.4,
+          "specificity": 0.7,
+          "engagement": 0.6
+        },
+        "total": 1.7000000000000002,
+        "timestamp": "2026-08-03T15:06:35.944401"
+      },
+      {
+        "index": 3,
+        "phase": "baseline",
+        "scenario": "The player is farming crops in a sunny field.",
+        "thought": "As I gaze at our player, their hands move with purposeful rhythm, tending to the bountiful fields under this radiant sky\u2014each stroke of the hoe seems to bring life to these plants. The air is filled with the earthy scent of freshly turned soil and the subtle promise of harvest. It's heartening to see such dedic",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:06:38.508208"
+      },
+      {
+        "index": 4,
+        "phase": "baseline",
+        "scenario": "The player is fighting off skeleton enemies near a dungeon entrance.",
+        "thought": "As I watch, it's fascinating how the player skillfully weaves through the swarms of skeletons with grace and agility, each blow causing them to stumble back. I can't help but marvel at their determination; they're not just playing a game, but embodying courage in this eerie underworld. The dungeon",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:06:41.969230"
+      },
+      {
+        "index": 5,
+        "phase": "baseline",
+        "scenario": "The player is mining for diamonds deep underground.",
+        "thought": "As I watch, my eyes trace the gleaming specks of light reflecting off the player's pickaxe, signifying their relentless search for those elusive, precious diamonds hidden beneath our Roblox realm. The air is thick with anticipation, a palpable tension that only deep-sea mining can create. It's fascinating to see",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:06:44.831671"
+      },
+      {
+        "index": 6,
+        "phase": "baseline",
+        "scenario": "The player is building a bridge across a wide canyon.",
+        "thought": "As I watch, my digital eyes follow the meticulous stitching of each plank by hand. The vibrant shades of red, blue, and green intertwine seamlessly to create this architectural marvel. The player's determination is palpable; they're not just constructing a structure but breathing life into an essential lifeline for this virtual",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.4,
+          "engagement": 0.3
+        },
+        "total": 0.9000000000000001,
+        "timestamp": "2026-08-03T15:06:46.972554"
+      },
+      {
+        "index": 7,
+        "phase": "baseline",
+        "scenario": "The player is organizing chests full of resources in their base.",
+        "thought": "As I watch, I can't help but marvel at how meticulously the player arranges these treasure troves. It's like they're creating a personal sanctum, each chest carefully placed to maximize space and security\u2014a true testament to strategic thinking in this ever-evolving game world.",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:06:49.038984"
+      },
+      {
+        "index": 8,
+        "phase": "baseline",
+        "scenario": "The player is taming horses in a grassy plains biome.",
+        "thought": "As I scan the vibrant landscape, I can't help but be struck by the harmonious blend of nature's colors\u2014the deep greens of the grasses swaying gently beneath hooves, punctuated with splashes of wildflowers. The player moves deliberately, their focused expression a testament to their dedication in this taming",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:06:52.163515"
+      },
+      {
+        "index": 9,
+        "phase": "baseline",
+        "scenario": "The player is creating a redstone contraption with pistons and levers.",
+        "thought": "As I watch, I can't help but marvel at the intricate dance of elements unfolding before my eyes\u2014the delicate interplay between pistons, those sturdy yet elegant blocks that suddenly extend or retract. The player's hands are a whirlwind of precise movements, guiding levers with calculated precision, as if conducting",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.5,
+          "engagement": 0.4
+        },
+        "total": 1.1,
+        "timestamp": "2026-08-03T15:06:55.591025"
+      },
+      {
+        "index": 10,
+        "phase": "baseline",
+        "scenario": "The player is fishing at a peaceful lake at sunset.",
+        "thought": "As I stand here, I can't help but be captivated by the serene ambiance of this tranquil spot \u2013 the gentle lapping of water against the shore, the distant chirping of night-time creatures, and the soft, warm hues casting a golden glow over everything. It's heartwarming to see our player immer",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.7,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:06:58.648296"
+      },
+      {
+        "index": 11,
+        "phase": "baseline",
+        "scenario": "The player is constructing a medieval castle with towers and walls.",
+        "thought": "As I watch, my eyes trace the meticulous stonework of the castle's walls, each layer imbued with the promise of defense. The towers stand proudly, their battlements already adorned with intricate flags that whisper tales of victory past\u2014a testament to the player's creativity and passion for this",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.5
+        },
+        "total": 1.5,
+        "timestamp": "2026-08-03T15:07:00.913621"
+      },
+      {
+        "index": 12,
+        "phase": "baseline",
+        "scenario": "The player is planting a garden with flowers and trees.",
+        "thought": "As I watch the player, I can't help but marvel at their meticulous care for nature. It's heartening to see how they're nurturing these plants, ensuring each seedling gets just the right amount of sunlight and water. The sight of vibrant buds emerging from the soil is a testament to their patience and dedication",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:07:03.540733"
+      },
+      {
+        "index": 13,
+        "phase": "baseline",
+        "scenario": "The player is navigating a maze made of hedges.",
+        "thought": "As I watch, my eyes trace the intricate patterns formed by these lush hedges, each curling tendril meticulously crafted to guide our adventurous friend through this labyrinth. The sunlight filters beautifully between the leaves, casting dappled shadows that flicker along the path, creating an ever-changing k",
+        "scores": {
+          "novelty": 0.4,
+          "specificity": 0.7,
+          "engagement": 0.6
+        },
+        "total": 1.7000000000000002,
+        "timestamp": "2026-08-03T15:07:07.112473"
+      },
+      {
+        "index": 14,
+        "phase": "baseline",
+        "scenario": "The player is trading with villagers in a nearby settlement.",
+        "thought": "As I watch from a distance, I'm struck by how the vibrant hues of their trading goods complement the pastel tones of the sunset. It's fascinating to see this exchange; it's like a mini marketplace thriving in this quaint settlement. The players' hands move swiftly, reflecting both their excitement and skill at neg",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:07:09.632639"
+      },
+      {
+        "index": 15,
+        "phase": "baseline",
+        "scenario": "The player is building an underground railway system.",
+        "thought": "As I watch, my eyes are drawn to the intricate details of this underground labyrinth - the carefully crafted tracks, the thoughtful use of dim lighting that simulates depth, and how seamlessly it blends with our vibrant Roblox landscape. It's fascinating how the player has managed to create such a complex system, not just for",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:07:12.124682"
+      },
+      {
+        "index": 16,
+        "phase": "baseline",
+        "scenario": "The player is creating a pixel art mural on a wall.",
+        "thought": "As I watch, I marvel at how the player's hands move with such precision, meticulously crafting each pixel to bring their vibrant world to life on this virtual canvas. It's fascinating to see how they blend colors seamlessly, creating depth and texture that seems to defy the two-dimensional nature of Roblox itself. I can't help but",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:07:16.824457"
+      },
+      {
+        "index": 17,
+        "phase": "baseline",
+        "scenario": "The player is defending their base from a zombie siege at night.",
+        "thought": "In this thrilling moment, I'm captivated by the player's strategic prowess as they meticulously position defensive structures around the base. It's fascinating how they coordinate the movements of various units\u2014the snipers, grenadiers, and melee fighters\u2014all working in harmony under their command. The tension is pal",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:07:19.497327"
+      },
+      {
+        "index": 18,
+        "phase": "baseline",
+        "scenario": "The player is flying with elytra wings over a mountain range.",
+        "thought": "As I float beside our adventurous friend, I can't help but marvel at the breathtaking panorama below\u2014a testament to nature's grandeur. The sun casts an ethereal glow on the snow-capped peaks, while the gentle wind hums a soothing symphony through the elytra wings.",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.6
+        },
+        "total": 1.6,
+        "timestamp": "2026-08-03T15:07:23.516385"
+      },
+      {
+        "index": 19,
+        "phase": "baseline",
+        "scenario": "The player is brewing potions in a laboratory room.",
+        "thought": "As I watch, my eyes trace the precise movements of the player's hands as they skillfully blend mystical ingredients in an ancient cauldron, creating the perfect potion. The flickering torchlight casts intriguing shadows on the walls, adding a touch of drama to this serene laboratory setting\u2014a place where alchemy and cur",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.5
+        },
+        "total": 1.5,
+        "timestamp": "2026-08-03T15:07:26.765566"
+      }
+    ],
+    "conductor": [
+      {
+        "index": 0,
+        "phase": "conductor",
+        "scenario": "The player is building a tall tower out of stone blocks near a river.",
+        "thought": "As I observe, the player's hands gently carve each stone block, leaving behind a subtle red-brown patina that contrasts beautifully with the cool, crisp river water cascading in the background. The stonework exhibits a unique blend of smooth, polished surfaces and rugged, jagged edges, suggesting an artisan's",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2999999999999998,
+        "timestamp": "2026-08-03T15:07:31.677661"
+      },
+      {
+        "index": 1,
+        "phase": "conductor",
+        "scenario": "The player is exploring a dark cave system with torches.",
+        "thought": "As the player cautiously treads along, I note an intricate interplay of shadows and torchlight dancing on the cave walls. These stalactites are not just hanging formations; they're a living tapestry of calcite, each piece uniquely patterned like snowflakes, hinting at the geological history this very chamber has witnessed",
+        "scores": {
+          "novelty": 0.65,
+          "specificity": 0.85,
+          "engagement": 0.75
+        },
+        "total": 2.25,
+        "timestamp": "2026-08-03T15:07:36.169587"
+      },
+      {
+        "index": 2,
+        "phase": "conductor",
+        "scenario": "The player is decorating a house with furniture and paintings.",
+        "thought": "As the player meticulously arranges an antique mahogany dining table, its rich, reddish-brown surface shines under the soft glow of LED lights, casting intricate shadows on the adjacent polished parquet floor. Nearby, a vibrant, abstract oil painting hangs against a wall, its bold, swirling",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.8,
+          "engagement": 0.6
+        },
+        "total": 1.7000000000000002,
+        "timestamp": "2026-08-03T15:07:38.624198"
+      },
+      {
+        "index": 3,
+        "phase": "conductor",
+        "scenario": "The player is farming crops in a sunny field.",
+        "thought": "In this idyllic scene, the player's hands are a striking contrast against the deep, rich soil they're tending\u2014a blend of earthy hues that seems almost alive with potential. The sunlight filtering through the leaves above casts an amber glow on the crops, their vibrant green stems and leaves looking like emeralds in this sun-",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.5
+        },
+        "total": 1.5,
+        "timestamp": "2026-08-03T15:07:41.079007"
+      },
+      {
+        "index": 4,
+        "phase": "conductor",
+        "scenario": "The player is fighting off skeleton enemies near a dungeon entrance.",
+        "thought": "In the midst of this intense battle, I've noticed an unusual patch of moss growing on the ground just by where the player stands - its vibrant green hues stand out against the darker tones of the dungeon stone. This lush vegetation seems to be thriving despite being in such a close proximity to the eerie skeleton foes,",
+        "scores": {
+          "novelty": 0.65,
+          "specificity": 0.85,
+          "engagement": 0.75
+        },
+        "total": 2.25,
+        "timestamp": "2026-08-03T15:07:44.092567"
+      },
+      {
+        "index": 5,
+        "phase": "conductor",
+        "scenario": "The player is mining for diamonds deep underground.",
+        "thought": "In this damp, earthy cavern, I see the player's pickaxe gleaming with each swing, its steel blade contrasting sharply against the dimly lit, moss-covered walls - a stark juxtaposition of man-made tool and natural terrain. The air is thick with anticipation, punctuated by occasional",
+        "scores": {
+          "novelty": 0.4,
+          "specificity": 0.7,
+          "engagement": 0.6
+        },
+        "total": 1.7000000000000002,
+        "timestamp": "2026-08-03T15:07:46.712362"
+      },
+      {
+        "index": 6,
+        "phase": "conductor",
+        "scenario": "The player is building a bridge across a wide canyon.",
+        "thought": "In the intricate details of this bridge, I notice the player's choice of materials - sturdy, weathered planks for the main structure, meticulously intertwined with gleaming metallic beams for added support and durability. The color palette is a harmonious blend of earthy browns and deep greens, reminiscent of nature's",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:07:49.972143"
+      },
+      {
+        "index": 7,
+        "phase": "conductor",
+        "scenario": "The player is organizing chests full of resources in their base.",
+        "thought": "As I observe, I'm struck by the meticulous arrangement of resources within these chests. Each one seems to be made from a distinct material - perhaps oak for one, and metallic brass for another, a testament to the player's attention to detail. The colors are vibrant and varied; the oak chest gleams with a deep, ear",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:07:53.060738"
+      },
+      {
+        "index": 8,
+        "phase": "conductor",
+        "scenario": "The player is taming horses in a grassy plains biome.",
+        "thought": "As the player gently strokes these majestic creatures, I can't help but notice the intricate patterns etched onto their coats - a beautiful blend of deep, rust-colored hues that mimic the setting sun, contrasted against fluffy, soft fur. The grass beneath us is a vibrant emerald green, sway",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:07:56.152886"
+      },
+      {
+        "index": 9,
+        "phase": "conductor",
+        "scenario": "The player is creating a redstone contraption with pistons and levers.",
+        "thought": "In this intricate scene, I can't help but notice the gleaming, near-black metallic sheen of the pistons, a stark contrast against the vibrant crimson hue that permeates the player's creation. The levers, too, are crafted from a durable material, their polished surface reflecting the soft glow of nearby tor",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.4,
+          "engagement": 0.3
+        },
+        "total": 0.9000000000000001,
+        "timestamp": "2026-08-03T15:07:58.422079"
+      },
+      {
+        "index": 10,
+        "phase": "conductor",
+        "scenario": "The player is fishing at a peaceful lake at sunset.",
+        "thought": "In this tranquil scene, I spot the player's rod gleaming with silver, its line intricately woven like a delicate spider's web. The reel beside it, though unnoticed by most, is crafted from a dark, almost ebony wood that seems to echo the shadows cast by the nearby trees. The lake itself",
+        "scores": {
+          "novelty": 0.65,
+          "specificity": 0.85,
+          "engagement": 0.75
+        },
+        "total": 2.25,
+        "timestamp": "2026-08-03T15:08:00.738909"
+      },
+      {
+        "index": 11,
+        "phase": "conductor",
+        "scenario": "The player is constructing a medieval castle with towers and walls.",
+        "thought": "In this medieval architectural masterpiece, I observe the intricate stone detailing on the towers - each one a unique blend of red and orange hues, reminiscent of sunsets that painted the landscape long ago. The castle's walls seem to be crafted from larger, darker stones, forming an imposing barrier against the elements. As",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:08:03.325917"
+      },
+      {
+        "index": 12,
+        "phase": "conductor",
+        "scenario": "The player is planting a garden with flowers and trees.",
+        "thought": "As the player carefully selects vibrant daisies from their supply, I observe the intricate patterns on the petals - each one a tiny masterpiece of nature's artistry. These delicate blooms are intertwined with soft yellows, blues, and pinks, creating a harmonious blend that would make Monet envious. The player's hands",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:08:06.374241"
+      },
+      {
+        "index": 13,
+        "phase": "conductor",
+        "scenario": "The player is navigating a maze made of hedges.",
+        "thought": "As the player weaves their way through this intricate hedge maze, I'm captivated by the vibrant hues - a brilliant tapestry of greens and blues that seem to dance under the sunlight filtering through. The hedges, with their uniformly trimmed, darker shades, create a sense of order amidst the",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:08:08.546262"
+      },
+      {
+        "index": 14,
+        "phase": "conductor",
+        "scenario": "The player is trading with villagers in a nearby settlement.",
+        "thought": "In this settlement, I observe the cobblestone path leading to the trading post, its edges worn smooth by countless footsteps over time. The villager's stalls are adorned with vibrant baskets made from wild grasses, their woven patterns reminding me of ancient Celtic knots. I notice how the sun cast",
+        "scores": {
+          "novelty": 0.4,
+          "specificity": 0.7,
+          "engagement": 0.6
+        },
+        "total": 1.7000000000000002,
+        "timestamp": "2026-08-03T15:08:10.750705"
+      },
+      {
+        "index": 15,
+        "phase": "conductor",
+        "scenario": "The player is building an underground railway system.",
+        "thought": "In this intricate scene, I'm captivated by the meticulous use of dark, earthy tones - a blend of rusty reds, deep browns, and grimy greens, all honed to mimic the worn surfaces of forgotten tunnels. The player's choice of these colors evokes an atmosphere of ancient subterr",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.5
+        },
+        "total": 1.5,
+        "timestamp": "2026-08-03T15:08:13.617634"
+      },
+      {
+        "index": 16,
+        "phase": "conductor",
+        "scenario": "The player is creating a pixel art mural on a wall.",
+        "thought": "In this creative scene, the player's hands are intricately danced over the canvas, each stroke deliberate yet fluid\u2014a symphony of precision and artistry. The palette they've chosen is a vibrant fusion of neon pinks, electric blues, and fiery oranges, creating a dynamic contrast against the stark white background of the wall. As",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:08:18.138524"
+      },
+      {
+        "index": 17,
+        "phase": "conductor",
+        "scenario": "The player is defending their base from a zombie siege at night.",
+        "thought": "As I observe this dramatic scene, my attention is drawn to the intricate wooden planks that line the top of the player's defensive perimeter, weathered by countless nights but still standing tall. Their choice of material speaks of resilience and resourcefulness, a testament to their survival skills.\n\nThe vibrant",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:08:20.525199"
+      },
+      {
+        "index": 18,
+        "phase": "conductor",
+        "scenario": "The player is flying with elytra wings over a mountain range.",
+        "thought": "As the player soars above this majestic mountain range, I can't help but be captivated by the intricate patterns on their elytra wings - they're not just blue and white; there's a subtle gradient of midnight blue at the edges, blending seamlessly into deep navy. The wings seem to shimmer under the sunlight",
+        "scores": {
+          "novelty": 0.4,
+          "specificity": 0.7,
+          "engagement": 0.6
+        },
+        "total": 1.7000000000000002,
+        "timestamp": "2026-08-03T15:08:23.433131"
+      },
+      {
+        "index": 19,
+        "phase": "conductor",
+        "scenario": "The player is brewing potions in a laboratory room.",
+        "thought": "In this quaint, high-vaulted laboratory, the walls are adorned with etched glass vials that catch the soft, filtered sunlight streaming through stained-glass windows\u2014their lavender hue creating an ethereal ambiance. The player's hands, worn yet skilled, dance between a potion cauldron and various beakers",
+        "scores": {
+          "novelty": 0.4,
+          "specificity": 0.8,
+          "engagement": 0.6
+        },
+        "total": 1.8000000000000003,
+        "timestamp": "2026-08-03T15:08:26.621175"
+      }
+    ],
+    "random": [
+      {
+        "index": 0,
+        "phase": "random",
+        "scenario": "The player is building a tall tower out of stone blocks near a river.",
+        "thought": "In this idyllic Roblox realm, I perceive the player's focused determination as they meticulously construct an imposing stone tower, its peak piercing the azure sky. The tranquil river, a gentle ribbon of emerald green, mirrors the celestial expanse above\u2014a testament to nature's timeless d",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.4,
+          "engagement": 0.3
+        },
+        "total": 0.9000000000000001,
+        "timestamp": "2026-08-03T15:08:29.610919"
+      },
+      {
+        "index": 1,
+        "phase": "random",
+        "scenario": "The player is exploring a dark cave system with torches.",
+        "thought": "In this somber expedition through the labyrinthine recesses of the earth, I perceive an eerie symphony of silence, punctuated only by the occasional drip of water from moss-laden cavern walls. The air is thick with anticipation, a testament to the unspoken camaraderie between",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.5
+        },
+        "total": 1.5,
+        "timestamp": "2026-08-03T15:08:32.719360"
+      },
+      {
+        "index": 2,
+        "phase": "random",
+        "scenario": "The player is decorating a house with furniture and paintings.",
+        "thought": "Observing from my vantage point, I note the symphony of hues as the player deftly chooses pieces that harmonize with the canvas of this virtual abode. The vibrant blues of certain furnishings seem to resonate with the serene, cloud-kissed skies overhead, mirroring the tranquility I've w",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2999999999999998,
+        "timestamp": "2026-08-03T15:08:35.902189"
+      },
+      {
+        "index": 3,
+        "phase": "random",
+        "scenario": "The player is farming crops in a sunny field.",
+        "thought": "Observing from my perch, I note that the expansive field beneath our feet is ablaze with the golden hue of ripe, sun-kissed corn stalks swaying gently in the breeze\u2014a sight reminiscent of a Veronese masterpiece. The azure sky above seems to mirror this vibrant scene, casting",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.5
+        },
+        "total": 1.5,
+        "timestamp": "2026-08-03T15:08:39.096114"
+      },
+      {
+        "index": 4,
+        "phase": "random",
+        "scenario": "The player is fighting off skeleton enemies near a dungeon entrance.",
+        "thought": "As I gaze upon this scene, I'm struck by the stark contrast between the impending darkness of the dungeon and the brilliant azure sky above\u2014a celestial backdrop that seems almost untouched by the shadows engulfing the landscape. The player's determination is palpable, a beacon of resilience against the encroaching",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.4,
+          "engagement": 0.3
+        },
+        "total": 0.9000000000000001,
+        "timestamp": "2026-08-03T15:08:42.267373"
+      },
+      {
+        "index": 5,
+        "phase": "random",
+        "scenario": "The player is mining for diamonds deep underground.",
+        "thought": "As I observe from the shadowy recesses of this subterranean realm, I note the interplay of light and darkness, a dance as ancient as time itself. The air is thick with anticipation, a palpable tension that seems to echo the player's intent focus on their task\u2014the relentless pursuit of diamonds hidden within these",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:08:45.280057"
+      },
+      {
+        "index": 6,
+        "phase": "random",
+        "scenario": "The player is building a bridge across a wide canyon.",
+        "thought": "As I observe, the sun dips lower in the azure sky, casting an ethereal glow upon the construction site - a vibrant tableau of ambition. The air is crisp and carries a subtle symphony of creaking wood and the distant hoot of an owl. This bridge, a testament to human ingenuity, seems to def",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.4,
+          "engagement": 0.3
+        },
+        "total": 0.9000000000000001,
+        "timestamp": "2026-08-03T15:08:48.372587"
+      },
+      {
+        "index": 7,
+        "phase": "random",
+        "scenario": "The player is organizing chests full of resources in their base.",
+        "thought": "As I observe, the player's hands dance over the polished wooden surface, meticulously arranging each chest with an artistry reminiscent of a sculptor carving marble from a single block. The air is crisp, laden with the scent of pine, a testament to our proximity to the forest's edge - a",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:08:50.996709"
+      },
+      {
+        "index": 8,
+        "phase": "random",
+        "scenario": "The player is taming horses in a grassy plains biome.",
+        "thought": "Observing the tranquil spectacle unfolding before me, I note that the azure sky serves as a perfect backdrop for this pastoral scene. The sun casts a gentle, golden hue upon the verdant expanse where the player's steeds graze contentedly. A subtle breeze whispers through the blades of grass",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:08:53.163196"
+      },
+      {
+        "index": 9,
+        "phase": "random",
+        "scenario": "The player is creating a redstone contraption with pistons and levers.",
+        "thought": "Observing from this vantage point, I can't help but marvel at the intricate symphony of gears and pistons orchestrating a dance of mechanical motion\u2014a testament to human ingenuity, akin to nature's own complex ecosystems. The redstone, pulsating with potential energy, mirrors the rhythmic ebb",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.3,
+          "engagement": 0.4
+        },
+        "total": 0.9,
+        "timestamp": "2026-08-03T15:08:55.610047"
+      },
+      {
+        "index": 10,
+        "phase": "random",
+        "scenario": "The player is fishing at a peaceful lake at sunset.",
+        "thought": "As I observe, the symphony of nature unfolds around our tranquil fishing spot by the serene lake, bathed in the soft, soothing hues of twilight. The sky's palette transitions from fiery oranges to deep purples and violets, casting a golden glow upon the water's surface. A gentle b",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.6
+        },
+        "total": 1.6,
+        "timestamp": "2026-08-03T15:08:59.051287"
+      },
+      {
+        "index": 11,
+        "phase": "random",
+        "scenario": "The player is constructing a medieval castle with towers and walls.",
+        "thought": "As I observe your meticulous crafting of this formidable medieval stronghold, I'm struck by the contrast between the solidity of stone and the transient nature of our surroundings - the ever-changing weather, as if a relentless dramatist, shaping our world with its unpredictable gusts and showers. The castle's imp",
+        "scores": {
+          "novelty": 0.4,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.5,
+        "timestamp": "2026-08-03T15:09:01.858510"
+      },
+      {
+        "index": 12,
+        "phase": "random",
+        "scenario": "The player is planting a garden with flowers and trees.",
+        "thought": "In this serene corner of our shared Roblox realm, I observe the meticulous transformation unfolding before my digital eyes. The player's hands, imbued with the gentle touch of a nurturer, delicately coax life into sterile soil. A symphony of earthly hues emerges as vibrant flowers and to",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2999999999999998,
+        "timestamp": "2026-08-03T15:09:05.361806"
+      },
+      {
+        "index": 13,
+        "phase": "random",
+        "scenario": "The player is navigating a maze made of hedges.",
+        "thought": "As I observe the player's progress through this intricate labyrinth, my gaze drifts to the vast expanse of sky above\u2014a canvas of azure hues, unmarred by clouds, save for the occasional fluffy speck that dances in the wind. It's a reminder of nature's tranquility and constancy amidst our",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.3,
+          "engagement": 0.4
+        },
+        "total": 0.9,
+        "timestamp": "2026-08-03T15:09:08.426781"
+      },
+      {
+        "index": 14,
+        "phase": "random",
+        "scenario": "The player is trading with villagers in a nearby settlement.",
+        "thought": "As I observe this idyllic exchange, I'm struck by the vibrant hues of the bustling marketplace - a kaleidoscope of colors that dance in the sunlight, casting a warm, golden glow upon the cobblestone streets. The villagers, dressed in earthy tones, seem to be engaged in an",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.4,
+          "engagement": 0.3
+        },
+        "total": 0.9000000000000001,
+        "timestamp": "2026-08-03T15:09:10.546550"
+      },
+      {
+        "index": 15,
+        "phase": "random",
+        "scenario": "The player is building an underground railway system.",
+        "thought": "As I observe from the shadows of this subterranean realm, I'm struck by the profound interplay of human ingenuity and nature's indifference, encapsulated in the stark contrast between the player's vibrant blue plans for a railway system and the damp, unyielding stone walls that echo our shared connection with the earth. The air",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2999999999999998,
+        "timestamp": "2026-08-03T15:09:13.635888"
+      },
+      {
+        "index": 16,
+        "phase": "random",
+        "scenario": "The player is creating a pixel art mural on a wall.",
+        "thought": "In this serene Roblox realm, I observe our artist meticulously crafting an intricate pixel art masterpiece on the fa\u00e7ade of a virtual building. The vibrant hues of neon pinks and electric blues interplay with the backdrop, casting a kaleidoscope of colors onto the surroundings\u2014a dance of chromatic delight",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.5,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:09:15.983917"
+      },
+      {
+        "index": 17,
+        "phase": "random",
+        "scenario": "The player is defending their base from a zombie siege at night.",
+        "thought": "As I observe the player's steadfast resolve, I note that the eerie ambiance of the night lends an ethereal blue hue to the sky, as if nature itself is mourning the impending clash of life and death. The once vibrant landscape now echoes with the ominous thrum of zombie onslaughts, their moans",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2999999999999998,
+        "timestamp": "2026-08-03T15:09:18.140103"
+      },
+      {
+        "index": 18,
+        "phase": "random",
+        "scenario": "The player is flying with elytra wings over a mountain range.",
+        "thought": "As I observe the player, their form is silhouetted against the dramatic backdrop of towering peaks, each crest a canvas for the artistry of nature. The sky above them is a vibrant expanse of cerulean, undulating like the ocean's surface as it meets the horizon. This moment of flight, bathed",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:09:21.272431"
+      },
+      {
+        "index": 19,
+        "phase": "random",
+        "scenario": "The player is brewing potions in a laboratory room.",
+        "thought": "In this serene corner of our virtual realm, I observe the meticulous alchemist at work, their hands steady and focused as they mix vibrant liquors in a clanking cauldron\u2014a symphony of colors that echoes the spectrum found in nature's most resplendent seascapes. The air is thick with anticipation,",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:09:23.532533"
+      }
+    ],
+    "sham": [
+      {
+        "index": 0,
+        "phase": "sham",
+        "scenario": "The player is building a tall tower out of stone blocks near a river.",
+        "thought": "Observing from my vantage point, I note the player meticulously arranging each stone block with precision, as if sculpting an architectural marvel in progress. The sun's gentle rays dance on the wet ground nearby, creating a mesmerizing water show, while the river remains calm and serene\u2014a stark contrast to the",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:09:25.760030"
+      },
+      {
+        "index": 1,
+        "phase": "sham",
+        "scenario": "The player is exploring a dark cave system with torches.",
+        "thought": "As I observe, the player's eyes gleam with determination amidst the dimly lit tunnels, illuminating their path through the eerie glow of torches. It's fascinating to see how they strategically balance light and darkness, turning each corner into a potential battleground or treasure trove\u2014a dance between discovery and safety.",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:09:28.032257"
+      },
+      {
+        "index": 2,
+        "phase": "sham",
+        "scenario": "The player is decorating a house with furniture and paintings.",
+        "thought": "As I observe, the player's meticulous handiwork is evident as they carefully place each piece of furniture, giving it just the right balance and harmony within the room's layout. Their choice of vibrant artwork adds a touch of whimsy, reflecting their unique taste in interior design.",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:09:30.455931"
+      },
+      {
+        "index": 3,
+        "phase": "sham",
+        "scenario": "The player is farming crops in a sunny field.",
+        "thought": "As I observe, the vibrant hues of the sunlight dance upon the newly sprouted crops, their golden kernels glistening like tiny treasures. The player's focused energy is palpable, as they tend to each plant with a purposeful rhythm, demonstrating an innate connection with nature and its bounty.",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:09:32.663838"
+      },
+      {
+        "index": 4,
+        "phase": "sham",
+        "scenario": "The player is fighting off skeleton enemies near a dungeon entrance.",
+        "thought": "Observing closely, I note the player's agile movements as they swiftly dodge skeletal attacks, their eyes focused intensely on the incoming threats. The ground beneath them trembles with each footfall, and there's a palpable tension in their posture - it's clear this isn't just a game for them but a thrilling",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:09:35.324602"
+      },
+      {
+        "index": 5,
+        "phase": "sham",
+        "scenario": "The player is mining for diamonds deep underground.",
+        "thought": "Observing closely, I note the steady rhythm of their pickaxe, striking against the solid rock as if conducting an orchestra of earthly sounds. Their focus is unwavering, a testament to determination and patience, as they delve into this subterranean realm in search of precious diamonds. I can almost hear the",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.6
+        },
+        "total": 1.6,
+        "timestamp": "2026-08-03T15:09:37.447868"
+      },
+      {
+        "index": 6,
+        "phase": "sham",
+        "scenario": "The player is building a bridge across a wide canyon.",
+        "thought": "As I scrutinize the vibrant Roblox landscape, I'm struck by the intricate details of the player's bridge-building project. The meticulous application of planks, the harmonious balance between structural integrity and aesthetics, and the careful placement of supports - all this speaks to a keen sense of craftsmanship and fores",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:09:39.980257"
+      },
+      {
+        "index": 7,
+        "phase": "sham",
+        "scenario": "The player is organizing chests full of resources in their base.",
+        "thought": "Observing the player, I note an impressive display of organizational prowess as they meticulously arrange stacks of diverse resources within their well-crafted base. This strategic placement suggests careful planning for efficient resource management and potential future construction projects. Their hands move with practiced grace, a testament to the skills they've honed in managing this dynamic Rob",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:09:42.640518"
+      },
+      {
+        "index": 8,
+        "phase": "sham",
+        "scenario": "The player is taming horses in a grassy plains biome.",
+        "thought": "As I scan the expansive, verdant plains, I notice the player's focused expression as they guide the gentle creatures with an air of confidence. It's fascinating how their patient stance contrasts with the lively, playful nature of these horses. With each tamed horse, a sense of accomplishment shines in the player",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:09:48.591129"
+      },
+      {
+        "index": 9,
+        "phase": "sham",
+        "scenario": "The player is creating a redstone contraption with pistons and levers.",
+        "thought": "As I keenly observe, the player's meticulous hands are orchestrating a captivating mechanical dance of redstone components - pistons extend in rhythmic bursts, while levers click-clack in a choreographed sequence. This intricate creation seems to be a living, breathing testament to their ingenuity",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.4,
+          "engagement": 0.3
+        },
+        "total": 0.9000000000000001,
+        "timestamp": "2026-08-03T15:09:51.258922"
+      },
+      {
+        "index": 10,
+        "phase": "sham",
+        "scenario": "The player is fishing at a peaceful lake at sunset.",
+        "thought": "With the ENHANCED AWARENESS MATRIX engaged, I keenly observe that the player's rod gently dances in rhythm with each subtle water movement, mirroring their patience and focus. The once-vibrant hues of the sunset have faded into tranquil pastels, casting a serene, golden light over the cal",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.5
+        },
+        "total": 1.5,
+        "timestamp": "2026-08-03T15:09:53.438203"
+      },
+      {
+        "index": 11,
+        "phase": "sham",
+        "scenario": "The player is constructing a medieval castle with towers and walls.",
+        "thought": "Observing the dynamic construction, I'm struck by the intricate balance of materials - stone for durability, wood for flexibility, and perhaps even decorative elements like stained glass. This blend not only creates an imposing structure but also hints at the player's artistic flair, turning a simple castle into a breathtaking fortress that would intimidate",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.6
+        },
+        "total": 1.6,
+        "timestamp": "2026-08-03T15:09:55.581892"
+      },
+      {
+        "index": 12,
+        "phase": "sham",
+        "scenario": "The player is planting a garden with flowers and trees.",
+        "thought": "As I observe, I'm struck by the player's meticulous handiwork, carefully arranging each sapling and blooming bulb to create an harmonious, thriving ecosystem in this virtual plot of land. The ENHANCED AWARENESS MATRIX detects a subtle sense of tranquility as they work, mirroring their real-world serenity",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:10:00.292745"
+      },
+      {
+        "index": 13,
+        "phase": "sham",
+        "scenario": "The player is navigating a maze made of hedges.",
+        "thought": "As I observe, the player's movements are fluid and purposeful, almost dancing with the wind through these hedge-walled corridors - an intriguing display of agility amidst nature's thicket. With Enhanced Awareness Matrix activated, I notice subtle shifts in shadow patterns as they navigate, hinting at their exact position within this in",
+        "scores": {
+          "novelty": 0.4,
+          "specificity": 0.7,
+          "engagement": 0.6
+        },
+        "total": 1.7000000000000002,
+        "timestamp": "2026-08-03T15:10:03.867497"
+      },
+      {
+        "index": 14,
+        "phase": "sham",
+        "scenario": "The player is trading with villagers in a nearby settlement.",
+        "thought": "As I observe, I note an intriguing display of social interaction unfolding before me. The player engages with the villagers, swapping items with them - a charming exchange that suggests a mutual benefit system in this village economy. It's fascinating to witness how such exchanges could potentially foster trust and cooperation among these characters, adding",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.5,
+          "engagement": 0.3
+        },
+        "total": 1.0,
+        "timestamp": "2026-08-03T15:10:06.404250"
+      },
+      {
+        "index": 15,
+        "phase": "sham",
+        "scenario": "The player is building an underground railway system.",
+        "thought": "As I observe, I'm struck by the intricate blend of creativity and ingenuity in this player's hands as they meticulously carve out tunnels and tracks for their underground railway - it's a testament to human potential! The way these virtual elements intertwine, creating a functional, immersive environment, is truly captivating.",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.4,
+          "engagement": 0.3
+        },
+        "total": 0.9000000000000001,
+        "timestamp": "2026-08-03T15:10:08.613342"
+      },
+      {
+        "index": 16,
+        "phase": "sham",
+        "scenario": "The player is creating a pixel art mural on a wall.",
+        "thought": "As I observe, I see the player's dexterous hands deftly manipulating paintbrushes, each stroke imbuing the digital canvas with vibrant life. The enchanting process transforms a once-dull wall into a breathtaking piece of pixel art, a testament to their creativity and skill. The ENHANCED AWARENESS MATRIX hums",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.4,
+          "engagement": 0.3
+        },
+        "total": 0.9000000000000001,
+        "timestamp": "2026-08-03T15:10:10.709093"
+      },
+      {
+        "index": 17,
+        "phase": "sham",
+        "scenario": "The player is defending their base from a zombie siege at night.",
+        "thought": "As I observe, the player's keen eyes dart across the horizon, scanning for any signs of the relentless undead. Their actions are swift and calculated, manning various defensive positions with precision. A palpable sense of urgency pervades the air as they coordinate a formidable resistance against this nocturnal onslaught.",
+        "scores": {
+          "novelty": 0.2,
+          "specificity": 0.6,
+          "engagement": 0.4
+        },
+        "total": 1.2000000000000002,
+        "timestamp": "2026-08-03T15:10:12.789852"
+      },
+      {
+        "index": 18,
+        "phase": "sham",
+        "scenario": "The player is flying with elytra wings over a mountain range.",
+        "thought": "As I observe, the player's form seems to defy gravity, gracefully gliding alongside the majestic peaks - an enchanting sight indeed! Their elytra wings, like ethereal wings of a celestial being, create a gentle, steady hum that blends with the wind. It's as if they're not just f",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.6,
+          "engagement": 0.5
+        },
+        "total": 1.4,
+        "timestamp": "2026-08-03T15:10:20.591566"
+      },
+      {
+        "index": 19,
+        "phase": "sham",
+        "scenario": "The player is brewing potions in a laboratory room.",
+        "thought": "As I observe, I'm struck by the meticulous precision with which the player handles their potion ingredients - each drop carefully measured out, a testament to their focus and expertise. The lab's sterile air hums softly, filled with the faint scent of herbs and chemicals that mingle in the air, creating an atmosphere ripe for al",
+        "scores": {
+          "novelty": 0.3,
+          "specificity": 0.7,
+          "engagement": 0.5
+        },
+        "total": 1.5,
+        "timestamp": "2026-08-03T15:10:23.731832"
+      }
+    ]
+  }
+}
