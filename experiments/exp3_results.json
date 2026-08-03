@@ -54,5 +54,19 @@
     "model": "granite3.1-dense:2b",
     "prompt_id": "04_creative_describe",
     "prompt": "Describe the most interesting thing about this workshop in vivid detail. Make it sound magical."
+  },
+  {
+    "response": "When comparing the stonework on a bridge to that of a tower, both structures require significant skill and expertise, but they present unique challenges and demands due to their distinct functions and forms. To make a fair comparison, let's break them down:\n\n1. Bridge:\n   - Material: Bridges typically use large, uniform stones for their foundation and piers",
+    "eval_count": 80,
+    "prompt_eval_count": 84,
+    "latency_ms": 29896,
+    "load_duration_ms": 1628,
+    "prompt_eval_duration_ms": 0,
+    "eval_duration_ms": 29896,
+    "tokens_per_sec": 2.68,
+    "error": null,
+    "model": "granite3.1-dense:2b",
+    "prompt_id": "05_analytical_compare",
+    "prompt": "Compare the stonework on the bridge versus the tower. Which required more skill to build, and why?"
   }
 ]
