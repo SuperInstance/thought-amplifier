@@ -13,7 +13,7 @@ OUTPUT_FILE = "/home/eileen/projects/thought-amplifier/experiments/exp3_results.
 
 MODELS = ["granite3.1-dense:2b", "qwen2.5:0.5b"]
 
-def run_chat(model, prompt_text):
+def run_chat(model, prompt_text, max_retries=3):
     """Run a single chat completion and return metrics."""
     payload = json.dumps({
         "model": model,
@@ -24,17 +24,33 @@ def run_chat(model, prompt_text):
             "top_p": 0.9,
             "seed": 42,
             "num_ctx": 2048,
+            "num_predict": 300,
         }
     }).encode("utf-8")
 
-    req = urllib.request.Request(OLLAMA_URL, data=payload, headers={"Content-Type": "application/json"})
-
-    start_ns = time.perf_counter_ns()
-    resp = urllib.request.urlopen(req, timeout=120)
-    end_ns = time.perf_counter_ns()
-
-    data = json.loads(resp.read().decode("utf-8"))
-    latency_ms = (end_ns - start_ns) // 1_000_000
+    for attempt in range(max_retries):
+        try:
+            req = urllib.request.Request(OLLAMA_URL, data=payload, headers={"Content-Type": "application/json"})
+            start_ns = time.perf_counter_ns()
+            resp = urllib.request.urlopen(req, timeout=300)
+            end_ns = time.perf_counter_ns()
+            data = json.loads(resp.read().decode("utf-8"))
+            latency_ms = (end_ns - start_ns) // 1_000_000
+            break
+        except Exception as e:
+            print(f"    [retry {attempt+1}/{max_retries}] {e}", flush=True)
+            time.sleep(2)
+    else:
+        return {
+            "response": "[ERROR: timed out after retries]",
+            "eval_count": 0,
+            "prompt_eval_count": 0,
+            "total_duration_ns": 0,
+            "load_duration_ns": 0,
+            "prompt_eval_duration_ns": 0,
+            "eval_duration_ns": 0,
+            "latency_ms": 0,
+        }
 
     return {
         "response": data["message"]["content"],
