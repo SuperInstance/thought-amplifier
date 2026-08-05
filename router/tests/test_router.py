@@ -68,6 +68,7 @@ FAIL = 0
 
 def test(name: str):
     """Decorator for test functions."""
+    test.__test__ = False  # tell pytest not to collect this decorator
     def decorator(fn):
         def wrapper():
             global PASS, FAIL
