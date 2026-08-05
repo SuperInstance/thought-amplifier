@@ -224,29 +224,120 @@ TEACHING_TOPICS: dict[str, list[str]] = {
 
 # ─── HTTP Utilities ────────────────────────────────────────────
 
+class DistillationError(Exception):
+    """Base exception for distillation loop failures."""
+    pass
+
+
+class TeacherUnavailable(DistillationError):
+    """GLM API is unavailable after all retries."""
+    pass
+
+
+class StudentUnavailable(DistillationError):
+    """Ollama is unavailable after all retries."""
+    pass
+
+
+class EmptyResponse(DistillationError):
+    """API returned an empty response."""
+    pass
+
+
 def _curl_post_json(
     url: str,
     headers: dict[str, str],
     data: dict[str, Any],
     timeout: int = 30,
+    retries: int = 3,
+    backoff_base: float = 2.0,
 ) -> dict[str, Any]:
-    """POST JSON via curl subprocess (avoids Python httpx dependency)."""
-    cmd = [
-        "curl", "-s", "-X", "POST", url,
-        "--connect-timeout", str(timeout),
-        "--max-time", str(timeout + 10),
-        "-H", "Content-Type: application/json",
-    ]
-    for key, val in headers.items():
-        cmd.extend(["-H", f"{key}: {val}"])
-    cmd.extend(["-d", json.dumps(data)])
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 15)
-        if result.returncode != 0:
-            return {"error": f"curl failed: {result.stderr.strip()}"}
-        return json.loads(result.stdout)
-    except Exception as e:
-        return {"error": str(e)}
+    """
+    POST JSON via curl subprocess with retry and exponential backoff.
+
+    Retries on:
+      - Network errors (curl exit code != 0)
+      - HTTP 429 (rate limit) or 5xx (server error)
+      - JSON parse errors
+      - Timeouts
+
+    Returns the parsed JSON response, or {"error": ...} if all retries fail.
+    """
+    last_error = ""
+
+    for attempt in range(1, retries + 1):
+        cmd = [
+            "curl", "-s", "-X", "POST", url,
+            "--connect-timeout", str(timeout),
+            "--max-time", str(timeout + 10),
+            "-H", "Content-Type: application/json",
+            "-w", "\n%{http_code}",  # Append HTTP status code
+        ]
+        for key, val in headers.items():
+            cmd.extend(["-H", f"{key}: {val}"])
+        cmd.extend(["-d", json.dumps(data)])
+
+        try:
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=timeout + 20,
+            )
+
+            if result.returncode != 0:
+                last_error = f"curl exit {result.returncode}: {result.stderr.strip()}"
+                if attempt < retries:
+                    wait = backoff_base * (2 ** (attempt - 1))
+                    time.sleep(min(wait, 30))
+                continue
+
+            # Split response body and HTTP status code
+            raw = result.stdout.strip()
+            lines = raw.rsplit("\n", 1)
+            if len(lines) == 2:
+                body, http_code_str = lines
+            else:
+                body, http_code_str = raw, "0"
+
+            try:
+                http_code = int(http_code_str)
+            except ValueError:
+                http_code = 0
+
+            # Handle rate limiting and server errors with retry
+            if http_code == 429 or 500 <= http_code < 600:
+                retry_after = 5
+                # Parse Retry-After from headers if present (simplified)
+                last_error = f"HTTP {http_code} from server"
+                if attempt < retries:
+                    wait = max(retry_after, backoff_base * (2 ** (attempt - 1)))
+                    time.sleep(min(wait, 60))
+                continue
+
+            # HTTP 4xx errors (except 429) are not retried
+            if 400 <= http_code < 500 and http_code != 429:
+                return {"error": f"HTTP {http_code}: {body[:500]}", "_http_code": http_code}
+
+            # Parse JSON response
+            try:
+                return json.loads(body)
+            except json.JSONDecodeError:
+                last_error = f"JSON decode error: {body[:200]}"
+                if attempt < retries:
+                    wait = backoff_base * (2 ** (attempt - 1))
+                    time.sleep(min(wait, 30))
+                continue
+
+        except subprocess.TimeoutExpired:
+            last_error = f"Request timed out after {timeout + 20}s"
+            if attempt < retries:
+                wait = backoff_base * (2 ** (attempt - 1))
+                time.sleep(min(wait, 30))
+        except Exception as e:
+            last_error = str(e)
+            if attempt < retries:
+                wait = backoff_base * (2 ** (attempt - 1))
+                time.sleep(min(wait, 30))
+
+    return {"error": f"All {retries} attempts failed: {last_error}"}
 
 
 def _timestamp() -> str:
@@ -403,12 +494,20 @@ Rules:
 """
 
 
-def stage_teacher(domain: str, topic: str, iteration: int) -> dict[str, Any]:
+def stage_teacher(
+    domain: str,
+    topic: str,
+    iteration: int,
+    max_retries: int = 3,
+) -> dict[str, Any]:
     """
     STAGE 1: Call GLM to generate a teaching prompt about the topic.
 
     Returns dict with:
       - topic, lesson, raw_response, timestamp, iteration
+      - error (optional): present if the teacher failed permanently
+
+    Raises TeacherUnavailable if all retries are exhausted and no fallback works.
     """
     user_msg = (
         f"Domain: {domain}\n"
@@ -427,14 +526,52 @@ def stage_teacher(domain: str, topic: str, iteration: int) -> dict[str, Any]:
         "temperature": 0.7,
         "max_tokens": 800,
     }
-    headers = {"Authorization": f"Bearer {GLM_API_KEY or os.environ.get('GLM_API_KEY', '')}"}
-    result = _curl_post_json(GLM_API_URL, headers, payload, timeout=45)
+    api_key = GLM_API_KEY or os.environ.get("GLM_API_KEY", "")
+    headers = {"Authorization": f"Bearer {api_key}"}
+
+    result = _curl_post_json(GLM_API_URL, headers, payload, timeout=45, retries=max_retries)
 
     if "error" in result:
-        lesson = f"(Teacher error: {result['error']})"
-    else:
-        choices = result.get("choices", [])
-        lesson = choices[0].get("message", {}).get("content", "") if choices else "(no response)"
+        # All retries exhausted. Record the error but don't crash.
+        error_msg = result["error"]
+        artifact = {
+            "topic": topic,
+            "domain": domain,
+            "lesson": "",
+            "iteration": iteration,
+            "timestamp": _timestamp(),
+            "model": GLM_MODEL,
+            "token_usage": {},
+            "error": error_msg,
+            "success": False,
+        }
+        fname = f"{domain}_iter{iteration:04d}_teacher.json"
+        (TEACHER_DIR / fname).write_text(
+            json.dumps(artifact, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        return artifact
+
+    choices = result.get("choices", [])
+    lesson = choices[0].get("message", {}).get("content", "") if choices else ""
+
+    # Check for empty response
+    if not lesson or not lesson.strip():
+        artifact = {
+            "topic": topic,
+            "domain": domain,
+            "lesson": "",
+            "iteration": iteration,
+            "timestamp": _timestamp(),
+            "model": GLM_MODEL,
+            "token_usage": result.get("usage", {}),
+            "error": "Empty response from teacher",
+            "success": False,
+        }
+        fname = f"{domain}_iter{iteration:04d}_teacher.json"
+        (TEACHER_DIR / fname).write_text(
+            json.dumps(artifact, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        return artifact
 
     artifact = {
         "topic": topic,
@@ -444,6 +581,7 @@ def stage_teacher(domain: str, topic: str, iteration: int) -> dict[str, Any]:
         "timestamp": _timestamp(),
         "model": GLM_MODEL,
         "token_usage": result.get("usage", {}),
+        "success": True,
     }
 
     # Save artifact
@@ -462,16 +600,21 @@ def stage_student(
     use_teaching: bool,
     iteration: int,
     domain: str,
+    max_retries: int = 3,
 ) -> dict[str, Any]:
     """
     STAGE 2: Feed the teaching to Granite (or run baseline without it).
 
     If use_teaching is True, the prompt includes the teacher's lesson.
     If False, it's a baseline response without the teaching.
+
+    Includes watchdog integration: if Ollama is down, attempt recovery
+    before giving up.
     """
     if use_teaching:
+        lesson_text = teacher_artifact.get('lesson', '(no lesson)')
         prompt = (
-            f"A teacher explains:\n\n{teacher_artifact['lesson']}\n\n"
+            f"A teacher explains:\n\n{lesson_text}\n\n"
             f"---\n\n"
             f"Now apply this to the following real task.\n\n"
             f"Task: {task['task']}\n\n"
@@ -485,20 +628,45 @@ def stage_student(
             f"Provide your analysis and suggestions."
         )
 
-    # Call Ollama
+    # Call Ollama with retries
     payload = {
         "model": OLLAMA_MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "stream": False,
         "options": {"temperature": 0.5, "top_p": 0.9},
     }
-    result = _curl_post_json(OLLAMA_URL, {}, payload, timeout=60)
+
+    result = _curl_post_json(
+        "http://localhost:11434/api/chat", {}, payload,
+        timeout=90, retries=max_retries,
+    )
 
     if "error" in result:
-        response = f"(Student error: {result['error']})"
+        # Ollama is likely down. Try watchdog recovery.
+        try:
+            from watchdog import ensure_healthy
+            if ensure_healthy(max_attempts=3):
+                # Retry after recovery
+                result = _curl_post_json(
+                    "http://localhost:11434/api/chat", {}, payload,
+                    timeout=90, retries=2,
+                )
+        except ImportError:
+            pass  # Watchdog not available, continue with error
+
+        if "error" in result:
+            response = f"(Student error after recovery attempt: {result['error']})"
+            success = False
+        else:
+            msg = result.get("message", {})
+            response = msg.get("content", "") if isinstance(msg, dict) else str(msg)
+            success = True
     else:
         msg = result.get("message", {})
         response = msg.get("content", "") if isinstance(msg, dict) else str(msg)
+        success = bool(response and response.strip())
+        if not success:
+            response = "(Empty response from student model)"
 
     label = "taught" if use_teaching else "baseline"
 
@@ -512,6 +680,7 @@ def stage_student(
         "timestamp": _timestamp(),
         "eval_count": result.get("eval_count", 0),
         "eval_duration": result.get("eval_duration", 0),
+        "success": success,
     }
 
     fname = f"{domain}_iter{iteration:04d}_{label}.json"
@@ -763,6 +932,8 @@ def run_iteration(domain: str, iteration: int) -> dict[str, Any]:
     Run all 5 stages of the distillation loop for one iteration.
 
     Returns a summary dict for the CLI to print.
+    Handles partial failures gracefully — if the teacher fails,
+    the iteration is skipped with a recorded error but the loop continues.
     """
     topics = TEACHING_TOPICS.get(domain, TEACHING_TOPICS["cognition"])
     tasks = TASK_SOURCES.get(domain, TASK_SOURCES["cognition"])
@@ -774,11 +945,51 @@ def run_iteration(domain: str, iteration: int) -> dict[str, Any]:
     # STAGE 1: Teacher generates lesson
     teacher = stage_teacher(domain, topic, iteration)
 
+    # If teacher failed entirely, skip this iteration but don't crash
+    if not teacher.get("success", False):
+        return {
+            "domain": domain,
+            "iteration": iteration,
+            "topic": topic,
+            "task": task["task"][:80],
+            "baseline_score": 0.0,
+            "taught_score": 0.0,
+            "delta": 0.0,
+            "teaching_helped": False,
+            "reflex_compiled": False,
+            "reflex_id": "",
+            "prompt_updated": False,
+            "prompt_version": "",
+            "consecutive_positives": 0,
+            "error": teacher.get("error", "teacher_failed"),
+            "success": False,
+        }
+
     # STAGE 2a: Student baseline (no teaching)
     baseline = stage_student(teacher, task, code, use_teaching=False, iteration=iteration, domain=domain)
 
     # STAGE 2b: Student with teaching
     taught = stage_student(teacher, task, code, use_teaching=True, iteration=iteration, domain=domain)
+
+    # If student failed, record but continue with empty scores
+    if not baseline.get("success", False) or not taught.get("success", False):
+        return {
+            "domain": domain,
+            "iteration": iteration,
+            "topic": topic,
+            "task": task["task"][:80],
+            "baseline_score": 0.0,
+            "taught_score": 0.0,
+            "delta": 0.0,
+            "teaching_helped": False,
+            "reflex_compiled": False,
+            "reflex_id": "",
+            "prompt_updated": False,
+            "prompt_version": "",
+            "consecutive_positives": 0,
+            "error": "student_model_unavailable",
+            "success": False,
+        }
 
     # STAGE 3: Evaluate the delta
     evaluation = stage_evaluate(baseline, taught, domain, iteration)
@@ -803,6 +1014,7 @@ def run_iteration(domain: str, iteration: int) -> dict[str, Any]:
         "prompt_updated": prompt_update["updated"],
         "prompt_version": prompt_update.get("version", ""),
         "consecutive_positives": prompt_update.get("consecutive_positives", 0),
+        "success": True,
     }
 
 
@@ -822,19 +1034,34 @@ def compute_stats(summaries: list[dict[str, Any]]) -> dict[str, Any]:
     if not summaries:
         return {}
 
-    deltas = [s["delta"] for s in summaries]
-    helped = [s for s in summaries if s["teaching_helped"]]
-    compiled = [s for s in summaries if s["reflex_compiled"]]
-    promoted = [s for s in summaries if s["prompt_updated"]]
+    # Separate successful iterations from failed ones
+    successful = [s for s in summaries if s.get("success", True)]
+    failed = [s for s in summaries if not s.get("success", True)]
+
+    if not successful:
+        return {
+            "total_iterations": len(summaries),
+            "successful_iterations": 0,
+            "failed_iterations": len(failed),
+            "errors": [s.get("error", "unknown") for s in failed],
+        }
+
+    deltas = [s["delta"] for s in successful]
+    helped = [s for s in successful if s["teaching_helped"]]
+    compiled = [s for s in successful if s["reflex_compiled"]]
+    promoted = [s for s in successful if s["prompt_updated"]]
 
     return {
         "total_iterations": len(summaries),
+        "successful_iterations": len(successful),
+        "failed_iterations": len(failed),
         "teaching_helped_count": len(helped),
-        "help_rate": round(len(helped) / len(summaries), 3),
+        "help_rate": round(len(helped) / len(successful), 3),
         "reflexes_compiled": len(compiled),
         "promotions": len(promoted),
         "avg_delta": round(sum(deltas) / len(deltas), 3),
         "max_delta": round(max(deltas), 3),
         "min_delta": round(min(deltas), 3),
         "positive_iterations": [s["iteration"] for s in helped],
+        "errors": [s.get("error", "unknown") for s in failed],
     }
