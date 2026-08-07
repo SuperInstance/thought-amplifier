@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thought-amplifier"
+version = "0.1.0"
+description = "A continuous thought-generation engine with a supervisor that shapes what thoughts look like"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "SuperInstance"}]
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.27",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.0",
+]
+viewer = [
+    "flask>=3.0",
+]
+embeddings = [
+    "sentence-transformers>=2.3",
+]
+
+[project.scripts]
+thought-amplifier = "amplifier:main"
+
+[tool.setuptools.packages.find]
+include = ["core*", "modes*", "router*", "scheduler*", "viewer*", "watchdog*"]
+exclude = ["tests*", "experiments*", "competition*", "logos*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v"
