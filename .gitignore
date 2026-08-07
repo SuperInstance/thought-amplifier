@@ -11,3 +11,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 distillation-output/logs/
+.coverage
+__pycache__/
+*.pyc
