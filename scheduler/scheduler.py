@@ -70,7 +70,7 @@ class InferenceRequest:
     id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
     agent: str = "default"
     priority: Priority = Priority.NORMAL
-    model: str = "llama3.2:3b"
+    model: str = "granite3.1-dense:2b"
     prompt: str = ""
     stream: bool = False
     options: dict[str, Any] = field(default_factory=dict)
@@ -183,7 +183,7 @@ class InferenceScheduler:
         prompt: str,
         agent: str = "default",
         priority: Priority | str | int = Priority.NORMAL,
-        model: str = "llama3.2:3b",
+        model: str = "granite3.1-dense:2b",
         options: dict | None = None,
     ) -> InferenceRequest:
         """Submit an inference request. Returns immediately."""

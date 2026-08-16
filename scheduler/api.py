@@ -164,7 +164,7 @@ class SchedulerAPI:
 
                     agent = body.get("agent", "default")
                     priority = body.get("priority", "NORMAL")
-                    model = body.get("model", "llama3.2:3b")
+                    model = body.get("model", "granite3.1-dense:2b")
                     options = body.get("options", {})
 
                     # Register agent for fair-use tracking

@@ -477,7 +477,7 @@ def test_full_flow_submit_wait_result():
             prompt="hello world",
             agent="test_agent",
             priority=Priority.NORMAL,
-            model="llama3.2:3b",
+            model="granite3.1-dense:2b",
         )
         assert mock.wait_for([req.id], timeout=5.0)
 
