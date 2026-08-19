@@ -74,6 +74,16 @@ OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434/api/chat")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "granite3.1-dense:2b")
 OLLAMA_BIN = os.environ.get("OLLAMA_BIN", "/home/eileen/.local/bin/ollama")
 
+# Fleet Gateway shim (Phase 3: the distillation loop is its first consumer).
+# Cloud API POSTs try fleet_gw.post() first; on ANY failure — shim missing,
+# gateway down, unknown URL, bad response — we fall back to the original
+# curl path, so loop behavior is unchanged. Fail-open is non-negotiable.
+# Kill switch: DISTILL_USE_GATEWAY=0 forces curl-only (pre-Phase-3 behavior).
+FLEET_GW_CLIENT_DIR = Path("/home/eileen/projects/fleet-gateway/clients/python")
+GATEWAY_ENABLED = os.environ.get("DISTILL_USE_GATEWAY", "1") != "0"
+
+_fleet_gw_cache: list = []  # [module] once successfully imported
+
 # ─── Domain Definitions ────────────────────────────────────────
 
 # Real task sources — actual code from the codebase
@@ -244,7 +254,83 @@ class EmptyResponse(DistillationError):
     pass
 
 
+def _fleet_gw_module():
+    """Lazily import the Fleet Gateway shim. Returns the module or None.
+
+    Import is deferred (and failures are never cached) so that importing
+    distillation_loop always succeeds even if the shim is absent — fail-open
+    applies to wiring, not just requests. A missing shim is retried on the
+    next call so it can be picked up if it appears later.
+    """
+    if _fleet_gw_cache:
+        return _fleet_gw_cache[0]
+    if not GATEWAY_ENABLED:
+        return None
+    try:
+        if str(FLEET_GW_CLIENT_DIR) not in sys.path:
+            sys.path.insert(0, str(FLEET_GW_CLIENT_DIR))
+        import fleet_gw
+        _fleet_gw_cache.append(fleet_gw)
+        return fleet_gw
+    except Exception:
+        return None
+
+
+def _gateway_route(url: str) -> tuple[str, str] | None:
+    """Map a direct vendor URL to (provider, gateway_path) for fleet_gw.post.
+
+    Only OpenAI-compatible chat/completions endpoints are routed through the
+    gateway. Ollama's native /api/chat is deliberately NOT routed: it has a
+    different payload shape ("options") AND response shape ({"message": ...}
+    vs {"choices": [...]}) — proxying it through an OpenAI-compatible gateway
+    would corrupt stage_student(). It stays on curl.
+    """
+    u = url.lower()
+    if any(h in u for h in ("api.z.ai", "bigmodel.cn", "zhipuai")):
+        return "zai", "/v1/chat/completions"
+    if "api.deepseek.com" in u:
+        return "deepseek", "/v1/chat/completions"
+    if "api.deepinfra.com" in u:
+        return "deepinfra", "/v1/chat/completions"
+    return None
+
+
 def _curl_post_json(
+    url: str,
+    headers: dict[str, str],
+    data: dict[str, Any],
+    timeout: int = 30,
+    retries: int = 3,
+    backoff_base: float = 2.0,
+) -> dict[str, Any]:
+    """
+    POST JSON with retry and exponential backoff — gateway-first.
+
+    Phase 3 (first Fleet Gateway consumer): when the URL maps to a known
+    cloud provider and the gateway is reachable, the POST goes through
+    fleet_gw.post() (which itself fails open to a direct vendor call with
+    its own env keys). On ANY gateway-side failure — shim missing, gateway
+    down, unknown URL, exception, non-dict response — we fall through to
+    the original curl subprocess path, preserving the exact return
+    contract every existing caller relies on:
+
+    Returns the parsed JSON response, or {"error": ...} if all retries fail.
+    """
+    gw = _fleet_gw_module()
+    if gw is not None:
+        route = _gateway_route(url)
+        if route is not None:
+            provider, gw_path = route
+            try:
+                resp = gw.post(provider, gw_path, data)
+                if isinstance(resp, dict):
+                    return resp
+            except Exception:
+                pass  # fail open — curl path below
+    return _curl_post_json_direct(url, headers, data, timeout, retries, backoff_base)
+
+
+def _curl_post_json_direct(
     url: str,
     headers: dict[str, str],
     data: dict[str, Any],
