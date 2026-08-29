@@ -1,5 +1,7 @@
 # Thought Amplifier
 
+<img src="assets/images/gallery-thought-amplifier.jpg" alt="A machine that dreams continuously: a brass thought-stream ticker spilling endless amber paper tape in a dark engine room, an unseen supervisor's hand adjusting the tuning dial." width="720">
+
 **A continuous thought-generation engine with a supervisor that shapes what thoughts look like.**
 
 A small model thinks continuously. A supervisor agent watches the stream and adjusts the conditions — prompt, temperature, context, interval — to improve thought quality. Six specialized modes extend the stream into research, debate, creativity, monitoring, synthesis, and experimentation.
