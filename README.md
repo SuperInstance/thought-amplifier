@@ -4,7 +4,13 @@
 
 **A continuous thought-generation engine with a supervisor that shapes what thoughts look like.**
 
-A small model thinks continuously. A supervisor agent watches the stream and adjusts the conditions — prompt, temperature, context, interval — to improve thought quality. Six specialized modes extend the stream into research, debate, creativity, monitoring, synthesis, and experimentation.
+A small model thinks continuously. A supervisor watches the stream and adjusts the conditions — prompt, temperature, context, interval — to improve thought quality. Six specialized modes extend the stream into research, debate, creativity, monitoring, synthesis, and experimentation.
+
+## What's Verified
+
+- **551 tests, all passing** (`tests/`: 444 · `router/tests/`: 37 · `scheduler/tests/`: 70), run on Python 3.10–3.12 in CI.
+- **Quickstart below was tested in a fresh venv with zero pip installs** — the runtime is pure Python 3.10+ stdlib (HTTP goes through `curl`); thoughts generated against local Ollama.
+- No frameworks, no agent loops, no vector DB required to run the core loop.
 
 ## Why It's Novel
 
@@ -19,6 +25,8 @@ This is not an agent framework (no tool-calling loops). Not a RAG system (not re
 
 ## Quick Start
 
+Verified in a fresh venv with no packages installed.
+
 ```bash
 # Install Ollama with a small model (preferred)
 ollama pull granite3.1-dense:2b
@@ -27,18 +35,27 @@ ollama pull granite3.1-dense:2b
 export DEEPSEEK_API_KEY="your-key"
 # export ZAI_API_KEY="your-glm-key"   # optional GLM fallback
 
-# Just think
-python amplifier.py
+# Sanity check
+python amplifier.py --help
 
-# Think with context
+# Just think (Ctrl+C to stop)
+python amplifier.py
+```
+
+One honest expectation: **the think loop writes to the journal, not the terminal.** After startup you'll see the banner and backend line; thoughts accumulate in `journals/session_*.jsonl` (machine) and `.md` (human). Watch them live:
+
+```bash
+# In another terminal while it thinks
+tail -f journals/session_*.md
+
+# Or run the built-in live viewer, then open http://localhost:8770
+python amplifier.py --viewer
+
+# Think with a context
 python amplifier.py --context "You are exploring the nature of consciousness"
 
-# Think with supervisor (adjusts prompts based on quality)
+# Think with the supervisor adjusting conditions (recommended)
 python amplifier.py --supervise
-
-# Think with live web viewer
-python amplifier.py --viewer
-# Then open http://localhost:8770
 ```
 
 ## Modes
@@ -52,6 +69,8 @@ python amplifier.py --viewer
 | **watcher** | Monitor a URL for changes | `python amplifier.py -m watcher --url https://site.com --interval 60` |
 | **connector** | Find patterns across sources | `python amplifier.py -m connector --sources url1 url2 "some text"` |
 | **simulator** | Thought experiments | `python amplifier.py -m simulator --premise "What if dreams are practice runs?"` |
+
+Modes are single-shot: one run produces a bounded batch of journal entries and returns. They are not part of the continuous loop.
 
 ## Architecture
 
@@ -69,10 +88,13 @@ thought-amplifier/
 │   ├── watcher.py        # URL change monitoring
 │   ├── connector.py      # Multi-document synthesis
 │   └── simulator.py      # Thought experiments
+├── router/               # Cognitive router: known/unknown triage, confidence,
+│                         #   boundary tracking, cloud escalation (own test suite)
+├── scheduler/            # Fair-use cloud budgeting + priority queue (own test suite)
 ├── viewer/
 │   ├── server.py         # WebSocket viewer (pure stdlib)
 │   └── index.html        # Real-time stream UI
-├── journals/             # Session logs (JSONL + Markdown)
+├── journals/             # Session logs (JSONL + Markdown, gitignored)
 └── REPO_DESIGN.md        # Full architecture spec
 ```
 
@@ -80,30 +102,29 @@ thought-amplifier/
 
 ### The Thinker
 
-Generates thoughts at a configurable interval using the best available backend:
+Generates thoughts at a configurable interval (default 5s) using the best available backend:
 1. **Ollama** (localhost:11434) — preferred, free, local, private
 2. **GLM API** (Z.AI) — fast cloud fallback
 3. **DeepSeek API** — cheap cloud fallback
 
-Every thought is journaled with metadata: backend, model, temperature, prompt version.
+One sweep per tick: if every backend fails, the failure is journalled and the next tick tries again. Every thought is journaled with metadata: backend, model, temperature, prompt version.
 
 ### The Supervisor
 
-Every 30 seconds, the supervisor:
-1. Reads the last 10 thoughts
+Every 30 seconds (configurable), the supervisor:
+1. Reads the last 10 thoughts (needs at least 3 before it acts)
 2. Scores them on novelty, specificity, coherence, engagement
 3. Decides if conditions should change (prompt style, temperature, context)
 4. Applies the directive and journals it
-5. Tracks trust: does changing things actually help?
 
-Trust model (asymmetric, from the deep dives):
-- +0.5 per quality improvement (minimum 10 observations)
-- -2.0 per quality decrease
-- 3 consecutive decreases → automatic rollback
+Trust model, as implemented (asymmetric — a bad change costs more than a good change earns):
+- Trust starts at 0.5, bounded [0.05, 0.95]
+- +0.05 per quality improvement, −0.20 per quality decline
+- 3 consecutive declines → automatic rollback to the previous prompt
 
 ### The Modes
 
-Each mode is a specialized thought pattern that uses the LLM in a different way. They're not part of the continuous loop — they're on-demand tools that produce structured multi-output analyses.
+Each mode is a specialized thought pattern that uses the LLM in a different way. They're on-demand tools, not part of the continuous loop. See each module's docstring for exactly which angles/layers/trajectories it runs.
 
 ## Requirements
 
@@ -111,7 +132,15 @@ Each mode is a specialized thought pattern that uses the LLM in a different way.
 - `curl` (for HTTP — Cloudflare blocks Python HTTP libraries)
 - Ollama (optional but recommended) OR an API key
 
-No Python packages required — the system runs entirely on stdlib.
+No Python packages required — the runtime is stdlib-only (verified). `pip install -e ".[dev]"` gives you pytest if you want to run the suite.
+
+## Depth
+
+- **[REPO_DESIGN.md](REPO_DESIGN.md)** — the full architecture spec
+- **[DISSERTATION.md](DISSERTATION.md)** / **[DISSERTATION_NOTES.md](DISSERTATION_NOTES.md)** — the research grounding
+- **[ADVISORY_BRIDGE.md](ADVISORY_BRIDGE.md)** — theory-to-practice mapping
+- **[HOW_TO_USE.md](HOW_TO_USE.md)** — command cookbook for every mode
+- **[DISTILLATION.md](DISTILLATION.md)** — the distillation loop (first gateway consumer)
 
 ## Design Heritage
 
