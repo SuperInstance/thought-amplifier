@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 """
-modes/common.py — Shared utilities for all modes.
+modes/common.py — Shared helpers for the on-demand analysis modes.
 
-Provides LLM calling and URL fetching utilities used by the specialized modes.
-All HTTP is done via subprocess+curl (Cloudflare blocks Python libraries).
+Provides the LLM call helper (GLM with DeepSeek fallback), curl-based URL
+fetching, a crude HTML-to-text extractor, and a short content hash. All HTTP
+goes through subprocess + curl because Cloudflare blocks Python HTTP clients.
+
+These are stateless utilities for the specialized modes (reporter, advocate,
+mirror, watcher, connector, simulator), which run as single-shot commands via
+`amplifier.py --mode ...`. Nothing here participates in the continuous thinking
+loop (core.thinker) or runs in the background.
 """
 
 from __future__ import annotations
 
-import json
-import os
 import re
 import subprocess
-from typing import Any
 
 from core.thinker import _curl_post_json
 
@@ -96,7 +99,6 @@ def fetch_markdown(url: str, max_chars: int = 10000, timeout: int = 15) -> str:
     except Exception as e:
         return f"[Fetch error: {e}]"
 
-    # If it looks like HTML, convert
     if "<html" in text.lower() or "<body" in text.lower():
         text = html_to_text(text, max_chars)
     else:
@@ -106,28 +108,23 @@ def fetch_markdown(url: str, max_chars: int = 10000, timeout: int = 15) -> str:
 
 
 def html_to_text(html: str, max_chars: int = 10000) -> str:
-    """Simple HTML to text conversion."""
-    # Remove scripts and styles
+    """Strip an HTML document to plain text with light markdown-ish structure."""
     html = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.DOTALL | re.IGNORECASE)
     html = re.sub(r'<style[^>]*>.*?</style>', '', html, flags=re.DOTALL | re.IGNORECASE)
     html = re.sub(r'<nav[^>]*>.*?</nav>', '', html, flags=re.DOTALL | re.IGNORECASE)
     html = re.sub(r'<footer[^>]*>.*?</footer>', '', html, flags=re.DOTALL | re.IGNORECASE)
 
-    # Convert common elements
     html = re.sub(r'<h[1-6][^>]*>(.*?)</h[1-6]>', r'\n## \1\n', html, flags=re.DOTALL | re.IGNORECASE)
     html = re.sub(r'<p[^>]*>(.*?)</p>', r'\1\n\n', html, flags=re.DOTALL | re.IGNORECASE)
     html = re.sub(r'<br\s*/?>', '\n', html, flags=re.IGNORECASE)
     html = re.sub(r'<li[^>]*>(.*?)</li>', r'• \1\n', html, flags=re.DOTALL | re.IGNORECASE)
     html = re.sub(r'<a[^>]*href="([^"]*)"[^>]*>(.*?)</a>', r'\2 (\1)', html, flags=re.DOTALL | re.IGNORECASE)
 
-    # Remove all remaining tags
     text = re.sub(r'<[^>]+>', '', html)
 
-    # Decode entities
     text = text.replace('&nbsp;', ' ').replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
     text = text.replace('&quot;', '"').replace('&#39;', "'").replace('&apos;', "'")
 
-    # Clean whitespace
     text = re.sub(r'\n{3,}', '\n\n', text)
     text = re.sub(r' {2,}', ' ', text)
 

@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """
-modes/reporter.py — URL Fetching + Research Streaming
+modes/reporter.py — URL research
 
-The reporter mode fetches content from URLs and generates a stream of
-research thoughts about that content. It's like having a researcher
-who reads a source and then thinks out loud about it continuously.
+The reporter mode fetches a URL once, injects the extracted text as context,
+and generates a bounded batch of analytical thoughts about it from a fixed
+set of angles, followed by a synthesis. Each thought and the synthesis are
+written to the journal.
 
 Usage:
     reporter = Reporter(thinker, journal, api_keys...)
     reporter.research("https://example.com/article", num_thoughts=5)
 
-The reporter fetches the URL, injects the content as context, and then
-generates multiple thoughts that analyze, question, and connect the
-material to broader themes.
+Single-shot: one `amplifier.py --mode reporter` run does one fetch, emits its
+entries, and returns. It is not the continuous thinking loop and does not
+re-fetch or poll.
 """
 
 from __future__ import annotations
@@ -21,7 +22,7 @@ import time
 from typing import Any
 
 from core.journal import Journal
-from core.thinker import Thinker, ThinkerConfig
+from core.thinker import Thinker
 from modes.common import fetch_markdown, llm_call
 
 
@@ -55,7 +56,6 @@ class Reporter:
             {"mode": "reporter", "url": url},
         )
 
-        # Fetch the URL content
         content = fetch_markdown(url, max_chars=8000)
 
         if content.startswith("[Fetch error"):
@@ -66,7 +66,6 @@ class Reporter:
             )
             return []
 
-        # Store the source content
         self.journal.write(
             "mode_output",
             f"**Source:** {url}\n\n**Content excerpt:**\n{content[:500]}...",
@@ -75,7 +74,6 @@ class Reporter:
 
         entries: list[dict[str, Any]] = []
 
-        # Generate research thoughts
         analysis_angles = [
             "What are the key claims or findings in this source?",
             "What assumptions does this source make that might be questioned?",
@@ -123,11 +121,9 @@ class Reporter:
             )
             entries.append(entry)
 
-            # Brief pause between calls
             if i < num_thoughts - 1:
                 time.sleep(1)
 
-        # Summary
         summary_prompt = (
             f"You analyzed this source in {num_thoughts} different ways.\n\n"
             f"Source: {url}\n"

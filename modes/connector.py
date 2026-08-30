@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """
-modes/connector.py — Multi-Document Pattern Finding
+modes/connector.py — Multi-document pattern finding
 
-The connector mode takes multiple texts (URLs, pasted content, or thoughts
-from the journal) and finds patterns, contradictions, and connections
-between them that aren't obvious when reading them separately.
+The connector mode takes two or more sources (URLs or literal text strings),
+fetches any URLs once, and runs a fixed multi-layer analysis across all of
+them, writing each layer to the journal:
+1. Surface patterns (shared vocabulary, themes)
+2. Structural patterns (similar arguments, parallel logic)
+3. Hidden connections (one idea resolves a tension in another)
+4. Contradictions (where the sources conflict)
+5. Synthesis (what emerges when you hold them together)
 
 Usage:
     connector = Connector(thinker, journal, api_keys...)
@@ -14,12 +19,8 @@ Usage:
         "Some pasted text about a third topic",
     ])
 
-The connector fetches each source, then performs multi-layer analysis:
-1. Surface patterns (shared vocabulary, themes)
-2. Structural patterns (similar arguments, parallel logic)
-3. Hidden connections (one idea resolves a tension in another)
-4. Contradictions (where the sources conflict)
-5. Synthesis (what emerges when you hold them together)
+Single-shot: one `amplifier.py --mode connector` run produces a bounded batch
+of journal entries and returns. It is not part of the continuous thinking loop.
 """
 
 from __future__ import annotations
@@ -70,7 +71,6 @@ class Connector:
             {"mode": "connector", "num_sources": len(sources), "sources": sources},
         )
 
-        # Fetch all content
         contents: list[tuple[str, str]] = []  # (source_label, content)
         for i, source in enumerate(sources):
             content = self._get_content(source)
@@ -93,7 +93,6 @@ class Connector:
 
         entries: list[dict[str, Any]] = []
 
-        # Layer 1: Surface Patterns
         entries.append(self._analyze_layer(
             contents,
             "Surface Patterns",
@@ -103,7 +102,6 @@ class Connector:
         ))
         time.sleep(1)
 
-        # Layer 2: Structural Patterns
         entries.append(self._analyze_layer(
             contents,
             "Structural Patterns",
@@ -113,7 +111,6 @@ class Connector:
         ))
         time.sleep(1)
 
-        # Layer 3: Hidden Connections
         entries.append(self._analyze_layer(
             contents,
             "Hidden Connections",
@@ -124,7 +121,6 @@ class Connector:
         ))
         time.sleep(1)
 
-        # Layer 4: Contradictions
         entries.append(self._analyze_layer(
             contents,
             "Contradictions",
@@ -134,7 +130,7 @@ class Connector:
         ))
         time.sleep(1)
 
-        # Layer 5: Synthesis
+        # Layer 5: synthesis across all sources at once
         all_content = "\n\n---\n\n".join(
             f"[Source {i+1}]: {label}\n{content[:2000]}"
             for i, (label, content) in enumerate(contents)

@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
 """
-modes/simulator.py — Thought Experiments
+modes/simulator.py — Thought experiments
 
-The simulator mode runs thought experiments: it takes a premise and
-explores what would happen if it were true, tracing implications
-forward until they reach a surprising conclusion or a contradiction.
+The simulator mode takes a premise and traces its implications along a fixed
+set of trajectories, then adds a meta-synthesis of the main insight. Each
+trajectory and the conclusion are written to the journal.
+
+Trajectories:
+1. First-order consequences (immediate effects)
+2. Second-order consequences (systemic effects)
+3. Edge cases (what breaks the model?)
+4. Historical parallel (when has something similar happened?)
+5. Reductio (where does this lead if taken to the extreme?)
+6. Inversion (what if the opposite were true?)
 
 Usage:
     simulator = Simulator(thinker, journal, api_keys...)
     simulator.simulate("What if humans could photosynthesize?")
 
-The simulator explores multiple trajectories:
-1. First-order consequences (immediate effects)
-2. Second-order consequences (systemic effects)
-3. Edge cases (what breaks the model?)
-4. Historical parallels (when has something similar happened?)
-5. The reductio (where does this lead if taken to the extreme?)
+Single-shot: one `amplifier.py --mode simulator` run produces a bounded batch
+of journal entries and returns. It is not part of the continuous thinking loop.
 """
 
 from __future__ import annotations
@@ -160,7 +164,7 @@ class Simulator:
             if i < len(selected) - 1:
                 time.sleep(1)
 
-        # Meta-synthesis: what did we learn?
+        # Meta-synthesis across the trajectories explored above.
         results_summary = "\n".join(
             f"- [{e['metadata'].get('trajectory', '?')}]: {e['content'][:150]}"
             for e in entries

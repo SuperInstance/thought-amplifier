@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
 """
-modes/watcher.py — URL Monitoring + Change Detection
+modes/watcher.py — URL monitoring and change detection
 
-The watcher mode periodically fetches a URL, compares it to the previous
-version, and generates a thought about what changed. It's a sentry that
-never sleeps — pointed at a page, it notices everything.
+The watcher mode fetches a URL repeatedly (up to `max_checks` times, `interval`
+seconds apart), hashes the extracted text to detect changes, and on a change
+generates an analytical thought about the diff. Snapshots are written to
+journals/watcher_snapshots/ and every check is logged to the journal.
 
 Usage:
     watcher = Watcher(thinker, journal, api_keys...)
     watcher.watch("https://news.ycombinator.com", interval=60, max_checks=5)
 
-The watcher stores snapshots in journals/watcher_snapshots/ and uses
-content hashing to detect changes. When something changes, it generates
-an analytical thought about the difference.
+Single-shot: a `watch` run is bounded by `max_checks` and then returns. It is
+a foreground command, not a background daemon, and is not part of the
+continuous thinking loop.
 """
 
 from __future__ import annotations
 
-import os
 import time
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -105,9 +104,6 @@ class Watcher:
         previous_hash: str | None = None
 
         for check_num in range(1, max_checks + 1):
-            timestamp = datetime.now(timezone.utc).isoformat()
-
-            # Fetch current content
             content = fetch_markdown(url, max_chars=5000)
             current_hash = content_hash(content)
 
@@ -134,11 +130,9 @@ class Watcher:
                 previous_hash = current_hash
 
             elif current_hash != previous_hash:
-                # Change detected!
                 diff = self._diff_analysis(previous_content, content)
                 self._save_snapshot(self._snapshot_path(url, check_num), content)
 
-                # Generate analysis of the change
                 messages = [
                     {
                         "role": "system",
@@ -184,7 +178,6 @@ class Watcher:
                 previous_hash = current_hash
 
             else:
-                # No change
                 entry = self.journal.write(
                     "mode_output",
                     f"**Check #{check_num}:** No changes detected. Hash: {current_hash}",

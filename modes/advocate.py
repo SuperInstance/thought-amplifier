@@ -1,24 +1,22 @@
 #!/usr/bin/env python3
 """
-modes/advocate.py — Devil's Advocate Counter-Arguments
+modes/advocate.py — Devil's advocate counter-arguments
 
-The advocate mode takes a claim or position and generates the strongest
-possible counter-arguments. It's a steel-man machine: it doesn't attack
-strawmen, it builds the best possible opposition.
+The advocate mode takes a claim and builds steel-manned counter-arguments
+from a fixed set of angles (empirical, logical, practical, moral, historical,
+systemic), then adds a meta-analysis of which angle the claim is most
+vulnerable to. Each argument and the meta-analysis are written to the journal.
 
 Usage:
     advocate = Advocate(thinker, journal, api_keys...)
     advocate.argue("Free trade always benefits both countries")
 
-The advocate generates multiple independent counter-arguments, rates
-their strength, and then identifies the meta-pattern: what kind of
-position is this claim most vulnerable to?
+Single-shot: one `amplifier.py --mode advocate` run produces a bounded batch
+of journal entries and returns. It is not part of the continuous thinking loop.
 """
 
 from __future__ import annotations
 
-import json
-import re
 import time
 from typing import Any
 
@@ -57,7 +55,6 @@ class Advocate:
             {"mode": "advocate", "claim": claim},
         )
 
-        # Strategy types for diverse arguments
         strategies = [
             ("empirical", "Challenge the factual basis. What evidence contradicts or complicates this claim?"),
             ("logical", "Challenge the reasoning. What logical fallacies or gaps exist in the argument?"),
@@ -116,7 +113,7 @@ class Advocate:
             if i < num_arguments - 1:
                 time.sleep(1)
 
-        # Meta-analysis: what is this claim most vulnerable to?
+        # Meta-analysis: which angle is the claim most vulnerable to?
         meta_prompt = (
             f"You generated {num_arguments} counter-arguments against this claim:\n"
             f"\"{claim}\"\n\n"

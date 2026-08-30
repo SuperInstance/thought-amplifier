@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-modes/mirror.py — Creative Reflection
+modes/mirror.py — Creative reflection
 
-The mirror mode takes a thought, theme, or idea and reflects it through
-multiple creative lenses: as a metaphor, as a story fragment, as poetry,
-as a paradox, as an image description. It's a creativity amplifier that
-finds the hidden facets of an idea.
+The mirror mode takes a theme and refracts it through a fixed set of creative
+lenses (metaphor, story, poetry, paradox, inversion, scale), then adds a
+synthesis of what unifies the reflections. Each reflection and the synthesis
+are written to the journal.
 
 Usage:
     mirror = Mirror(thinker, journal, api_keys...)
     mirror.reflect("The way rivers reshape landscapes over millennia")
 
-The mirror generates reflections that are surprising, beautiful, and
-thought-provoking. It's not analysis — it's art that makes you think.
+Single-shot: one `amplifier.py --mode mirror` run produces a bounded batch of
+journal entries and returns. It is not part of the continuous thinking loop.
 """
 
 from __future__ import annotations
@@ -113,7 +113,6 @@ class Mirror:
             {"mode": "mirror", "theme": theme},
         )
 
-        # Select styles
         if styles:
             selected = [s for s in REFLECTION_STYLES if s["name"] in styles]
         else:
