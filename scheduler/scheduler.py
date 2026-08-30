@@ -1,26 +1,21 @@
 """
-scheduler.py — The Core: Priority Queue + GPU Serialization
+scheduler.py — priority queue that serializes inference requests to Ollama.
 
-The RTX 4050 has 6GB VRAM. Ollama loads one model at a time. When two
-agents call simultaneously, the GPU OOMs and Ollama crashes. This module
-serializes all inference requests through a single queue with preemptive
-priority and fair-use guarantees.
+Ollama loads one model at a time on a single local GPU; concurrent calls
+can OOM it. A single worker thread pops requests from a priority heap and
+runs them one at a time. It optionally consults a FairUseTracker (to defer
+agents that are over their share) and a CloudBridge (to offload when the
+local queue is deep).
 
-Design constraints (from EXP1 and SELF_AUDIT):
-- ONE inference at a time, no exceptions
-- Higher priority preempts lower (but running inference completes atomically)
-- GPU time tracked per agent over a sliding window
-- Idle capacity goes to background/evolution work
+Priority levels (lower value served first):
+  URGENT (0), HIGH (1), NORMAL (2), LOW (3), IDLE (4)
 
-Priority levels (borrowed from OS scheduling):
-  URGENT (0) — user-facing, blocking, real-time
-  HIGH   (1) — conductor analysis, trust scoring
-  NORMAL (2) — agent thinking loop
-  LOW    (3) — batch embedding, indexing
-  IDLE   (4) — evolution rollouts, background training
-
-The jazz metaphor: scheduled turns are the beat, urgent preempts are
-syncopation. The rhythm section (fair_use) keeps everyone in pocket.
+Does NOT:
+- preempt a running inference; priority only decides which queued request
+  is popped next
+- stream responses; requests always run with stream=False
+- reserve idle capacity for background work beyond ordinary priority order
+- persist the queue or stats across restarts
 """
 
 from __future__ import annotations
@@ -29,7 +24,6 @@ import heapq
 import itertools
 import json
 import logging
-import os
 import subprocess
 import threading
 import time
@@ -37,7 +31,7 @@ import uuid
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Any, Callable
+from typing import Any
 
 logger = logging.getLogger("scheduler")
 
@@ -143,7 +137,7 @@ class InferenceScheduler:
       1. Pop highest-priority request
       2. Check fair-use — if agent is over share and others are waiting,
          defer (move to back of its priority band)
-      3. Execute via Ollama CLI (curl subprocess)
+      3. Execute via curl to the Ollama HTTP API
       4. Record stats
       5. Repeat
 
@@ -237,7 +231,7 @@ class InferenceScheduler:
             self._wakeup.notify()
             return True
 
-    def queue_snapshot(self) -> list[dict]:
+    def queue_snapshot(self) -> dict:
         with self._lock:
             queued = [
                 {
@@ -399,11 +393,7 @@ class InferenceScheduler:
         return self.cloud_bridge.should_overflow(queued)
 
     def _call_ollama(self, req: InferenceRequest) -> dict:
-        """
-        Call Ollama via curl. We use subprocess + curl rather than urllib
-        because the design spec says "stdlib + curl only" and curl gives
-        us better timeout handling and connection management.
-        """
+        """Call Ollama's /api/generate via curl (stdlib + curl only, per design spec)."""
         url = f"{self.ollama_url}/api/generate"
         payload = json.dumps({
             "model": req.model,

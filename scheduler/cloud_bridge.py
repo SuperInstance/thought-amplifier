@@ -16,8 +16,13 @@ The bridge tracks:
   - Per-request routing decision logged for auditability
 
 Design principle: cloud is an accelerator, never a dependency. If the
-cloud is down, rate-limited, or quota exhausted, the system degrades
-gracefully — requests stay in the local queue, just slower.
+cloud is unconfigured, rate-limited, or quota exhausted, should_overflow()
+returns False and requests stay in the local queue.
+
+Does NOT: stream responses, retry a failed cloud call, or meter neurons
+precisely — usage is charged at a fixed per-request estimate. A cloud
+call that fails after routing is reported as an error, not re-queued
+locally.
 """
 
 from __future__ import annotations
@@ -28,7 +33,7 @@ import os
 import subprocess
 import threading
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 logger = logging.getLogger("cloud_bridge")
 

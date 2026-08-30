@@ -27,7 +27,7 @@ Endpoints:
     returns: {agents: {...}, cloud: {...}, evolver: {...}}
 
   GET  /health             Health check
-    returns: {ok, uptime_s, requests_total}
+    returns: {ok, uptime_s, requests_handled}
 
   POST /quality/:id        Submit quality feedback for a completed request
     body: {quality, timeliness}
@@ -37,10 +37,13 @@ Endpoints:
     returns: {policy, agent_quality, ...}
 
 Architecture:
-  The server is single-threaded async (http.server.BaseHTTPRequestHandler).
-  The scheduler worker runs in a separate daemon thread. This is fine
-  because the heavy work (Ollama inference) happens in a subprocess,
-  freeing the handler thread immediately.
+  Requests are served by ThreadingHTTPServer (one thread per request).
+  Handlers only enqueue work and read state; the scheduler worker runs
+  the actual Ollama inference on its own daemon thread, and a second
+  daemon thread periodically triggers policy evolution.
+
+Does NOT: authenticate callers, rate-limit, use TLS, or persist any
+state across restarts.
 """
 
 from __future__ import annotations

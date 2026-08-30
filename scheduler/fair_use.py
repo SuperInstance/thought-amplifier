@@ -1,33 +1,25 @@
 """
-fair_use.py — The Ethos: Guaranteed Minimum GPU Share
+fair_use.py — sliding-window GPU accounting so no agent starves.
 
-Every agent gets a floor. No agent starves. The pie is divided so that
-even the LOWEST priority agent gets its minimum share of GPU time over
-any sliding window. Above the floor, excess capacity is redistributed
-by value-weight — agents that produce more value per GPU-ms get more.
+Tracks each agent's GPU-ms over a sliding window (default 5 min) and
+computes a fair share: a floor for every registered agent plus a
+value-weighted slice of the leftover capacity, capped at a ceiling.
+The value weight is an EMA of the quality scores fed back via record().
 
-This is the university supercomputer model: every lab gets a guaranteed
-allocation. Labs that use their allocation productively get more.
-Nobody is ever fully cut off, but neither is capacity wasted on agents
-that produce nothing useful.
-
-The sliding window is key. We don't track total GPU time since the
-beginning of the universe — we track the last N seconds (default 5 min).
-This means an agent that was greedy 10 minutes ago isn't penalized
-forever, and an agent that was idle can ramp up.
-
-Guarantees:
-  1. Every registered agent gets at least floor_ms per window
-  2. No agent can consume more than ceiling_ms per window
-  3. Excess capacity (total - sum of floors) distributed by value
-  4. New agents get a "warmup" period with default floor
-  5. Starvation is impossible: if an agent hasn't been served in
-     window_s * 2, its effective priority is boosted to HIGH
+The scheduler calls check_agent() before serving a request; this module
+returns only a defer/serve decision plus a reason. Enforcement is
+advisory:
+  - an agent over its share is deferred only while others are waiting
+  - the ceiling is a soft cap, applied the same way
+  - an agent unserved for longer than starvation_boost_s is never
+    deferred (it is not otherwise re-prioritised)
 
 Value-weighted redistribution:
-  excess_ms = available_ms - sum(floors)
-  agent_share = excess_ms * (agent_value / sum(all_values))
-  where agent_value = EMA of quality scores from completed requests
+  excess_ms = total_capacity_ms - sum(floors) - used
+  agent_share = floor + excess_ms * (agent_value / sum(all_values))
+
+Does NOT: hard-cap usage, preempt running work, change priority levels,
+or persist accounting across restarts.
 """
 
 from __future__ import annotations
@@ -35,7 +27,7 @@ from __future__ import annotations
 import logging
 import threading
 import time
-from collections import defaultdict, deque
+from collections import deque
 from dataclasses import dataclass, field
 
 logger = logging.getLogger("fair_use")
@@ -167,9 +159,6 @@ class FairUseTracker:
         agents = list(self._agents.values())
         if not agents:
             return {}
-
-        now = time.time()
-        cutoff = now - self.window_s
 
         total_floor = sum(
             (a.custom_floor_ms or self.default_floor_ms)

@@ -1,52 +1,35 @@
 """
-priority_evolver.py — The Learning System: Scheduling Policy That Evolves
+priority_evolver.py — learns per-agent priority adjustments from outcomes.
 
-Starts with static weights. Learns which priority assignments produce
-better outcomes. The scheduling policy ITSELF evolves to fit the
-application — this is the dynamic ML.
+Each completed request is reported via record_outcome() with a quality and
+a timeliness score. Outcomes are bucketed by (agent, time-of-day, load)
+and a composite reward is accumulated per assigned priority level. Every
+evolution_interval_s, maybe_evolve() picks, for each bucket, the priority
+level with the highest average reward and nudges that bucket's adjustment
+toward it with EMA smoothing (alpha default 0.05, adjustment clamped to
++/- adjustment_clamp).
 
-How it works:
-  1. Every completed request gets a quality score (0-1) from the outcome
-     (did the agent use the result? was it fast enough? was the output good?)
-  2. The evolver tracks: for each (agent, priority) pair, what's the
-     average quality outcome?
-  3. Periodically, it adjusts the effective priority of agents whose
-     outcomes are consistently better at different priority levels
-  4. It also tracks timing patterns: agent X produces better results
-     in the morning, agent Y is better after long idle periods
+effective_priority() applies the learned adjustment on top of a base
+priority and clamps the result to [0, 4].
 
-The evolution is slow (EMA alpha=0.05) and conservative (clamp [0.05, 0.95]).
-It never makes extreme changes. The policy can always be overridden by
-explicit user/agent priority settings.
+The policy is a nested dict (agent -> bucket -> float adjustment) and
+round-trips through export_policy() / import_policy().
 
-This is ZeroClaw Arena's policy breeding applied to scheduling:
-  - State = (agent, time_of_day, queue_depth, recent_load)
-  - Actions = adjust effective priority by +/- 1
-  - Reward = quality_score * timeliness_factor
-  - Update = EMA alpha=0.05, clamp [0.05, 0.95]
-
-The policy is a dict[str, str], <50KB, zero imports, hot-swappable.
+Does NOT: persist the policy on its own (the caller must export/import),
+use queue_depth in bucketing (it is recorded but unused), defer to
+explicit priority requests, or act on a single request — it only shifts
+priorities statistically over time.
 """
 
 from __future__ import annotations
 
-import json
 import logging
 import threading
 import time
 from collections import defaultdict, deque
-from dataclasses import dataclass, field
-from enum import IntEnum
+from dataclasses import dataclass
 
 logger = logging.getLogger("evolver")
-
-
-class Priority(IntEnum):
-    URGENT = 0
-    HIGH = 1
-    NORMAL = 2
-    LOW = 3
-    IDLE = 4
 
 
 @dataclass
@@ -115,9 +98,8 @@ class PriorityEvolver:
         bucket = self._context_bucket(record)
         key = f"{record.agent}:{bucket}"
 
-        # Compute composite reward
-        # Reward = quality * 0.6 + timeliness * 0.3 + efficiency * 0.1
-        # where efficiency = 1 if local+fast, 0.5 if cloud, 0 if slow local
+        # Composite reward: quality 0.6 + timeliness 0.3 + efficiency 0.1.
+        # efficiency: 1.0 local & fast, 0.7 local & slow, 0.5 cloud, 0.3 other.
         if record.served_by == "local":
             efficiency = 1.0 if record.gpu_ms < 1000 else 0.7
         elif record.served_by == "cloud":
@@ -192,7 +174,7 @@ class PriorityEvolver:
         For each (agent, context_bucket):
           - Compute average reward at each priority level
           - Find the priority level with highest average reward
-          - Set adjustment = best_priority - agent_average_base_priority
+          - Set adjustment = best_priority - average priority actually used
           - Apply EMA smoothing to the adjustment
         """
         with self._lock:
