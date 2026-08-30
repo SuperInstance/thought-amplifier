@@ -702,6 +702,58 @@ def stage_teacher(
     return artifact
 
 
+# ─── Circuit Breaker (Ollama-down containment) ─────────────
+
+# PRODUCTION FIX (2026-08-30): when Ollama is truly down, the old path
+# burned 3 curl retries + a full watchdog recovery cycle (5 attempts,
+# up-to-60s sleeps, 35s health checks) per student call, twice per
+# iteration, forever — a dead Ollama could stall a cron run for tens of
+# minutes per iteration doing zero useful work. The breaker opens after
+# BREAKER_THRESHOLD consecutive total student failures and short-circuits
+# stage_student for BREAKER_COOLDOWN seconds: a clear error artifact, no
+# network. After the cooldown it half-opens (one probe call through);
+# the first success closes it. State is module-level and deliberately
+# NOT persisted — a fresh process gets a fresh probe, which is fine.
+
+_breaker_state: dict[str, Any] = {"consecutive_failures": 0, "opened_at": 0.0}
+
+BREAKER_THRESHOLD = int(os.environ.get("TA_BREAKER_THRESHOLD", "3"))
+BREAKER_COOLDOWN = float(os.environ.get("TA_BREAKER_COOLDOWN", "600"))
+
+
+def breaker_is_open(now: float | None = None) -> bool:
+    """True while the student circuit breaker is open (Ollama deemed down)."""
+    if _breaker_state["consecutive_failures"] < BREAKER_THRESHOLD:
+        return False
+    now = time.time() if now is None else now
+    if now - _breaker_state["opened_at"] >= BREAKER_COOLDOWN:
+        # Cooldown elapsed: half-open — allow exactly one probe through.
+        _breaker_state["consecutive_failures"] = BREAKER_THRESHOLD - 1
+        _breaker_state["opened_at"] = 0.0
+        return False
+    return True
+
+
+def breaker_record(success: bool) -> None:
+    """Record a student-call outcome. Success closes; failures stack."""
+    if success:
+        _breaker_state["consecutive_failures"] = 0
+        _breaker_state["opened_at"] = 0.0
+    else:
+        _breaker_state["consecutive_failures"] += 1
+        if (
+            _breaker_state["consecutive_failures"] >= BREAKER_THRESHOLD
+            and _breaker_state["opened_at"] == 0.0
+        ):
+            _breaker_state["opened_at"] = time.time()
+
+
+def _breaker_reset() -> None:
+    """Test/introspection helper: close the breaker."""
+    _breaker_state["consecutive_failures"] = 0
+    _breaker_state["opened_at"] = 0.0
+
+
 # ─── STAGE 2: STUDENT ──────────────────────────────────────────
 
 def stage_student(
@@ -720,8 +772,31 @@ def stage_student(
     If False, it's a baseline response without the teaching.
 
     Includes watchdog integration: if Ollama is down, attempt recovery
-    before giving up.
+    before giving up. If the circuit breaker is open (Ollama deemed down
+    after repeated failures), returns immediately without network calls.
     """
+    label = "taught" if use_teaching else "baseline"
+
+    if breaker_is_open():
+        artifact = {
+            "response": "(student circuit open: Ollama down, call skipped)",
+            "label": label,
+            "domain": domain,
+            "iteration": iteration,
+            "task": task["task"],
+            "code_file": task["code"],
+            "timestamp": _timestamp(),
+            "eval_count": 0,
+            "eval_duration": 0,
+            "success": False,
+            "error": "student_circuit_open",
+        }
+        fname = f"{domain}_iter{iteration:04d}_{label}.json"
+        (STUDENT_DIR / fname).write_text(
+            json.dumps(artifact, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        return artifact
+
     if use_teaching:
         lesson_text = teacher_artifact.get('lesson', '(no lesson)')
         prompt = (
@@ -779,7 +854,7 @@ def stage_student(
         if not success:
             response = "(Empty response from student model)"
 
-    label = "taught" if use_teaching else "baseline"
+    breaker_record(success)
 
     artifact = {
         "response": response,
@@ -939,8 +1014,59 @@ def stage_distill(
 
 # ─── STAGE 5: UPDATE PROMPT ────────────────────────────────────
 
-# Track consistency per domain for promotion gating
-_domain_history: dict[str, list[bool]] = {}
+# Track consistency per domain for promotion gating.
+# PRODUCTION FIX (2026-08-30): streaks used to live in a module-level dict,
+# which meant every cron/overnight invocation (a fresh process) reset them —
+# with promote_threshold=3 a restart mid-streak silently never promoted.
+# Streaks + run quality metrics now persist in PROMPT_DIR/domain_streaks.json.
+
+# Cap on ACTIVE (non-archived) directives per domain. Older directives are
+# flagged archived=true and kept in the versions file — nothing is deleted;
+# the archive law holds. Prevents runaway prompt growth over long runs.
+MAX_ACTIVE_DIRECTIVES = int(os.environ.get("TA_MAX_DIRECTIVES", "8"))
+
+
+def _streaks_path() -> Path:
+    return PROMPT_DIR / "domain_streaks.json"
+
+
+def _load_domain_history() -> dict[str, dict[str, Any]]:
+    """Load persisted promotion streaks + metrics. Tolerates missing/corrupt files."""
+    try:
+        data = json.loads(_streaks_path().read_text(encoding="utf-8"))
+        if isinstance(data, dict):
+            return data
+    except (OSError, json.JSONDecodeError):
+        pass
+    return {}
+
+
+def _save_domain_history(history: dict[str, dict[str, Any]]) -> None:
+    """Atomically persist streaks (tmp + rename) so a crash can't corrupt them."""
+    path = _streaks_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(history, ensure_ascii=False), encoding="utf-8")
+    tmp.replace(path)
+
+
+def _load_versions(domain: str) -> list[dict[str, Any]]:
+    version_path = PROMPT_DIR / f"{domain}_versions.jsonl"
+    versions: list[dict[str, Any]] = []
+    if version_path.exists():
+        try:
+            versions = [json.loads(line) for line in version_path.read_text().strip().split("\n") if line.strip()]
+        except (json.JSONDecodeError, OSError):
+            pass
+    return versions
+
+
+def _save_versions(domain: str, versions: list[dict[str, Any]]) -> None:
+    version_path = PROMPT_DIR / f"{domain}_versions.jsonl"
+    version_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(version_path, "w", encoding="utf-8") as f:
+        for v in versions:
+            f.write(json.dumps(v, ensure_ascii=False) + "\n")
 
 
 def stage_update_prompt(
@@ -955,39 +1081,54 @@ def stage_update_prompt(
     promote it to a permanent system prompt directive.
 
     Promotes when: N consecutive positive deltas (default 3).
+
+    Production hardening (2026-08-30):
+      - Streaks persist on disk, so one-shot cron runs still promote.
+      - Active directives per domain are capped at MAX_ACTIVE_DIRECTIVES;
+        overflow is archived (flagged, kept), never deleted.
+      - Every promotion records run quality metrics (help_rate, avg_delta)
+        so prompt drift is observable in the version history itself.
     """
     helped = eval_artifact["teaching_helped"]
 
-    # Track history
-    if domain not in _domain_history:
-        _domain_history[domain] = []
-    _domain_history[domain].append(helped)
+    # Load persisted state (streak + cumulative quality metrics)
+    history = _load_domain_history()
+    entry = history.get(domain) or {
+        "streak": [],
+        "metrics": {"iterations": 0, "helped": 0, "delta_sum": 0.0},
+    }
+    # Tolerate the old in-memory format (bare list of bools)
+    if isinstance(entry, list):
+        entry = {"streak": entry, "metrics": {"iterations": len(entry), "helped": sum(entry), "delta_sum": 0.0}}
+    streak: list[bool] = list(entry.get("streak", []))
+    metrics: dict[str, Any] = dict(entry.get("metrics", {}))
+    metrics.setdefault("iterations", 0)
+    metrics.setdefault("helped", 0)
+    metrics.setdefault("delta_sum", 0.0)
 
-    # Keep last 10
-    if len(_domain_history[domain]) > 10:
-        _domain_history[domain] = _domain_history[domain][-10:]
+    streak.append(helped)
+    if len(streak) > 10:
+        streak = streak[-10:]
+    metrics["iterations"] += 1
+    if helped:
+        metrics["helped"] += 1
+    metrics["delta_sum"] = round(metrics["delta_sum"] + eval_artifact["delta"], 4)
 
     # Check for promotion (N consecutive positives)
-    recent = _domain_history[domain][-promote_threshold:]
+    recent = streak[-promote_threshold:]
     consecutive_positives = sum(recent)
 
+    promoted = None
     if len(recent) >= promote_threshold and consecutive_positives == promote_threshold:
-        # Promote!
+        help_rate = metrics["helped"] / max(1, metrics["iterations"])
+        avg_delta = metrics["delta_sum"] / max(1, metrics["iterations"])
         directive = (
             f"[{domain.upper()}] Apply this wisdom consistently: "
             f"{teacher_artifact['topic']}. "
             f"Key insight: {teacher_artifact['lesson'][:200].strip()}"
         )
 
-        # Version the prompt
-        version_path = PROMPT_DIR / f"{domain}_versions.jsonl"
-        versions: list[dict[str, Any]] = []
-        if version_path.exists():
-            try:
-                versions = [json.loads(line) for line in version_path.read_text().strip().split("\n") if line.strip()]
-            except (json.JSONDecodeError, OSError):
-                pass
-
+        versions = _load_versions(domain)
         version_num = len(versions) + 1
         version_entry = {
             "version": f"v{version_num}",
@@ -998,28 +1139,51 @@ def stage_update_prompt(
             "delta": eval_artifact["delta"],
             "timestamp": _timestamp(),
             "consecutive_positives": consecutive_positives,
+            # Quality metrics at promotion time — drift becomes visible.
+            "help_rate": round(help_rate, 3),
+            "avg_delta": round(avg_delta, 3),
+            "archived": False,
         }
         versions.append(version_entry)
 
-        with open(version_path, "w", encoding="utf-8") as f:
-            for v in versions:
-                f.write(json.dumps(v, ensure_ascii=False) + "\n")
+        # Bound the prompt evolution: keep only MAX_ACTIVE_DIRECTIVES active.
+        # Overflow is archived in place (flag + date), never removed.
+        active_indexes = [i for i, v in enumerate(versions) if not v.get("archived")]
+        archived_now = 0
+        while len(active_indexes) > MAX_ACTIVE_DIRECTIVES:
+            i = active_indexes.pop(0)
+            versions[i]["archived"] = True
+            versions[i]["archived_at"] = _timestamp()
+            archived_now += 1
 
-        # Record in VERSION_HISTORY.jsonl
+        _save_versions(domain, versions)
+
+        # Record in VERSION_HISTORY.jsonl (append-only audit trail)
         history_path = PROMPT_DIR / "VERSION_HISTORY.jsonl"
+        history_path.parent.mkdir(parents=True, exist_ok=True)
         with open(history_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(version_entry, ensure_ascii=False) + "\n")
 
-        # Reset the streak to avoid re-promoting the same thing
-        _domain_history[domain] = []
+        # Reset the streak (a promotion consumes it); metrics keep running.
+        streak = []
 
-        return {
+        promoted = {
             "updated": True,
             "version": f"v{version_num}",
             "directive": directive[:100] + "...",
             "domain": domain,
             "iteration": iteration,
+            "help_rate": round(help_rate, 3),
+            "avg_delta": round(avg_delta, 3),
+            "archived_overflow": archived_now,
         }
+
+    # Persist state back to disk (streak + metrics survive restarts)
+    history[domain] = {"streak": streak, "metrics": metrics}
+    _save_domain_history(history)
+
+    if promoted:
+        return promoted
 
     return {
         "updated": False,
