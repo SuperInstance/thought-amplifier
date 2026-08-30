@@ -1,68 +1,35 @@
 """
-confidence.py — Local Confidence Assessment
+confidence.py — local confidence assessment.
 
-How does the router know if a local model CAN handle a request?
+Estimates whether a local model can handle a prompt, producing the score
+the router uses to split KNOWN-UNKNOWN (local) from UNKNOWN-UNKNOWN (cloud).
 
-This is the crux of the KNOWN-UNKNOWN vs UNKNOWN-UNKNOWN decision.
-Get this wrong and either:
-  - You over-escalate to cloud (wasting money on things the local
-    model could handle) — false UNKNOWN-UNKNOWN
-  - You under-escalate and the local model produces garbage —
-    false KNOWN-UNKNOWN
+Four weak signals are combined as a weighted geometric mean, so a single
+low signal drags the result down and biases toward escalation:
 
-We use multiple weak signals and combine them into a single confidence
-score. No single signal is reliable. The ensemble is.
+  capability  0.30 — best local model's prior score for the task type
+  history     0.25 — per-task-type EMA of past local success
+  complexity  0.20 — inverse of a keyword/structure complexity score
+  novelty     0.25 — inverse of how often this prompt "shape" has been seen
 
-Signals (from experimental data and architectural reasoning):
+Task type is classified from keyword patterns (analytical, creative, code,
+emotional, ...).
 
-1. REFLEX MATCH SCORE
-   If there's a partial match to an existing reflex (similar prompt
-   shape, same domain), the local model likely can handle it. The
-   reflex cache didn't hit (this isn't a KNOWN-KNOWN), but a nearby
-   reflex means we're in familiar territory.
-
-2. PROMPT COMPLEXITY
-   Word count, nesting depth, question type. Short, direct prompts
-   are easy for local models. Long, multi-step reasoning chains
-   are harder. From EXP3: Granite 2B wins on analytical tasks
-   (comparisons, pattern recognition, problem solving) but struggles
-   with creative/emotional depth.
-
-3. HISTORICAL SUCCESS RATE
-   Have similar prompts (by category) succeeded locally before?
-   This is a per-category EMA of local success rate.
-
-4. MODEL CAPABILITY MAP
-   What is each local model known to be good at?
-   From EXP3 GPU data:
-     Granite 2B: analytical, problem-solving, empathy, reflection
-     Qwen 0.5B: creative, emotional, instructional, quick filler
-   If the task falls in either model's strength zone, confidence rises.
-
-5. NOVELTY DETECTION
-   Is this prompt type completely new? If we've never seen anything
-   like it, confidence drops. Novel prompts might require a larger
-   model of understanding.
-
-The ensemble: weighted geometric mean of signals. Geometric mean
-because a single very low signal (e.g., extreme novelty = 0.1)
-should pull down the overall confidence even if other signals are
-moderate. This is conservative — we'd rather over-escalate to cloud
-than produce a confident-sounding wrong answer locally.
+Does NOT:
+  - use any ML model or embeddings — classification and complexity are
+    regex/keyword based
+  - inspect reflex-cache contents (the router checks that separately)
+  - make the routing decision — it only returns scores
+  - persist anything; SuccessHistory and NoveltyDetector are in-process
 """
 
 from __future__ import annotations
 
-import hashlib
 import math
 import re
-import time
-import logging
-from collections import defaultdict, deque
-from dataclasses import dataclass, field
+from collections import defaultdict
+from dataclasses import dataclass
 from typing import Any
-
-logger = logging.getLogger("router.confidence")
 
 
 # ---------------------------------------------------------------------------
@@ -329,10 +296,6 @@ class SuccessHistory:
     MIN_OBSERVATIONS = 5
 
     def __init__(self):
-        # task_type -> list of (success: bool, quality: float)
-        self._observations: dict[str, deque] = defaultdict(
-            lambda: deque(maxlen=200)
-        )
         # task_type -> current EMA
         self._ema: dict[str, float] = {}
         # task_type -> count
@@ -341,7 +304,6 @@ class SuccessHistory:
     def record(self, task_type: str, success: bool, quality: float = 0.0):
         """Record a local model outcome."""
         score = quality if quality > 0 else (1.0 if success else 0.0)
-        self._observations[task_type].append((success, quality))
         self._counts[task_type] += 1
 
         prev = self._ema.get(task_type, score)  # cold start = first observation
@@ -429,10 +391,10 @@ class ConfidenceAssessor:
     determines the KNOWN-UNKNOWN vs UNKNOWN-UNKNOWN boundary.
 
     Signal weights (sum to 1.0):
-      - Model capability   : 0.35  (can ANY local model do this?)
+      - Model capability   : 0.30  (can ANY local model do this?)
       - Historical success  : 0.25  (have local models done this before?)
       - Prompt complexity   : 0.20  (is the prompt tractable?)
-      - Novelty             : 0.20  (is this completely new territory?)
+      - Novelty             : 0.25  (is this completely new territory?)
 
     The ensemble is a weighted geometric mean, which is conservative:
     a single very low signal drags the whole score down. This prevents

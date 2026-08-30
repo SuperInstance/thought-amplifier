@@ -1,53 +1,34 @@
 """
-model_selector.py — Local Model Selection
+model_selector.py — local model selection.
 
-Given that we're going local (KNOWN-UNKNOWN), WHICH model do we use?
+Given that a request is going local (KNOWN-UNKNOWN), picks between the two
+installed Ollama models and returns a ModelProfile:
 
-From EXP3 GPU RERUN data (RTX 4050, GPU-accelerated):
+  granite3.1-dense:2b — 76.8 tok/s, quality-first on analytical/reasoning
+                        tasks, never breaks character
+  qwen2.5:0.5b        — 178.8 tok/s, better on creative/emotional tasks,
+                        sometimes breaks character
 
-  Granite 3.1 2B (Q4_K_M, 1.57GB)
-    Speed: 76.8 tok/s (~1.1s per response)
-    Strengths: analytical, problem-solving, empathy, reflection,
-              pattern recognition, narrative
-    Style: formal, structured, "museum curator voice"
-    Never breaks character (critical for NPC use)
+Selection order: a character-consistency requirement forces Granite; an
+URGENT request without a high quality bar forces Qwen; otherwise a learned
+per-task-type EMA score (seeded from MODEL_CAPABILITY, nudged by urgency
+and quality-requirement multipliers) decides, with ties going to Granite.
+record_outcome() updates the EMA (α=0.05).
 
-  Qwen 2.5 0.5B (Q4_K_M, 398MB)
-    Speed: 178.8 tok/s (~0.5s per response)
-    Strengths: creative, emotional, instructional, social,
-              personality voice
-    Style: conversational, warm, longer responses
-    Sometimes breaks character ("As an AI language model...")
-
-Both models respond in under 1.5 seconds on GPU. The speed difference
-(1.1s vs 0.5s) is barely perceptible. So the routing decision should
-be QUALITY-FIRST, not speed-first — pick the model that will produce
-the better output for this specific task.
-
-Decision factors:
-  1. Task type → which model is better at this kind of task?
-  2. Urgency → is the user waiting? (URGENT → Qwen for speed)
-  3. Quality requirement → does this need to be good? (HIGH → Granite)
-  4. Character consistency → is this for an NPC? (→ Granite, always)
-  5. Historical performance → has this task type worked better on
-     a specific model before?
-
-The selector can also recommend a hot-swap: start with Qwen (fast first
-token), and if quality signals are poor, re-run with Granite. This is
-the "Lever Runner cascade" pattern applied within the local tier.
+Does NOT:
+  - run inference or contact Ollama
+  - choose more than these two models
+  - implement the mid-response hot-swap the older design contemplated
+  - persist learned scores across restarts
 """
 
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
-from .confidence import (
-    MODEL_CAPABILITY,
-    best_model_for_task,
-    SuccessHistory,
-)
+from .confidence import MODEL_CAPABILITY, SuccessHistory
 
 logger = logging.getLogger("router.model_selector")
 
@@ -69,11 +50,6 @@ class ModelProfile:
     weaknesses: tuple[str, ...] # task types where it struggles
     breaks_character: bool      # does it ever say "As an AI"?
     reasoning: str = ""
-
-    @property
-    def throughput_quality(self) -> float:
-        """Speed × capability heuristic."""
-        return self.speed_toks
 
 
 # From EXP3 GPU RERUN — measured data

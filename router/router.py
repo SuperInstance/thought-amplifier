@@ -1,40 +1,23 @@
 """
-router.py — The Core Cognitive Router
+router.py — the core cognitive router.
 
-Casey's three epistemic states, made executable:
+Classifies each inference request into one of three epistemic states and
+returns a RouteDecision describing where it should run:
 
-  1. KNOWN-KNOWN     — We've seen this before and know the answer.
-                       Reflex cache hit. Sub-1ms. $0 cost.
-                       (Pincher pattern: vector DB is the runtime)
+  KNOWN-KNOWN     — reflex cache hit. Sub-ms, $0.
+  KNOWN-UNKNOWN   — a local model is sufficient. ~1-3s, $0.
+  UNKNOWN-UNKNOWN — cascade to a cloud model. ~10-30s, paid.
 
-  2. KNOWN-UNKNOWN   — We know what kind of processing is needed but
-                       haven't processed THIS exact request. Route to
-                       the fastest sufficient local model.
-                       ~1-3s latency. $0 cost.
-                       (Lever Runner 3-gate cascade)
+Callers feed results back via record_outcome(); successful cloud responses
+are compiled into reflexes so the same prompt becomes a KNOWN-KNOWN next
+time, and the boundary between states shifts toward KNOWN.
 
-  3. UNKNOWN-UNKNOWN — No pattern exists. The puzzle pieces don't fit.
-                       Cascade to a LARGER model of understanding.
-                       ~10-30s latency. Paid cost.
-                       Worth it because it creates NEW knowledge.
-
-The profound part:
-  - State 3 solutions become State 1 reflexes over time (Pincher write-back)
-  - The boundary between State 2 and State 3 EVOLVES
-  - Known-unknowns grow, unknown-unknowns shrink
-  - The router itself LEARNS which routing decisions were correct
-
-Integration with the existing scheduler:
-  The scheduler handles GPU serialization and fair-use. The router
-  sits IN FRONT of the scheduler — it decides WHERE a request goes.
-  The scheduler decides WHEN it runs. Together they form the full
-  Logos faculty: what to do, and when to do it.
-
-  router → scheduler → model
-
-  The router enriches InferenceRequest with routing metadata
-  (epistemic_state, target, expected latency, cost estimate)
-  and optionally overrides the model selection.
+Does NOT:
+  - execute any inference — it returns a decision, the caller runs it
+  - talk to the scheduler, Ollama, or any cloud API
+  - persist anything; the reflex cache and boundary history live in memory
+    and are lost on restart
+  - track conversation state — route() is a function of (prompt, context)
 """
 
 from __future__ import annotations
@@ -44,7 +27,7 @@ import time
 import hashlib
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Literal
+from typing import Any
 
 logger = logging.getLogger("router")
 
@@ -117,7 +100,7 @@ class RouteDecision:
 
 
 # ---------------------------------------------------------------------------
-# Reflex Cache (simple in-process; backed by boundary_tracker for persistence)
+# Reflex Cache — in-process, keyed by prompt hash
 # ---------------------------------------------------------------------------
 
 @dataclass
@@ -248,10 +231,9 @@ class CognitiveRouter:
       2. Is this a KNOWN-UNKNOWN? → local model (Granite/Qwen)
       3. Is this an UNKNOWN-UNKNOWN? → cloud cascade
 
-    The router is stateless across requests except for the reflex cache
-    and the confidence history. It does NOT maintain conversation state
-    — that's the caller's job. The router is a pure function from
-    (prompt, context) → RouteDecision.
+    The router keeps no per-conversation state — that's the caller's job.
+    Its only mutable state is the reflex cache, the confidence history,
+    and the boundary tracker, all in-process.
 
     Usage:
 

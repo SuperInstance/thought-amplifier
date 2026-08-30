@@ -19,6 +19,13 @@ Usage:
   python3 start_router.py              # test routing decisions
   python3 start_router.py --serve      # start HTTP router on port 8772
   from start_router import get_router  # import in other code
+
+Notes:
+  - route_through_scheduler() and the HTTP server talk to a running
+    scheduler over HTTP by shelling out to `curl`; both must be present.
+  - No credentials are required to build the router. DEEPINFRA_KEY and the
+    CF_* env vars are only read for the startup log line — the router
+    itself never uses them.
 """
 
 from __future__ import annotations
@@ -35,8 +42,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from router import (
     CognitiveRouter,
-    RouteDecision,
-    EpistemicState,
     ConfidenceAssessor,
     LocalModelSelector,
     CloudCascade,
@@ -88,7 +93,7 @@ def get_router() -> CognitiveRouter:
 
     Wiring:
       - ReflexCache (in-process, confidence threshold 0.85)
-      - ConfidenceAssessor (ensemble of 5 signals)
+      - ConfidenceAssessor (ensemble of 4 signals)
       - LocalModelSelector (Granite vs Qwen based on task type)
       - CloudCascade (DeepInfra → Cloudflare fallback chain)
       - BoundaryTracker (logs the evolving knowledge frontier)

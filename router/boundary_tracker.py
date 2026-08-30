@@ -1,67 +1,33 @@
 """
-boundary_tracker.py — The Evolving Knowledge Frontier
+boundary_tracker.py — metrics on the evolving knowledge frontier.
 
-The boundary between KNOWN-KNOWN, KNOWN-UNKNOWN, and UNKNOWN-UNKNOWN
-is not static. It moves. This module tracks that movement.
+Records every routing decision and its outcome, then derives rolling
+statistics about how the split across the three epistemic states is
+moving over time:
 
-The system's knowledge frontier is defined by the distribution of
-requests across the three epistemic states over time:
+  - state_distribution: share of KNOWN-KNOWN / KNOWN-UNKNOWN /
+    UNKNOWN-UNKNOWN over a window
+  - routing_accuracy: fraction of decisions judged correct after the fact
+    (see _evaluate_correctness for the per-state quality thresholds)
+  - calibration_error: mean gap between confidence and realised success
+    rate, binned by confidence
+  - reflex_growth_rate: cloud→reflex write-backs per hour
+  - avg_cost_trend: mean/total estimated cost and free-request ratio
 
-  Time 0:    100% UNKNOWN-UNKNOWN (everything is new)
-  Time 1h:   ~60% UNKNOWN-UNKNOWN, 30% KNOWN-UNKNOWN, 10% KNOWN-KNOWN
-  Time 1day: ~40% UNKNOWN-UNKNOWN, 35% KNOWN-UNKNOWN, 25% KNOWN-KNOWN
-  Time 1week: ~20% UNKNOWN-UNKNOWN, 30% KNOWN-UNKNOWN, 50% KNOWN-KNOWN
-
-The exact trajectory depends on the workload. But the direction is
-always the same: known grows, unknown shrinks. The production line
-gets better at producing value.
-
-This module provides:
-
-1. REQUEST LOGGING
-   Every routing decision is logged with its epistemic state, task
-   type, model used, and outcome. This is the raw data for boundary
-   tracking.
-
-2. RATIO TRACKING
-   The ratio of KNOWN to UNKNOWN over sliding windows. This should
-   trend toward KNOWN over time. If it doesn't, something is wrong
-   (the reflexes aren't compiling, or the workload keeps changing).
-
-3. WRITE-BACK TRACKING
-   When a cloud solution succeeds and gets compiled into a reflex,
-   that's a boundary event — a piece of UNKNOWN became KNOWN. These
-   events are the system's growth metric.
-
-4. ROUTING ACCURACY
-   Did the router make the right call? A KNOWN-UNKNOWN routing that
-   produces low quality is a routing error (should have been cloud).
-   A UNKNOWN-UNKNOWN that produces high quality is also a routing
-   error (should have been local). The accuracy metric tracks how
-   often the router's confidence assessment was correct.
-
-5. COST EVOLUTION
-   Average cost per request over time. As reflexes accumulate, the
-   average cost should trend toward $0. This is the financial
-   expression of the production line thesis: the hardware gets
-   better at producing value (at $0 marginal cost).
-
-Trust tracking: each routing decision has a confidence score. Over
-time, we correlate confidence with actual outcomes. A well-calibrated
-router has confidence ≈ success rate. If confidence > success rate,
-the router is overconfident and needs adjustment.
+Does NOT:
+  - influence routing — it only observes; the router calls record() and
+    record_outcome() but never reads back from here to make decisions
+  - persist; records live in a bounded in-memory deque (last 10k) and are
+    lost on restart
+  - match outcomes to decisions exactly — record_outcome() finds the most
+    recent record with the same state, target, and confidence (±0.01)
 """
 
 from __future__ import annotations
 
-import logging
-import math
 import time
 from collections import Counter, deque
-from dataclasses import dataclass, field
-from typing import Any
-
-logger = logging.getLogger("router.boundary")
+from dataclasses import dataclass
 
 
 # ---------------------------------------------------------------------------

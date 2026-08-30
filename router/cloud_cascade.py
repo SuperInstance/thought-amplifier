@@ -1,51 +1,32 @@
 """
-cloud_cascade.py — Cloud Escalation Path
+cloud_cascade.py — cloud model selection for the escalation path.
 
-When local models aren't enough (UNKNOWN-UNKNOWN), we cascade to cloud
-models that have a larger "model of understanding." These models can
-shape problems that the local models can't even perceive.
+When a request is UNKNOWN-UNKNOWN, picks which cloud model to use and
+returns a CloudModelSelection (name, provider, estimated cost, latency).
 
-Each cloud model has a specialty — a kind of understanding it's best at
-shaping:
+Registered models and their specialties:
+  deepseek-chat                        — reasoning / planning / analysis
+  Qwen/Qwen3-Coder-480B (DeepInfra)    — code generation
+  NousResearch/Hermes-3-Llama-405B     — creative / emotional / voice
+  @cf/meta/llama-3.1-8b (Cloudflare)   — free overflow (used when the
+                                         daily budget is exhausted)
 
-  DeepSeek V3 (direct API) — reasoning, planning, analysis
-    The deep thinker. When the problem requires multi-step reasoning
-    that local models can't follow, DeepSeek builds the chain.
+Scoring blends task-type/specialty match with cost and latency penalties.
+Cost is estimated from prompt length (1 token ≈ 4 chars) plus an assumed
+output size, and charged against a per-day CloudBudget.
 
-  Qwen3-Coder-480B (DeepInfra) — code generation
-    The builder. When the problem is "write me a function that..."
-    and the local model's code is wrong or incomplete, this model
-    generates production-quality code.
-
-  Hermes-3-Llama-405B (DeepInfra) — creative, personality, voice
-    The artist. When the problem requires creative thinking that
-    exceeds the local models' capability, Hermes brings genuine
-    novelty and personality.
-
-  Cloudflare Workers AI (@cf/meta/llama-3.1-8b) — cheap overflow
-    The utility player. When the queue is deep and we just need
-    throughput, this model is free (within quota) and decent.
-
-Cost tracking:
-  Each cloud model has a per-1K-token cost. The router estimates
-  total cost based on prompt length and expected output size.
-  This feeds into the Ethos (fair use) faculty — the system tracks
-  cloud spend and can throttle when budgets are tight.
-
-After a cloud response succeeds with high quality, the result is
-compiled into a reflex (Pincher write-back). Next time the same
-(or similar) prompt arrives, it's a KNOWN-KNOWN — sub-1ms, $0.
-The cloud solution became a local reflex. The boundary moved.
+Does NOT:
+  - make any network call or run the inference — the caller does that
+  - hold API keys or provider credentials
+  - retry, stream, or handle provider errors
+  - persist budget state; spend resets by calendar date, in memory
 """
 
 from __future__ import annotations
 
-import json
 import logging
-import os
-import subprocess
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 logger = logging.getLogger("router.cloud_cascade")

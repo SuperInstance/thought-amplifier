@@ -8,8 +8,10 @@ which of three epistemic states the request falls into:
   KNOWN-UNKNOWN  — local model sufficient, 1-3s, $0
   UNKNOWN-UNKNOWN — cascade to cloud, 10-30s, paid
 
-Over time, cloud solutions compile into reflexes. The boundary evolves.
-The production line gets better at producing value.
+Over time, cloud solutions compile into reflexes and the boundary evolves.
+
+The router only produces routing decisions and tracks metrics; it does
+not execute inference or persist state across restarts.
 
 Modules:
   router.py          — core routing decision
