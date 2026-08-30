@@ -1,0 +1,184 @@
+=== 1. GET /health (no auth, open) ===
+{"ok": true, "service": "thought-amplifier", "lessons": 0, "events": 0, "ollama_up": true, "breaker_open": false, "time": "2026-08-30T22:56:35.521374+00:00"}
+=== 2. POST /events WITHOUT token (expect 401) ===
+{"error": "unauthorized", "hint": "POST endpoints require a valid bearer token (TA_INGEST_TOKEN)."} [HTTP 401]
+=== 3. POST /events with token: synthetic kid events (wren + theo) ===
+{
+    "stored": 8,
+    "players": [
+        "theo",
+        "wren"
+    ],
+    "lessons_created": [
+        {
+            "scope": "player",
+            "player_id": "theo",
+            "domain": "quilt-scratch",
+            "lesson": "theo discards most suggestions (2 of 2) \u2014 ask what they want before suggesting, and keep suggestions small.",
+            "quality": {
+                "novelty": 1.0,
+                "specificity": 1.0,
+                "engagement": 0.05,
+                "spatial": 0.125,
+                "composite": 0.591,
+                "coverage": 1.0,
+                "confidence": 0.15
+            },
+            "tags": [
+                "verdict-caution"
+            ],
+            "teaching_helped": null,
+            "generator": "heuristic",
+            "source_streams": {
+                "events": [
+                    "evt_006",
+                    "evt_007",
+                    "evt_008"
+                ],
+                "event_count": 3
+            },
+            "id": "les_6636b3d873bf507f",
+            "created": "2026-08-30T22:56:35.536601+00:00"
+        },
+        {
+            "scope": "player",
+            "player_id": "theo",
+            "domain": "quilt-scratch",
+            "lesson": "Avoid leading with lock tiles for theo \u2014 they discarded 2 of those suggestions.",
+            "quality": {
+                "novelty": 1.0,
+                "specificity": 1.0,
+                "engagement": 0.15,
+                "spatial": 0.0,
+                "composite": 0.58,
+                "coverage": 1.0,
+                "confidence": 0.15
+            },
+            "tags": [
+                "tile-lock",
+                "avoid"
+            ],
+            "teaching_helped": null,
+            "generator": "heuristic",
+            "source_streams": {
+                "events": [
+                    "evt_006",
+                    "evt_007",
+                    "evt_008"
+                ],
+                "event_count": 3
+            },
+            "id": "les_b32081e1aa6ed31b",
+            "created": "2026-08-30T22:56:35.536697+00:00"
+        },
+        {
+            "scope": "player",
+            "player_id": "wren",
+            "domain": "quilt-scratch",
+            "lesson": "Suggestions land well with wren (2 of 3 applied) \u2014 keep offering similar builds.",
+            "quality": {
+                "novelty": 1.0,
+                "specificity": 1.0,
+                "engagement": 0.05,
+                "spatial": 0.0,
+                "composite": 0.56,
+                "coverage": 1.0,
+                "confidence": 0.25
+            },
+            "tags": [
+                "verdict-good"
+            ],
+            "teaching_helped": null,
+            "generator": "heuristic",
+            "source_streams": {
+                "events": [
+                    "evt_001",
+                    "evt_002",
+                    "evt_003",
+                    "evt_004",
+                    "evt_005"
+                ],
+                "event_count": 5
+            },
+            "id": "les_3c4c938a7cd54060",
+            "created": "2026-08-30T22:56:35.536859+00:00"
+        },
+        {
+            "scope": "player",
+            "player_id": "wren",
+            "domain": "quilt-scratch",
+            "lesson": "Lead with personality tiles for wren \u2014 they applied 2 suggestions built around that type.",
+            "quality": {
+                "novelty": 1.0,
+                "specificity": 1.0,
+                "engagement": 0.05,
+                "spatial": 0.125,
+                "composite": 0.591,
+                "coverage": 1.0,
+                "confidence": 0.25
+            },
+            "tags": [
+                "tile-personality",
+                "preference"
+            ],
+            "teaching_helped": null,
+            "generator": "heuristic",
+            "source_streams": {
+                "events": [
+                    "evt_001",
+                    "evt_002",
+                    "evt_003",
+                    "evt_004",
+                    "evt_005"
+                ],
+                "event_count": 5
+            },
+            "id": "les_7f8d79ce8851b943",
+            "created": "2026-08-30T22:56:35.536936+00:00"
+        },
+        {
+            "scope": "player",
+            "player_id": "wren",
+            "domain": "quilt-scratch",
+            "lesson": "wren wires their own crumble tiles often (3 times) \u2014 suggest ways to extend what they built, not replacements.",
+            "quality": {
+                "novelty": 1.0,
+                "specificity": 1.0,
+                "engagement": 0.05,
+                "spatial": 0.0,
+                "composite": 0.56,
+                "coverage": 1.0,
+                "confidence": 0.25
+            },
+            "tags": [
+                "tile-crumble",
+                "builder-pattern"
+            ],
+            "teaching_helped": null,
+            "generator": "heuristic",
+            "source_streams": {
+                "events": [
+                    "evt_001",
+                    "evt_002",
+                    "evt_003",
+                    "evt_004",
+                    "evt_005"
+                ],
+                "event_count": 5
+            },
+            "id": "les_f9a81625d4569785",
+            "created": "2026-08-30T22:56:35.536981+00:00"
+        }
+    ]
+}
+=== 4. GET /lessons?player=wren (per-player + global tiers) ===
+player tier: 3 lessons; global tier: 0 lessons
+  [les_f9a81625d4569785] wren wires their own crumble tiles often (3 times) — suggest ways to extend what  tags=['tile-crumble', 'builder-pattern'] q=0.56
+  [les_7f8d79ce8851b943] Lead with personality tiles for wren — they applied 2 suggestions built around t  tags=['tile-personality', 'preference'] q=0.591
+  [les_3c4c938a7cd54060] Suggestions land well with wren (2 of 3 applied) — keep offering similar builds.  tags=['verdict-good'] q=0.56
+=== 5. GET /lessons?player=theo (isolation: wren's lessons must NOT appear) ===
+theo has 2 lessons; any wren leakage: False
+=== 6. GET /stats ===
+{"total": 5, "by_domain": {"quilt-scratch": 5}, "by_scope": {"player": 5}, "top_players": {"wren": 3, "theo": 2}}
+=== 7. bad event shape (expect 400) ===
+{"error": "bad_request", "detail": "event.player_id (string) is required"} [HTTP 400]

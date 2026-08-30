@@ -1,0 +1,15 @@
+iterations simulated: 60 (help-rate drift: 75% -> 35% -> 65%)
+promotions fired:     6
+versions on disk:     6 (nothing deleted)
+ACTIVE directives:    5  (cap = 5)  -> BOUNDED: True
+
+version topic       delta  help_rate  avg_delta  archived
+v1      topic-3     0.121      1.000      0.077  YES @ 20260830
+v2      topic-7     0.064      0.857      0.059  no
+v3      topic-24    0.073      0.625      0.032  no
+v4      topic-36    0.153      0.583      0.028  no
+v5      topic-42    0.148      0.571      0.028  no
+v6      topic-55    0.154      0.582      0.030  no
+
+final run metrics (persisted): iterations=60 helped=35 help_rate=0.583
+verdict: drift is VISIBLE per version (help_rate/avg_delta recorded); active set stays capped; archive preserved.

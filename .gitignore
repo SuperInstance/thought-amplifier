@@ -14,3 +14,4 @@ distillation-output/logs/
 .coverage
 __pycache__/
 *.pyc
+distillation-output/lessons/

@@ -68,6 +68,29 @@ distillation-output/
 └── logs/             # Full run logs (JSONL)
 ```
 
+## Serving the lessons (production)
+
+The loop's output is a structured, re-servable lesson store
+(`distillation-output/lessons/lessons.jsonl`). Every lesson is a JSON
+object: `id`, `scope` (always `player` — global promotion is a human act on
+the bridge side, never here), `player_id`, `domain`, `source_streams`,
+`lesson` text, `quality` scores, `tags`, `generator`.
+
+```bash
+# Serve over HTTP (stdlib only; quilt-scratch's ta-bridge Worker is the client)
+TA_INGEST_TOKEN=... python3 serve.py --port 8772
+
+# Endpoints: GET /health /stats /lessons?player=...
+#            POST /events (bearer token) -> stores + distills lessons
+#            POST /distill {player_id}   -> re-distill from stored history
+
+python3 serve.py --selftest   # no server, no network smoke test
+```
+
+Events follow the contract in `quilt-scratch/docs/TA-BRIDGE.md`. The LLM
+generator (GLM) is optional — set `TA_USE_LLM=1` — and always falls back to
+the deterministic heuristic distiller; the store works with zero network.
+
 ## API Key Resolution
 
 The runner looks for the Z.ai API key in this order:
