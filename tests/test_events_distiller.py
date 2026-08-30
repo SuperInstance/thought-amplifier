@@ -231,6 +231,15 @@ class TestLlmPath:
 # ─── event store ───────────────────────────────────────────────
 
 class TestEventStore:
+    def test_extend_is_idempotent_by_event_id(self, event_store):
+        """Re-forwarded events (bridge flush/retry) must not double-count."""
+        batch = [request_event(1, "a"), request_event(2, "b")]
+        first = event_store.extend(batch)
+        assert len(first) == 2
+        again = event_store.extend(batch + [request_event(3, "c")])
+        assert len(again) == 1, "only the genuinely-new event stored"
+        assert event_store.count() == 3
+
     def test_extend_and_all_for_player(self, event_store):
         event_store.extend([request_event(1, "a"), request_event(2, "b", player="theo")])
         assert event_store.count() == 2

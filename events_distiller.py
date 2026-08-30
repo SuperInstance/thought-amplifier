@@ -105,14 +105,22 @@ class EventStore:
         self.path = self.dir / "events.jsonl"
 
     def extend(self, events: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        """Validate + append a batch. Raises EventValidationError on first bad row."""
+        """Validate + append a batch, skipping event ids already stored
+        (idempotent ingest — the bridge re-forwards on flush/retry, and a
+        retried event must not double-count in the digest history).
+        Raises EventValidationError on a contract-violating row (atomic:
+        nothing stored when validation fails).
+        """
         normalized = [validate_event(e) for e in events]
-        with open(self.path, "a", encoding="utf-8") as f:
-            for e in normalized:
-                f.write(json.dumps(e, ensure_ascii=False) + "\n")
-        return normalized
+        known = {e.get("id") for e in self._rows()}
+        fresh = [e for e in normalized if e["id"] not in known]
+        if fresh:
+            with open(self.path, "a", encoding="utf-8") as f:
+                for e in fresh:
+                    f.write(json.dumps(e, ensure_ascii=False) + "\n")
+        return fresh
 
-    def all_for_player(self, player_id: str) -> list[dict[str, Any]]:
+    def _rows(self) -> list[dict[str, Any]]:
         if not self.path.exists():
             return []
         rows: list[dict[str, Any]] = []
@@ -124,9 +132,12 @@ class EventStore:
                 obj = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            if isinstance(obj, dict) and obj.get("player_id") == player_id:
+            if isinstance(obj, dict):
                 rows.append(obj)
         return rows
+
+    def all_for_player(self, player_id: str) -> list[dict[str, Any]]:
+        return [r for r in self._rows() if r.get("player_id") == player_id]
 
     def count(self) -> int:
         if not self.path.exists():
