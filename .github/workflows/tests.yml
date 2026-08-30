@@ -29,10 +29,10 @@ jobs:
           if [ -f pyproject.toml ]; then pip install -e ".[dev]" 2>/dev/null || true; fi
 
       - name: Run tests
-        run: python -m pytest -v --tb=short --maxfail=10
+        run: python -m pytest tests router/tests scheduler/tests -v --tb=short --maxfail=10
 
       - name: Test summary
         if: always()
         run: |
           echo "## Test Results" >> $GITHUB_STEP_SUMMARY
-          python -m pytest --tb=no -q 2>&1 | tail -5 >> $GITHUB_STEP_SUMMARY
+          python -m pytest tests router/tests scheduler/tests --tb=no -q 2>&1 | tail -5 >> $GITHUB_STEP_SUMMARY

@@ -37,5 +37,5 @@ include = ["core*", "modes*", "router*", "scheduler*", "viewer*"]
 exclude = ["tests*", "experiments*", "competition*", "logos*"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "router/tests", "scheduler/tests"]
 addopts = "-v"
