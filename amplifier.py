@@ -7,6 +7,12 @@ the conditions under which the small model thinks. Six specialized modes
 extend the stream into research, debate, creativity, monitoring, synthesis,
 and experimentation.
 
+This module is the CLI entry point only: it parses arguments and wires
+together the journal, thinker, supervisor, and modes, then hands off to
+their run loops. It does not implement thinking, API fallback, or journal
+writing itself (see core/), and it does not manage the Ollama server or
+model (see watchdog.py).
+
 Usage:
     # Basic: just think
     python amplifier.py
@@ -52,7 +58,6 @@ import os
 import signal
 import sys
 import threading
-import time
 
 # Ensure local imports work regardless of cwd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -65,7 +70,8 @@ from core.supervisor import Supervisor
 # ─── Mode Imports ───────────────────────────────────────────────
 
 def get_mode_instance(mode: str, thinker: Thinker, journal: Journal,
-                      api_keys: dict[str, str], args) -> object | None:
+                      api_keys: dict[str, str],
+                      args: argparse.Namespace) -> object | None:
     """Instantiate a mode by name."""
     glm_key = api_keys.get("glm", "")
     ds_key = api_keys.get("deepseek", "")
@@ -156,13 +162,9 @@ def main() -> None:
 
     # ─── Initialize ─────────────────────────────────────────────
 
-    # Resolve API keys
     api_keys = resolve_api_keys()
-
-    # Create journal
     journal = Journal(journal_dir=args.journal_dir)
 
-    # Create thinker config
     config = ThinkerConfig(
         ollama_model=args.ollama_model,
         system_prompt=args.context if args.context else ThinkerConfig().system_prompt,
@@ -175,17 +177,14 @@ def main() -> None:
         deepseek_model=args.deepseek_model,
     )
 
-    # Create thinker
     thinker = Thinker(config, journal)
 
-    # Journal startup
     journal.write("system", "Thought Amplifier starting up", {
         "mode": args.mode,
         "args": vars(args),
         "api_keys_available": list(api_keys.keys()),
     })
 
-    # Print banner
     print()
     print("╔══════════════════════════════════════════════╗")
     print("║        Thought Amplifier v1.0                 ║")
@@ -228,7 +227,6 @@ def main() -> None:
         # ── Plain thought loop (with optional supervisor) ──
 
         if args.supervise:
-            # Run supervisor in a thread
             supervisor = Supervisor(
                 thinker, journal,
                 review_interval=args.supervisor_interval,
@@ -293,7 +291,6 @@ def main() -> None:
                 sys.exit(1)
             entries = mode_instance.simulate(args.premise, num_trajectories=args.num_thoughts)
 
-        # Print results
         print(f"\n{'='*50}")
         print(f"Mode complete. {len(entries)} entries written.")
         print(f"Journal: {journal.jsonl_path}")

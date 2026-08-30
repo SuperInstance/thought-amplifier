@@ -3,6 +3,11 @@ Ollama Watchdog — keeps the local model alive during overnight runs.
 
 Checks Ollama health, restarts if dead, verifies GPU availability,
 and logs all watchdog events for the morning briefing.
+
+Scope is the Ollama server and the required model only: this module does
+not watch the amplifier or distillation processes, does not send alerts,
+and never stops a running Ollama — its only recovery actions are starting
+the server and pulling the model.
 """
 
 from __future__ import annotations
@@ -10,7 +15,6 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -66,7 +70,7 @@ def check_ollama_alive() -> bool:
             return False
         data = json.loads(result.stdout)
         return "models" in data or isinstance(data, dict)
-    except (subprocess.TimeoutExpired, json.JSONDecodeError, Exception):
+    except Exception:
         return False
 
 
@@ -83,17 +87,18 @@ def check_model_available() -> bool:
         data = json.loads(result.stdout)
         models = [m.get("name", "") for m in data.get("models", [])]
         return OLLAMA_MODEL in models
-    except (subprocess.TimeoutExpired, json.JSONDecodeError, Exception):
+    except Exception:
         return False
 
 
 def check_gpu_available() -> bool:
     """
-    Check if GPU is available for Ollama inference.
-    On WSL2, check /proc/driver/nvidia or nvidia-smi.
-    Falls back to True if we can't determine (let Ollama try CPU).
+    Check whether a GPU is visible for Ollama inference.
+
+    Tries nvidia-smi, then the WSL2 /proc/driver/nvidia path. Returns False
+    when neither indicates a GPU; callers treat that as a warning rather than
+    fatal, since Ollama can fall back to CPU.
     """
-    # Try nvidia-smi first
     try:
         result = subprocess.run(
             ["nvidia-smi", "--query-gpu=name,memory.total,memory.used",
@@ -105,13 +110,11 @@ def check_gpu_available() -> bool:
     except (subprocess.TimeoutExpired, FileNotFoundError):
         pass
 
-    # Check /proc/driver/nvidia (WSL2 path)
+    # Check the WSL2 /proc/driver/nvidia path
     nvidia_proc = Path("/proc/driver/nvidia")
     if nvidia_proc.exists():
         return True
 
-    # No GPU detected — not necessarily fatal, Ollama can use CPU
-    # Log it but don't block
     return False
 
 
@@ -120,7 +123,6 @@ def start_ollama() -> bool:
     log_event("restart_attempt", {"binary": OLLAMA_BIN})
 
     try:
-        # Start ollama serve in the background
         proc = subprocess.Popen(
             [OLLAMA_BIN, "serve"],
             stdout=subprocess.DEVNULL,
@@ -214,7 +216,7 @@ def health_check_full() -> dict[str, Any]:
             status["test_inference"] = bool(data.get("response", ""))
         else:
             status["issues"].append("Test inference returned error")
-    except (subprocess.TimeoutExpired, json.JSONDecodeError, Exception) as e:
+    except Exception as e:
         status["issues"].append(f"Test inference failed: {e}")
 
     return status
