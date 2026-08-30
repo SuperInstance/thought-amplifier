@@ -21,16 +21,19 @@ From REPO_DESIGN.md §5.3 — Trust Scoring:
 
 The supervisor is intentionally conservative. A bad modification is worse
 than no modification — the system should think differently, not brokenly.
+
+It shapes future thoughts only through the thinker's config (system prompt,
+temperature, context, interval). It does NOT edit or delete thoughts already
+recorded in the journal, does NOT persist trust/quality state across runs,
+and its optional LLM path silently falls back to the heuristic on any error.
 """
 
 from __future__ import annotations
 
 import json
-import os
 import re
-import subprocess
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from core.journal import Journal
@@ -84,7 +87,7 @@ class QualityScore:
         # Coherence: check for basic sentence structure
         sentences = re.split(r'[.!?]+', thought)
         sentences = [s.strip() for s in sentences if s.strip()]
-        if sentences and len(sentences) >= 1:
+        if sentences:
             avg_len = sum(len(s.split()) for s in sentences) / len(sentences)
             coherence = min(1.0, avg_len / 10.0) if avg_len > 0 else 0.3
         else:
@@ -272,9 +275,8 @@ class Supervisor:
         current_prompt = self.thinker.config.system_prompt
 
         if avg_quality < 0.35:
-            # Quality is very low — switch to a different prompt style
-            available = [p for p in PROMPT_VARIATIONS.values() if p != current_prompt]
-            # Pick the one we haven't tried, or the one with best historical performance
+            # Quality is very low — switch to a different prompt style.
+            # Prefer the best historical performer, else a random different one.
             if self.prompt_history:
                 best_prompt = max(self.prompt_history, key=lambda x: x[1])
                 new_prompt = best_prompt[0] if best_prompt[1] > avg_quality else None
@@ -306,18 +308,15 @@ class Supervisor:
             return None  # Don't fix what isn't broken
 
         else:
-            # Mid-range quality — try injecting context from recent thoughts
-            if thoughts:
-                # Pick the highest-quality recent thought and use it as seed
-                sorted_thoughts = sorted(thoughts, key=lambda t: t.get("metadata", {}).get("quality", 0.5))
-                best = sorted_thoughts[-1]
-                seed = best["content"][:100]
-                return Directive(
-                    kind="context",
-                    description=f"Seeding context from high-quality thought (quality={avg_quality:.2f})",
-                    changes={"context": f"Earlier you thought: \"{seed}...\". Build on or diverge from this."},
-                )
-            return None
+            # Mid-range quality — seed context from the highest-quality recent thought
+            sorted_thoughts = sorted(thoughts, key=lambda t: t.get("metadata", {}).get("quality", 0.5))
+            best = sorted_thoughts[-1]
+            seed = best["content"][:100]
+            return Directive(
+                kind="context",
+                description=f"Seeding context from high-quality thought (quality={avg_quality:.2f})",
+                changes={"context": f"Earlier you thought: \"{seed}...\". Build on or diverge from this."},
+            )
 
     def _rollback_directive(self) -> Directive:
         """Rollback to the previous prompt."""
@@ -408,8 +407,9 @@ class Supervisor:
             else:
                 return None
 
-        except Exception as e:
-            # Fallback to heuristic
+        except Exception:
+            # Any failure (network, bad JSON, unexpected shape) falls back
+            # silently to the heuristic path.
             return self._choose_directive(thoughts, avg_quality)
 
     def _current_prompt_name(self) -> str:
@@ -444,12 +444,11 @@ class Supervisor:
             },
         )
 
-        # Notify callback
         if self._on_directive:
             try:
                 self._on_directive(directive)
             except Exception:
-                pass
+                pass  # Callback errors shouldn't crash the loop
 
     def review(self) -> Directive | None:
         """Perform one review cycle.

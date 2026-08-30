@@ -10,13 +10,15 @@ The journal is the system's memory. The supervisor reads it to assess
 thought quality. Modes read it for context. The viewer streams from it.
 
 Design: pure stdlib, no external dependencies.
+
+The journal does NOT rotate, prune, or lock its files. Writes are plain
+appends to the current session's files, so concurrent writers from
+separate processes may interleave lines.
 """
 
 from __future__ import annotations
 
 import json
-import os
-import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -69,11 +71,9 @@ class Journal:
             "session": self.session_id,
         }
 
-        # Append to JSONL
         with open(self.jsonl_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
-        # Append to Markdown
         self._write_markdown(entry)
 
         return entry

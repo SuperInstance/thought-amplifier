@@ -6,9 +6,12 @@ A small model thinks continuously, producing a stream of thoughts.
 Ollama (localhost:11434) is the preferred backend with Granite 3.1 2B.
 If Ollama is unavailable, falls back to GLM API or DeepSeek API.
 
-The thinker is NOT an agent. It doesn't call tools or plan actions.
-It simply generates thoughts given the current prompt and context,
-one at a time, forever (or until stopped).
+The thinker is NOT an agent: it doesn't call tools or plan actions. It
+generates thoughts given the current prompt and context, one at a time,
+forever (or until stopped). It does NOT stream tokens (stream=False), does
+NOT retry within a tick beyond the single Ollama → GLM → DeepSeek sweep
+(a failed tick is journalled and the loop tries again on the next one),
+and keeps no state beyond the journal and an in-memory thought count.
 
 Design principles from REPO_DESIGN.md:
 - Degrades gracefully: Ollama → GLM → DeepSeek → error (never blocks)
@@ -23,7 +26,6 @@ import json
 import os
 import subprocess
 import time
-import urllib.error
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
@@ -100,7 +102,7 @@ def _curl_post_json(url: str, payload: dict[str, Any], headers: dict[str, str] |
         return json.loads(result.stdout)
     except subprocess.TimeoutExpired:
         raise RuntimeError(f"curl timed out after {timeout}s")
-    except json.JSONDecodeError as e:
+    except json.JSONDecodeError:
         raise RuntimeError(f"Invalid JSON response: {result.stdout[:500]}")
     except Exception as e:
         raise RuntimeError(f"curl error: {e}")
@@ -317,7 +319,6 @@ class Thinker:
 
         Tries the primary backend first, falls back to others on error.
         """
-        # Try each backend in priority order
         errors: list[str] = []
 
         for backend_name in self.config.backend_priority:
@@ -325,15 +326,14 @@ class Thinker:
             if generator is None:
                 continue
 
-            # Check if this backend is available
             if backend_name == "ollama" and not check_ollama(self.config.ollama_url):
-                errors.append(f"ollama: not available")
+                errors.append("ollama: not available")
                 continue
             if backend_name == "glm" and not self.config.glm_api_key:
-                errors.append(f"glm: no API key")
+                errors.append("glm: no API key")
                 continue
             if backend_name == "deepseek" and not self.config.deepseek_api_key:
-                errors.append(f"deepseek: no API key")
+                errors.append("deepseek: no API key")
                 continue
 
             try:
@@ -352,7 +352,7 @@ class Thinker:
         try:
             thought_text = self.generate_one()
         except Exception as e:
-            # Log error and wait before retrying
+            # Journal the failure and return; the loop retries on the next tick.
             entry = self.journal.write(
                 "system",
                 f"Thought generation failed: {e}",
@@ -375,7 +375,6 @@ class Thinker:
             },
         )
 
-        # Notify callback
         if self._on_thought:
             try:
                 self._on_thought(entry)
