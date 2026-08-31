@@ -1,26 +1,45 @@
 """
-Distillation Loop — the self-improvement engine.
+Distillation loop — a prompt-level teaching loop between a cloud model and a
+local model.
 
-This is the core of the whole system: a continuous loop where a large cloud
-model (GLM-5.2 via Z.ai, unlimited tokens) teaches a small local model
-(Granite 3.1 2B via Ollama, free) how to be better at real tasks.
+Each iteration runs five stages for one (domain, topic, task):
 
-Over time, the local model needs the cloud less and less. Teaching that
-helped gets compiled into .nail reflexes (Pincher's "LLM as compiler"
-pattern). Consistently helpful teaching becomes permanent system prompt
-directives via the PromptUpdater.
+  1. TEACHER   — a cloud model (GLM via Z.ai by default; see GLM_MODEL) writes
+                 a short lesson about the topic
+  2. STUDENT   — a local model (Granite via Ollama by default; see OLLAMA_MODEL)
+                 answers the task twice: once with the lesson, once without
+  3. EVALUATE  — heuristic text scoring of both answers; delta = taught - baseline
+  4. DISTILL   — on a positive delta, write a ".nail" reflex JSON capturing the
+                 lesson excerpt and a situation signature
+  5. UPDATE    — once the last N results for a domain are all positive deltas
+                 (default 3), append a versioned "system prompt directive" to a
+                 JSONL file
 
-The five stages:
-  1. TEACHER    — GLM generates a focused lesson about a domain topic
-  2. STUDENT    — Granite applies the lesson to a real task
-  3. EVALUATE   — score Granite's output vs its baseline (no teaching)
-  4. DISTILL    — if teaching helped, compile it into a .nail reflex
-  5. UPDATE     — if teaching consistently helps, promote to system prompt
+All artifacts are written under distillation-output/ (teacher/, student/, eval/,
+reflexes/, prompts/, logs/). Design context: REPO_DESIGN.md §5 (cloud as
+compiler, local as runtime, reflexes as the bridge).
 
-Architecture follows REPO_DESIGN.md §5 and the Pincher pattern:
-  - Cloud is the compiler, not the runtime
-  - Local is the runtime, not the compiler
-  - Reflexes are the bridge — compiled wisdom that avoids future cloud calls
+What this module does NOT do:
+  - No entry point or CLI. It is a library; the loop is driven by external
+    scripts (run_distillation.py, run_overnight.py).
+  - No model training or fine-tuning. "Distillation" here means teaching via
+    prompt context plus reflex capture, not weight transfer or LoRA — despite
+    what some TEACHING_TOPICS strings mention.
+  - Evaluation (stage_evaluate / score_response) is a bag of regex and n-gram
+    heuristics over the response text. It does not check task correctness and
+    does not use a model as judge.
+  - stage_update_prompt does not modify any live system prompt. It only appends
+    entries to distillation-output/prompts/<domain>_versions.jsonl and
+    VERSION_HISTORY.jsonl.
+  - Reflexes are written but never read back or matched here; wiring them into
+    the local model's inference path is out of scope for this file.
+  - No HTTP client library. Every request is a curl subprocess, optionally
+    routed through a fleet-gateway shim (see _curl_post_json).
+  - Not thread-safe. Stages run sequentially and module globals
+    (_domain_history, _fleet_gw_cache) carry mutable state.
+
+The stage functions never raise on API failure: they record the error in the
+returned artifact (success=False) and let the caller decide whether to continue.
 """
 
 from __future__ import annotations
@@ -235,7 +254,12 @@ TEACHING_TOPICS: dict[str, list[str]] = {
 # ─── HTTP Utilities ────────────────────────────────────────────
 
 class DistillationError(Exception):
-    """Base exception for distillation loop failures."""
+    """Base class for the exception hierarchy below.
+
+    Provided for callers that want to catch distillation failures, but the
+    stage_* functions currently do not raise these — they return an artifact
+    with success=False and an "error" key instead.
+    """
     pass
 
 
@@ -390,8 +414,8 @@ def _curl_post_json_direct(
 
             # Handle rate limiting and server errors with retry
             if http_code == 429 or 500 <= http_code < 600:
+                # Retry-After is not read from the response; use a fixed floor.
                 retry_after = 5
-                # Parse Retry-After from headers if present (simplified)
                 last_error = f"HTTP {http_code} from server"
                 if attempt < retries:
                     wait = max(retry_after, backoff_base * (2 ** (attempt - 1)))
@@ -402,7 +426,6 @@ def _curl_post_json_direct(
             if 400 <= http_code < 500 and http_code != 429:
                 return {"error": f"HTTP {http_code}: {body[:500]}", "_http_code": http_code}
 
-            # Parse JSON response
             try:
                 return json.loads(body)
             except json.JSONDecodeError:
@@ -587,13 +610,15 @@ def stage_teacher(
     max_retries: int = 3,
 ) -> dict[str, Any]:
     """
-    STAGE 1: Call GLM to generate a teaching prompt about the topic.
+    STAGE 1: Call GLM to generate a teaching lesson about the topic.
 
-    Returns dict with:
-      - topic, lesson, raw_response, timestamp, iteration
-      - error (optional): present if the teacher failed permanently
+    On success the returned artifact has: topic, domain, lesson, iteration,
+    timestamp, model, token_usage, success=True. It is also written to
+    TEACHER_DIR.
 
-    Raises TeacherUnavailable if all retries are exhausted and no fallback works.
+    On permanent failure (retries exhausted or an empty response) it returns an
+    artifact with lesson="", success=False and an "error" key — it does not
+    raise.
     """
     user_msg = (
         f"Domain: {domain}\n"
@@ -840,20 +865,14 @@ def stage_distill(
             "iteration": iteration,
         }
 
-    # Build the reflex
     lesson = teacher_artifact["lesson"]
     topic = teacher_artifact["topic"]
-
-    # Extract key insights from the lesson (first 500 chars for the reflex)
     lesson_excerpt = lesson[:500]
 
-    # Create a situation signature for matching
+    # Situation signature: what a future reflex lookup would match against.
     situation = f"domain={domain} topic={topic[:60]}"
-
-    # Embed the situation
     embedding = embed_hash(situation)
 
-    # Generate reflex ID
     raw = f"{domain}|{topic}|{iteration}|{teacher_artifact['timestamp']}"
     nail_id = hashlib.sha256(raw.encode()).hexdigest()[:16]
 
